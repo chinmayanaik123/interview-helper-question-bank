@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "version": 1,
+  "updatedAt": "2026-07-13T07:41:02.259Z",
+  "totalQuestions": 450,
+  "categories": [
+    {
+      "id": "angular",
+      "file": "angular.json",
+      "label": "Angular",
+      "group": "frontend",
+      "count": 78
+    },
+    {
+      "id": "ngcoding",
+      "file": "angular-coding.json",
+      "label": "Angular Coding",
+      "group": "frontend",
+      "count": 21
+    },
+    {
+      "id": "javascript",
+      "file": "javascript.json",
+      "label": "JavaScript",
+      "group": "frontend",
+      "count": 54
+    },
+    {
+      "id": "typescript",
+      "file": "typescript.json",
+      "label": "TypeScript",
+      "group": "frontend",
+      "count": 24
+    },
+    {
+      "id": "html",
+      "file": "html.json",
+      "label": "HTML",
+      "group": "frontend",
+      "count": 29
+    },
+    {
+      "id": "css",
+      "file": "css.json",
+      "label": "CSS",
+      "group": "frontend",
+      "count": 35
+    },
+    {
+      "id": "coding",
+      "file": "coding.json",
+      "label": "JS Coding",
+      "group": "frontend",
+      "count": 53
+    },
+    {
+      "id": "rxjs",
+      "file": "rxjs.json",
+      "label": "RxJS",
+      "group": "frontend",
+      "count": 29
+    },
+    {
+      "id": "ngrx",
+      "file": "ngrx.json",
+      "label": "NgRx",
+      "group": "frontend",
+      "count": 34
+    },
+    {
+      "id": "testing",
+      "file": "testing.json",
+      "label": "Testing",
+      "group": "frontend",
+      "count": 18
+    },
+    {
+      "id": "general",
+      "file": "general.json",
+      "label": "General",
+      "group": "frontend",
+      "count": 12
+    },
+    {
+      "id": "java",
+      "file": "java.json",
+      "label": "Java",
+      "group": "backend",
+      "count": 13
+    },
+    {
+      "id": "springboot",
+      "file": "springboot.json",
+      "label": "Spring Boot",
+      "group": "backend",
+      "count": 11
+    },
+    {
+      "id": "sql",
+      "file": "sql.json",
+      "label": "SQL",
+      "group": "backend",
+      "count": 12
+    },
+    {
+      "id": "git",
+      "file": "git.json",
+      "label": "Git",
+      "group": "devops",
+      "count": 10
+    },
+    {
+      "id": "behavioral",
+      "file": "behavioral.json",
+      "label": "Behavioral",
+      "group": "hr",
+      "count": 17
+    }
+  ]
+}
