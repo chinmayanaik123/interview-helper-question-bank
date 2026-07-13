@@ -1,0 +1,76 @@
+[
+  {
+    "id": "flutter-what-is",
+    "category": "flutter",
+    "difficulty": "beginner",
+    "tags": [
+      "flutter",
+      "framework",
+      "basics"
+    ],
+    "question": "What is Flutter, and what are its advantages?",
+    "answer": "<p><strong>Flutter</strong> is Google's open-source UI toolkit for building natively compiled applications for Android, iOS, Web, Windows, macOS, and Linux from a single codebase using the <strong>Dart</strong> programming language.</p><p>Key advantages include <strong>Hot Reload</strong>, a single codebase for multiple platforms, high performance through native compilation, a rich widget library (Material & Cupertino), expressive UI, and excellent developer productivity.</p>",
+    "tip": "Mention Hot Reload, single codebase, native performance, and widgets—these are the biggest Flutter selling points.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "flutter-widget-types",
+    "category": "flutter",
+    "difficulty": "beginner",
+    "tags": [
+      "widgets",
+      "stateless",
+      "stateful"
+    ],
+    "question": "What is the difference between StatelessWidget and StatefulWidget?",
+    "answer": "<p>A <strong>StatelessWidget</strong> is immutable. Once built, its UI does not change unless its parent rebuilds it.</p><p>A <strong>StatefulWidget</strong> has mutable state managed by a separate <code class=\"inline\">State</code> object. Calling <code class=\"inline\">setState()</code> updates the state and rebuilds the widget.</p>",
+    "tip": "Use StatelessWidget when the UI never changes. Use StatefulWidget when the UI changes because of user interaction, API responses, or animations.",
+    "code": "",
+    "lang": "dart"
+  },
+  {
+    "id": "flutter-hot-reload",
+    "category": "flutter",
+    "difficulty": "beginner",
+    "tags": [
+      "hot-reload",
+      "development"
+    ],
+    "question": "What is Hot Reload, and how is it different from Hot Restart?",
+    "answer": "<p><strong>Hot Reload</strong> injects updated source code into the running application while preserving the current state. It is mainly used during UI development.</p><p><strong>Hot Restart</strong> restarts the Dart application, resets all state, and rebuilds the widget tree from scratch.</p>",
+    "tip": "Hot Reload keeps the app state. Hot Restart starts the application from the beginning.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "flutter-widget-tree",
+    "category": "flutter",
+    "difficulty": "intermediate",
+    "tags": [
+      "widget-tree",
+      "ui",
+      "architecture"
+    ],
+    "question": "What is the Widget Tree in Flutter?",
+    "answer": "<p>Everything in Flutter is a <strong>Widget</strong>. The Widget Tree is a hierarchical structure that describes the application's UI. Parent widgets contain child widgets, and Flutter rebuilds only the affected parts of the tree when state changes, making rendering efficient.</p>",
+    "tip": "Remember: Widgets describe the UI; Elements manage widget instances; RenderObjects handle layout and painting.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "flutter-lifecycle",
+    "category": "flutter",
+    "difficulty": "intermediate",
+    "tags": [
+      "lifecycle",
+      "statefulwidget",
+      "state"
+    ],
+    "question": "Explain the lifecycle of a StatefulWidget.",
+    "answer": "<p>The main lifecycle methods are: <code class=\"inline\">createState()</code> → <code class=\"inline\">initState()</code> → <code class=\"inline\">didChangeDependencies()</code> → <code class=\"inline\">build()</code>. During updates, Flutter may call <code class=\"inline\">didUpdateWidget()</code> and <code class=\"inline\">setState()</code> triggers another <code class=\"inline\">build()</code>. Before removal, <code class=\"inline\">dispose()</code> is called to clean up resources like controllers, streams, and animations.</p>",
+    "tip": "Always initialize resources in initState() and release them in dispose() to avoid memory leaks.",
+    "code": "",
+    "lang": "dart"
+  }
+]

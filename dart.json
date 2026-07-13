@@ -1,0 +1,76 @@
+[
+  {
+    "id": "dart-what-is",
+    "category": "dart",
+    "difficulty": "beginner",
+    "tags": [
+      "dart",
+      "basics",
+      "language"
+    ],
+    "question": "What is Dart, and why is it used for Flutter development?",
+    "answer": "<p><strong>Dart</strong> is an object-oriented, client-optimized programming language developed by Google. It is the primary language for Flutter because it supports <strong>AOT (Ahead-of-Time)</strong> compilation for fast production performance and <strong>JIT (Just-in-Time)</strong> compilation for Hot Reload during development.</p>",
+    "tip": "Mention both AOT (performance) and JIT (Hot Reload)—this is a common interview question.",
+    "code": "",
+    "lang": "dart"
+  },
+  {
+    "id": "dart-final-const-var",
+    "category": "dart",
+    "difficulty": "beginner",
+    "tags": [
+      "variables",
+      "final",
+      "const"
+    ],
+    "question": "What is the difference between var, final, and const in Dart?",
+    "answer": "<p><strong>var</strong> declares a variable whose type is inferred and whose value can change.</p><p><strong>final</strong> can only be assigned once at runtime.</p><p><strong>const</strong> represents a compile-time constant and must be initialized with a constant value.</p>",
+    "tip": "Remember: final = runtime constant, const = compile-time constant.",
+    "code": "var name = 'John';\nfinal date = DateTime.now();\nconst pi = 3.14159;",
+    "lang": "dart"
+  },
+  {
+    "id": "dart-null-safety",
+    "category": "dart",
+    "difficulty": "intermediate",
+    "tags": [
+      "null-safety",
+      "types"
+    ],
+    "question": "What is Null Safety in Dart?",
+    "answer": "<p>Null Safety helps prevent null reference errors by distinguishing between nullable and non-nullable types. A variable declared as <code class=\"inline\">String</code> cannot hold <code class=\"inline\">null</code>, while <code class=\"inline\">String?</code> can.</p><p>Dart also provides operators like <code class=\"inline\">?</code>, <code class=\"inline\">!</code>, and <code class=\"inline\">??</code> to safely work with nullable values.</p>",
+    "tip": "Use nullable types only when null is a valid state.",
+    "code": "String name = 'John';\nString? middleName;\nprint(middleName ?? 'Not Available');",
+    "lang": "dart"
+  },
+  {
+    "id": "dart-async-await",
+    "category": "dart",
+    "difficulty": "intermediate",
+    "tags": [
+      "async",
+      "future",
+      "await"
+    ],
+    "question": "Explain async, await, and Future in Dart.",
+    "answer": "<p><strong>Future</strong> represents a value that will be available later. Functions marked with <code class=\"inline\">async</code> return a Future, and the <code class=\"inline\">await</code> keyword pauses execution until the Future completes without blocking the main thread.</p>",
+    "tip": "Most API calls and database operations in Flutter use Future with async/await.",
+    "code": "Future<String> fetchUser() async {\n  await Future.delayed(Duration(seconds: 2));\n  return 'John';\n}",
+    "lang": "dart"
+  },
+  {
+    "id": "dart-oop",
+    "category": "dart",
+    "difficulty": "intermediate",
+    "tags": [
+      "oop",
+      "class",
+      "inheritance"
+    ],
+    "question": "Which Object-Oriented Programming (OOP) concepts does Dart support?",
+    "answer": "<p>Dart fully supports the four main OOP principles:</p><ul><li><strong>Encapsulation</strong> – Bundle data and methods inside classes.</li><li><strong>Inheritance</strong> – Extend existing classes using <code class=\"inline\">extends</code>.</li><li><strong>Polymorphism</strong> – Override methods in subclasses.</li><li><strong>Abstraction</strong> – Use abstract classes and interfaces to hide implementation details.</li></ul><p>Dart also supports mixins, extensions, and interfaces for code reuse.</p>",
+    "tip": "Interviewers often ask about mixins after discussing OOP, so be prepared to explain them as well.",
+    "code": "",
+    "lang": "dart"
+  }
+]
