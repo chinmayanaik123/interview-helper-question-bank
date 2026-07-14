@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
-  "version": 4,
-  "updatedAt": "2026-07-13T10:09:01.520Z",
-  "totalQuestions": 470,
+  "version": 6,
+  "updatedAt": "2026-07-14T11:18:18.309Z",
+  "totalQuestions": 760,
   "groups": [
     {
       "id": "frontend",
@@ -38,7 +38,7 @@
       "group": "frontend",
       "color": "#C3002F",
       "count": 78,
-      "hash": "39ce05967428"
+      "hash": "8ff556722c56"
     },
     {
       "id": "ngcoding",
@@ -181,8 +181,8 @@
       "label": "Flutter",
       "group": "mobile",
       "color": "#42A5F5",
-      "count": 5,
-      "hash": "5fc6cc52ee90"
+      "count": 100,
+      "hash": "b164173a0876"
     },
     {
       "id": "dart",
@@ -190,8 +190,17 @@
       "label": "Dart",
       "group": "mobile",
       "color": "#0175C2",
-      "count": 5,
-      "hash": "e9d2f9231458"
+      "count": 100,
+      "hash": "e128f45c96a0"
+    },
+    {
+      "id": "fluttercoding",
+      "file": "flutter-coding.json",
+      "label": "Flutter Coding",
+      "group": "mobile",
+      "color": "#7C4DFF",
+      "count": 100,
+      "hash": "121084bc10f2"
     },
     {
       "id": "swift",
@@ -203,5 +212,5 @@
       "hash": "d36017bc1528"
     }
   ],
-  "contentHash": "978365b2d533aab03523a9fb40f7672ad3f00e54"
+  "contentHash": "05724f0e747eed0505e0d1c13d20947d6c2d9364"
 }
