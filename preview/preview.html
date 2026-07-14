@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interview Helper — Preview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="preview.css" />
+  </head>
+
+  <body>
+    <div class="app">
+
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-icon">IH</div>
+          <div class="brand-text">
+            <strong>Interview Helper</strong>
+            <span>Question Bank</span>
+          </div>
+        </div>
+
+        <div id="groupTabs" class="group-tabs"></div>
+        <div id="categoryList" class="category-list"></div>
+
+        <div class="sidebar-section">
+          <label class="sidebar-label">Search</label>
+          <div class="search-wrap">
+            <svg class="search-icon" viewBox="0 0 20 20" fill="none">
+              <circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M13 13l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+            <input id="searchInput" type="text" placeholder="Question, tag, keyword…" />
+            <button id="clearSearch" class="clear-btn" aria-label="Clear search">✕</button>
+          </div>
+        </div>
+
+        <div class="stat-pills">
+          <div class="stat-pill">
+            <span id="questionCount">0</span>
+            <label>Total</label>
+          </div>
+          <div class="stat-pill accent">
+            <span id="filteredCount">0</span>
+            <label>Shown</label>
+          </div>
+        </div>
+
+        <div class="sidebar-footer">
+          <button id="reloadBtn" class="reload-btn">
+            <svg viewBox="0 0 20 20" fill="none">
+              <path d="M4 10a6 6 0 016-6 6 6 0 014.24 1.76L16 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              <path d="M16 3v4h-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M16 10a6 6 0 01-6 6 6 6 0 01-4.24-1.76L4 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              <path d="M4 17v-4h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Reload</span>
+            <span id="reloadAge" class="reload-age">0s</span>
+          </button>
+
+          <div class="auto-reload-row">
+            <span class="sidebar-label">Auto-reload</span>
+            <div id="autoReloadDot" class="pulse-dot"></div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main -->
+      <main class="main">
+        <div class="main-header">
+          <h1 id="currentCategory" class="main-title">—</h1>
+          <p class="main-sub">Live preview · changes appear automatically</p>
+        </div>
+
+        <div id="questionList" class="question-list">
+          <div class="loading">
+            <div class="loading-spinner"></div>
+            <p>Loading questions…</p>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Question Template -->
+    <template id="questionTemplate">
+      <article class="question-card">
+
+        <div class="card-meta">
+          <div class="badges">
+            <span class="badge category"></span>
+            <span class="badge difficulty"></span>
+          </div>
+          <span class="question-id"></span>
+        </div>
+
+        <h2 class="question-title"></h2>
+
+        <div class="tags"></div>
+
+        <details class="section answer-section">
+          <summary>
+            <svg viewBox="0 0 16 16" fill="none">
+              <path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 10.5V7m0-2.5v.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            Answer
+          </summary>
+          <div class="answer section-body"></div>
+        </details>
+
+        <div class="tip-section hidden section">
+          <div class="tip-label">
+            <svg viewBox="0 0 16 16" fill="none">
+              <path d="M8 1a4 4 0 00-2 7.46V10a1 1 0 001 1h2a1 1 0 001-1V8.46A4 4 0 008 1zM6 12h4M7 14h2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            Tip
+          </div>
+          <div class="tip section-body"></div>
+        </div>
+
+        <div class="code-section hidden section">
+          <div class="code-header">
+            <span class="language"></span>
+            <button class="copy-btn">
+              <svg viewBox="0 0 16 16" fill="none">
+                <rect x="5" y="5" width="8" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
+                <path d="M11 5V4a1 1 0 00-1-1H4a1 1 0 00-1 1v8a1 1 0 001 1h1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+              Copy
+            </button>
+          </div>
+          <pre><code></code></pre>
+        </div>
+
+        <details class="deep-section hidden section">
+          <summary>
+            <svg viewBox="0 0 16 16" fill="none">
+              <path d="M2 8h12M2 4h12M2 12h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            Deep Dive
+          </summary>
+          <div class="deep section-body"></div>
+        </details>
+
+      </article>
+    </template>
+
+    <script>
+      const CONFIG = {
+        manifest: "../manifest.json",
+        autoReload: true,
+        reloadInterval: 1000,
+      };
+    </script>
+    <script src="preview.js"></script>
+  </body>
+</html>
