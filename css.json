@@ -27,7 +27,8 @@
     "answer": "<p><strong>Flexbox</strong> is one-dimensional (a row or a column) — great for toolbars, nav bars, aligning items along one axis.</p><p><strong>Grid</strong> is two-dimensional (rows and columns together) — great for page layouts and card galleries.</p>",
     "tip": "Flex for components in a line; Grid for the overall page structure.",
     "code": ".cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }",
-    "lang": "css"
+    "lang": "css",
+    "youtube": "https://youtu.be/3elGSZSWTbM"
   },
   {
     "id": "css-specificity",

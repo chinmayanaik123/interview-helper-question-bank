@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "version": 9,
-  "updatedAt": "2026-07-15T17:49:34.984Z",
+  "version": 10,
+  "updatedAt": "2026-07-15T18:32:36.064Z",
   "totalQuestions": 762,
   "groups": [
     {
@@ -56,7 +56,7 @@
       "group": "frontend",
       "color": "#B4820A",
       "count": 54,
-      "hash": "ec1f732d64ff"
+      "hash": "0be5f0b40653"
     },
     {
       "id": "typescript",
@@ -83,7 +83,7 @@
       "group": "frontend",
       "color": "#7A4FD6",
       "count": 35,
-      "hash": "a6aca9c9b442"
+      "hash": "b7db386a0189"
     },
     {
       "id": "coding",
@@ -144,7 +144,7 @@
       "file": "leetcode.json",
       "label": "LeetCode",
       "group": "backend",
-      "color": "#9dde23",
+      "color": "#a80362",
       "count": 2,
       "hash": "ef9eaa92af62"
     },
@@ -221,5 +221,5 @@
       "hash": "d36017bc1528"
     }
   ],
-  "contentHash": "cc4f49a3e0e96f3a9fb90859028a49c8b745488e"
+  "contentHash": "d557364f6fdf53c3d2e044bd9b1f180017016078"
 }
