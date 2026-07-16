@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
-  "version": 12,
-  "updatedAt": "2026-07-16T05:30:14.314Z",
-  "totalQuestions": 763,
+  "version": 13,
+  "updatedAt": "2026-07-16T15:09:06.354Z",
+  "totalQuestions": 888,
   "groups": [
     {
       "id": "frontend",
@@ -136,8 +136,8 @@
       "label": "Java",
       "group": "backend",
       "color": "#9A5B34",
-      "count": 13,
-      "hash": "9d6d1cd9d8e9"
+      "count": 138,
+      "hash": "624b7ebfb36b"
     },
     {
       "id": "leetcode",
@@ -221,5 +221,5 @@
       "hash": "d36017bc1528"
     }
   ],
-  "contentHash": "55293762cf94646d45401fb4003297388b2c95da"
+  "contentHash": "a62c6acb76c03a80c80f5e551ce54af77a376dad"
 }
