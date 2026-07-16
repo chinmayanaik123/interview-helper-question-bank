@@ -1,0 +1,22 @@
+#!/bin/sh
+# Regenerate manifest.json from the question JSON, then stage it so the
+# derived fields (count/totalQuestions/version/updatedAt) ship in this commit.
+#
+# Skip with: git commit --no-verify
+
+# Nothing to do if no question JSON is part of this commit.
+if git diff --cached --name-only --diff-filter=ACMR | grep -qE '^[^/]+\.json$'; then
+  :
+else
+  exit 0
+fi
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "pre-commit: node not found — cannot rebuild manifest.json" >&2
+  exit 1
+fi
+
+# Builder validates and exits non-zero on bad content; that aborts the commit.
+node "$(git rev-parse --show-toplevel)/build-manifest.mjs" || exit 1
+
+git add "$(git rev-parse --show-toplevel)/manifest.json"

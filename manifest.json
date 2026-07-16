@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
-  "version": 11,
-  "updatedAt": "2026-07-16T03:14:17.148Z",
-  "totalQuestions": 762,
+  "version": 12,
+  "updatedAt": "2026-07-16T05:30:14.314Z",
+  "totalQuestions": 763,
   "groups": [
     {
       "id": "frontend",
@@ -38,7 +38,7 @@
       "group": "frontend",
       "color": "#C3002F",
       "count": 78,
-      "hash": "99004d0961b9"
+      "hash": "3d0962ae1d32"
     },
     {
       "id": "ngcoding",
@@ -101,7 +101,7 @@
       "group": "frontend",
       "color": "#1E8E57",
       "count": 29,
-      "hash": "afa4a6b57e41"
+      "hash": "286899cb44ef"
     },
     {
       "id": "ngrx",
@@ -145,8 +145,8 @@
       "label": "LeetCode",
       "group": "backend",
       "color": "#a80362",
-      "count": 2,
-      "hash": "ef9eaa92af62"
+      "count": 3,
+      "hash": "c77f3f32ce89"
     },
     {
       "id": "springboot",
@@ -221,5 +221,5 @@
       "hash": "d36017bc1528"
     }
   ],
-  "contentHash": "9c9701fbb6b23c25327d58782720421d12dcc5ce"
+  "contentHash": "55293762cf94646d45401fb4003297388b2c95da"
 }

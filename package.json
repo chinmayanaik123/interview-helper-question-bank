@@ -5,6 +5,7 @@
   "description": "Single source of truth for Interview Helper questions (JSON + manifest).",
   "type": "module",
   "scripts": {
-    "build": "node build-manifest.mjs"
+    "build": "node build-manifest.mjs",
+    "prepare": "git config core.hooksPath hooks"
   }
 }

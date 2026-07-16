@@ -1,0 +1,27 @@
+#!/bin/sh
+# Safety net: refuse to push if manifest.json is stale relative to the
+# question JSON (e.g. a commit made with --no-verify, or hooks not installed).
+#
+# This only checks — it never rewrites your commits.
+#
+# Skip with: git push --no-verify
+
+command -v node >/dev/null 2>&1 || exit 0
+
+root="$(git rev-parse --show-toplevel)"
+
+# Run the builder on a scratch copy so the real manifest is never touched.
+tmp="$(mktemp -d)"
+trap 'rm -rf "$tmp"' EXIT
+cp "$root"/*.json "$root/build-manifest.mjs" "$tmp/" 2>/dev/null || exit 0
+
+if ! node "$tmp/build-manifest.mjs" >/dev/null 2>&1; then
+  echo "pre-push: manifest build failed — run 'npm run build' to see the errors" >&2
+  exit 1
+fi
+
+if ! cmp -s "$tmp/manifest.json" "$root/manifest.json"; then
+  echo "pre-push: manifest.json is out of date with the question files." >&2
+  echo "          Run 'npm run build', then commit the updated manifest.json." >&2
+  exit 1
+fi
