@@ -46,5 +46,39 @@
   "lang": "java",
   "deep": "<h4>Problem intuition</h4><p>You must buy before selling, and you can complete only one transaction. Instead of checking every buy-sell pair, keep track of the cheapest stock price seen so far.</p><h4>Brute Force</h4><p>Try every pair of buy and sell days using two loops.</p><ul><li>Time Complexity: <strong>O(n²)</strong></li><li>Space Complexity: <strong>O(1)</strong></li></ul><h4>Optimal Approach</h4><p>Maintain two variables:</p><ul><li><strong>minPrice</strong> → Lowest stock price seen so far.</li><li><strong>maxProfit</strong> → Best profit found so far.</li></ul><pre><code>prices = [7,1,5,3,6,4]\n\nDay 1: min=7 profit=0\nDay 2: min=1 profit=0\nDay 3: profit=5-1=4\nDay 4: profit=3-1=2\nDay 5: profit=6-1=5\nDay 6: profit=4-1=3\n\nMaximum Profit = 5</code></pre><h4>Why it works</h4><p>At every day, we know the cheapest buying price available before today. Selling today gives the best possible profit for that day. Taking the maximum over all days gives the answer.</p><h4>Common mistakes</h4><ul><li>Trying every buy-sell pair (O(n²)).</li><li>Selling before buying.</li><li>Returning negative profit when prices always decrease.</li></ul><h4>Interview Tip</h4><p>This is a classic <strong>Greedy</strong> problem. Whenever you need the best difference while scanning an array once, think of maintaining a running minimum or maximum.</p>",
   "youtube": "https://youtu.be/1pkOgXD63yU"
-}
+},
+  {
+    "id": "leetcode-longest-substring-without-repeating-characters",
+    "category": "leetcode",
+    "difficulty": "intermediate",
+    "tags": [
+      "string",
+      "sliding-window",
+      "hashmap",
+      "two-pointers"
+    ],
+    "question": "Longest Substring Without Repeating Characters",
+    "answer": "<p>Given a string <code class=\"inline\">s</code>, find the length of the longest substring without repeating characters.</p><p><strong>Optimal Approach:</strong> Use the <code class=\"inline\">Sliding Window</code> technique along with a <code class=\"inline\">HashMap</code> to store the last index of every character. Whenever a duplicate character is found inside the current window, move the left pointer just after its previous occurrence.</p><ul><li>Time Complexity: <strong>O(n)</strong></li><li>Space Complexity: <strong>O(min(n, charset))</strong></li></ul>",
+    "tip": "Whenever you hear <strong>longest/shortest substring</strong> with a condition, think <strong>Sliding Window</strong>.",
+    "code": "public int lengthOfLongestSubstring(String s) {\n    Map<Character, Integer> map = new HashMap<>();\n    int left = 0;\n    int maxLength = 0;\n\n    for (int right = 0; right < s.length(); right++) {\n        char ch = s.charAt(right);\n\n        if (map.containsKey(ch)) {\n            left = Math.max(left, map.get(ch) + 1);\n        }\n\n        map.put(ch, right);\n        maxLength = Math.max(maxLength, right - left + 1);\n    }\n\n    return maxLength;\n}",
+    "lang": "java",
+    "deep": "<h4>Problem intuition</h4><p>We need the longest contiguous substring where every character is unique. Instead of checking every possible substring, maintain a moving window that always contains unique characters.</p><h4>Approaches</h4><ul><li><strong>Brute Force:</strong> Generate every substring and check if it contains duplicates. Time Complexity: <strong>O(n³)</strong>.</li><li><strong>Better:</strong> Check uniqueness using a HashSet for every starting index. Time Complexity: <strong>O(n²)</strong>.</li><li><strong>Optimal:</strong> Use a Sliding Window with a HashMap storing each character's latest index.</li></ul><pre><code>s = \"abcabcbb\"\n\nleft = 0\nright = 0 → a → window = \"a\"\nright = 1 → b → window = \"ab\"\nright = 2 → c → window = \"abc\"\nright = 3 → a (duplicate)\nMove left to index after previous 'a'\nwindow = \"bca\"\nContinue...\n\nMaximum Length = 3</code></pre><h4>Why Sliding Window works</h4><p>The window always maintains unique characters. Whenever a duplicate is found, we shrink the window only as much as needed, ensuring every character is processed at most twice.</p><h4>Common mistakes</h4><ul><li>Moving the left pointer backwards instead of using <code class=\"inline\">Math.max()</code>.</li><li>Using a HashSet but removing characters one by one unnecessarily.</li><li>Checking all substrings instead of maintaining a valid window.</li></ul><h4>Interview Tip</h4><p>Whenever the problem mentions <strong>longest substring</strong>, <strong>unique characters</strong>, or <strong>contiguous sequence</strong>, your first thought should be <strong>Sliding Window</strong>.</p>",
+    "youtube": "https://youtu.be/wiGpQwVHdE0"
+  },
+  {
+    "id": "leetcode-contains-duplicate",
+    "category": "leetcode",
+    "difficulty": "beginner",
+    "tags": [
+      "array",
+      "hashset"
+    ],
+    "question": "Contains Duplicate",
+    "answer": "<p>Given an integer array <code class=\"inline\">nums</code>, return <code class=\"inline\">true</code> if any value appears at least twice in the array, and return <code class=\"inline\">false</code> if every element is distinct.</p><p><strong>Optimal Approach:</strong> Use a <code class=\"inline\">HashSet</code>. As you iterate through the array, check if the current element already exists in the set. If it does, a duplicate has been found.</p><ul><li>Time Complexity: <strong>O(n)</strong></li><li>Space Complexity: <strong>O(n)</strong></li></ul>",
+    "tip": "Whenever you need to detect duplicates quickly, think <strong>HashSet</strong>.",
+    "code": "public boolean containsDuplicate(int[] nums) {\n    Set<Integer> set = new HashSet<>();\n\n    for (int num : nums) {\n        if (!set.add(num)) {\n            return true;\n        }\n    }\n\n    return false;\n}",
+    "lang": "java",
+    "deep": "<h4>Problem intuition</h4><p>The task is simply to determine whether any number appears more than once. Instead of comparing every pair, remember the numbers you've already seen.</p><h4>Approaches</h4><ul><li><strong>Brute Force:</strong> Compare every pair using nested loops. Time Complexity: <strong>O(n²)</strong>.</li><li><strong>Sorting:</strong> Sort the array and check adjacent elements. Time Complexity: <strong>O(n log n)</strong>.</li><li><strong>Optimal:</strong> Store visited elements in a <code class=\"inline\">HashSet</code>. If insertion fails, a duplicate exists.</li></ul><pre><code>nums = [1,2,3,1]\n\nSet = {}\n1 → add\n2 → add\n3 → add\n1 → already exists\n\nAnswer = true</code></pre><h4>Why HashSet works</h4><p>A HashSet provides average <strong>O(1)</strong> insertion and lookup. This allows us to detect duplicates in a single pass through the array.</p><h4>Common mistakes</h4><ul><li>Using nested loops instead of a HashSet.</li><li>Sorting unnecessarily when only duplicate detection is required.</li><li>Using a List instead of a Set, resulting in slower lookups.</li></ul><h4>Interview Tip</h4><p>Whenever you hear phrases like <strong>contains duplicate</strong>, <strong>unique elements</strong>, or <strong>already seen</strong>, think of using a <strong>HashSet</strong>.</p>",
+    "youtube": "https://youtu.be/3OamzN90kPg"
+  }
 ]
