@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
-  "version": 26,
-  "updatedAt": "2026-07-19T17:08:30.085Z",
-  "totalQuestions": 1002,
+  "version": 27,
+  "updatedAt": "2026-07-19T17:24:33.152Z",
+  "totalQuestions": 1088,
   "groups": [
     {
       "id": "frontend",
@@ -222,8 +222,8 @@
       "label": "Fundamentals",
       "group": "testing",
       "color": "#0F766E",
-      "count": 6,
-      "hash": "dc1e12795154"
+      "count": 20,
+      "hash": "639d9f267639"
     },
     {
       "id": "manual-qa",
@@ -231,8 +231,8 @@
       "label": "Manual QA",
       "group": "testing",
       "color": "#14919B",
-      "count": 6,
-      "hash": "a8c525ccfda6"
+      "count": 20,
+      "hash": "3ee9a0bc73c0"
     },
     {
       "id": "api-testing",
@@ -240,8 +240,8 @@
       "label": "API Testing",
       "group": "testing",
       "color": "#0E7490",
-      "count": 6,
-      "hash": "63943825b614"
+      "count": 20,
+      "hash": "f471902a7d75"
     },
     {
       "id": "ui-automation",
@@ -249,8 +249,8 @@
       "label": "UI Automation",
       "group": "testing",
       "color": "#B45309",
-      "count": 6,
-      "hash": "ac58137257ed"
+      "count": 20,
+      "hash": "8a3f6561c49d"
     },
     {
       "id": "sql-testing",
@@ -258,8 +258,8 @@
       "label": "SQL for Testers",
       "group": "testing",
       "color": "#A16207",
-      "count": 6,
-      "hash": "bcf2692366d0"
+      "count": 20,
+      "hash": "842ae00b5b68"
     },
     {
       "id": "cicd-testing",
@@ -267,8 +267,8 @@
       "label": "CI/CD for Testers",
       "group": "testing",
       "color": "#C2410C",
-      "count": 6,
-      "hash": "c1b34d2ae70e"
+      "count": 20,
+      "hash": "85bfa80f9266"
     },
     {
       "id": "angular-testing",
@@ -276,9 +276,9 @@
       "label": "Angular Testing",
       "group": "testing",
       "color": "#A83294",
-      "count": 18,
-      "hash": "ae7cc50aec9c"
+      "count": 20,
+      "hash": "d068ae52dc49"
     }
   ],
-  "contentHash": "55aadc1f43672e8c6ac28144bb59edf23796a2cd"
+  "contentHash": "5876a88af88e2d4051e0ebbd84159059c0fa803f"
 }

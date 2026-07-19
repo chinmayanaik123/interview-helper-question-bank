@@ -95,5 +95,228 @@
     "code": "1) POST /orders  → 201 orderId=ORD-1001\n2) SQL: SELECT status, total_amount FROM orders WHERE order_id='ORD-1001'\n3) GET /orders/ORD-1001 → body matches DB",
     "lang": "text",
     "deep": "<h4>Example defect patterns</h4><ul><li>API 201 but no DB row (transaction issue).</li><li>DB saved, API response shows stale/wrong status.</li><li>UI success toast, DB status still PENDING.</li></ul><h4>How to say it in an interview</h4><p>“For critical order flows I validate all three: request/response, database state, and sometimes UI. That triangulation makes defects easy to localise and hard to dismiss.”</p>"
+  },
+  {
+    "id": "sqlt-insert-update-delete",
+    "category": "sql-testing",
+    "difficulty": "beginner",
+    "tags": [
+      "DML",
+      "test-data",
+      "crud"
+    ],
+    "question": "How do testers use INSERT/UPDATE/DELETE safely?",
+    "answer": "<p>Use DML to prepare or cleanup test data in QA — create a known user/order, update a status to a precondition, delete temporary rows after. Prefer QA databases only; never run destructive scripts on production. Prefer transactions/rollback or isolated test schemas when available.</p>",
+    "tip": "Always scope DELETE/UPDATE with a precise WHERE on test keys.",
+    "code": "INSERT INTO customers(email, status) VALUES ('qa+1@test.com', 'ACTIVE');\nUPDATE orders SET status='CREATED' WHERE order_id='ORD-QA-1';\nDELETE FROM order_items WHERE order_id='ORD-QA-1';",
+    "lang": "sql",
+    "deep": "<h4>Safety rules</h4><ul><li>Use unique test prefixes.</li><li>Avoid <code class=\"inline\">DELETE FROM table</code> without WHERE.</li><li>Know whether env auto-refreshes data.</li></ul><h4>How to say it in an interview</h4><p>“I use DML only in QA to seed and clean test data, always with precise keys, so scenarios start from known preconditions.”</p>"
+  },
+  {
+    "id": "sqlt-inner-vs-left",
+    "category": "sql-testing",
+    "difficulty": "beginner",
+    "tags": [
+      "V.Imp",
+      "joins",
+      "inner",
+      "left"
+    ],
+    "question": "When do you choose INNER JOIN vs LEFT JOIN in test validation?",
+    "answer": "<p>Use <strong>INNER JOIN</strong> when both sides must exist (order must have a customer). Use <strong>LEFT JOIN</strong> when you need all left rows and want to detect missing right-side children (orders missing payments).</p>",
+    "tip": "Missing related records = LEFT JOIN ... IS NULL.",
+    "code": "-- Orders with customer (both must exist)\nSELECT o.order_id, c.email\nFROM orders o\nINNER JOIN customers c ON c.customer_id = o.customer_id;\n\n-- Orders missing payments\nSELECT o.order_id\nFROM orders o\nLEFT JOIN payments p ON p.order_id = o.order_id\nWHERE p.payment_id IS NULL;",
+    "lang": "sql",
+    "deep": "<h4>How to say it in an interview</h4><p>“INNER JOIN validates expected relationships. LEFT JOIN is my go-to for finding missing child records after a create flow.”</p>"
+  },
+  {
+    "id": "sqlt-groupby-having",
+    "category": "sql-testing",
+    "difficulty": "intermediate",
+    "tags": [
+      "group-by",
+      "having",
+      "aggregates"
+    ],
+    "question": "How do GROUP BY and HAVING help in testing?",
+    "answer": "<p><code class=\"inline\">GROUP BY</code> buckets rows (e.g. orders per status). <code class=\"inline\">HAVING</code> filters those buckets (statuses with count &gt; 0, customers with more than 3 open orders). Useful for batch-job and reconciliation checks.</p>",
+    "tip": "WHERE filters rows; HAVING filters groups.",
+    "code": "SELECT status, COUNT(*) AS cnt\nFROM orders\nWHERE created_at >= CURRENT_DATE\nGROUP BY status\nHAVING COUNT(*) > 0;",
+    "lang": "sql",
+    "deep": "<h4>Example</h4><p>After a nightly billing job, group invoices by status and assert expected counts for GENERATED vs FAILED.</p><h4>How to say it in an interview</h4><p>“I use GROUP BY/HAVING for reconciliation — comparing expected volumes per status after batch processing.”</p>"
+  },
+  {
+    "id": "sqlt-subquery",
+    "category": "sql-testing",
+    "difficulty": "intermediate",
+    "tags": [
+      "subquery",
+      "exists",
+      "validation"
+    ],
+    "question": "How can subqueries help find data issues?",
+    "answer": "<p>Subqueries help express “rows that match/don’t match another set” — e.g. orders whose customer is inactive, or payments without a matching order. <code class=\"inline\">EXISTS</code>/<code class=\"inline\">NOT EXISTS</code> are often clearer for presence checks.</p>",
+    "tip": "NOT EXISTS is excellent for orphan detection.",
+    "code": "SELECT o.order_id\nFROM orders o\nWHERE NOT EXISTS (\n  SELECT 1 FROM payments p WHERE p.order_id = o.order_id\n);",
+    "lang": "sql",
+    "deep": "<h4>How to say it in an interview</h4><p>“I use NOT EXISTS to find orphans — orders without payments, or line items without a parent order — which are common integration defects.”</p>"
+  },
+  {
+    "id": "sqlt-distinct-duplicates",
+    "category": "sql-testing",
+    "difficulty": "intermediate",
+    "tags": [
+      "duplicates",
+      "distinct",
+      "data-quality"
+    ],
+    "question": "How do you detect duplicate records with SQL?",
+    "answer": "<p>Group by the business key that should be unique and use <code class=\"inline\">HAVING COUNT(*) &gt; 1</code>. Duplicates often appear after retry bugs or missing unique constraints.</p>",
+    "tip": "Decide the real unique key first (email? external_order_ref?).",
+    "code": "SELECT email, COUNT(*)\nFROM customers\nGROUP BY email\nHAVING COUNT(*) > 1;",
+    "lang": "sql",
+    "deep": "<h4>Ecommerce example</h4><p>Duplicate <code class=\"inline\">external_ref</code> on orders after client retries POST without idempotency.</p><h4>How to say it in an interview</h4><p>“I hunt duplicates with GROUP BY + HAVING COUNT &gt; 1 on business keys — especially after create APIs that may be retried.”</p>"
+  },
+  {
+    "id": "sqlt-dates",
+    "category": "sql-testing",
+    "difficulty": "intermediate",
+    "tags": [
+      "dates",
+      "time",
+      "filters"
+    ],
+    "question": "How do you validate date/time fields in testing with SQL?",
+    "answer": "<p>Filter with clear ranges, beware timezones, and validate business rules like “cancel allowed within 60 minutes”. Compare timestamps from API/UI with DB values and check formatting/precision issues.</p>",
+    "tip": "Timezone mismatches are a top source of “works in UI, fails in DB checks”.",
+    "code": "SELECT order_id, created_at, cancelled_at\nFROM orders\nWHERE order_id = 'ORD-1001'\n  AND cancelled_at <= created_at + INTERVAL '60' MINUTE;",
+    "lang": "sql",
+    "deep": "<h4>How to say it in an interview</h4><p>“I validate time-based rules with explicit ranges and call out timezone assumptions. For cancel windows I compare created_at vs cancelled_at in SQL.”</p>"
+  },
+  {
+    "id": "sqlt-like-patterns",
+    "category": "sql-testing",
+    "difficulty": "beginner",
+    "tags": [
+      "like",
+      "wildcards",
+      "search"
+    ],
+    "question": "How do you use LIKE for test data discovery?",
+    "answer": "<p><code class=\"inline\">LIKE</code> helps find seeded test rows by prefix/suffix patterns (e.g. all QA emails). Use it for investigation, not as a substitute for exact key lookups in assertions.</p>",
+    "tip": "Exact IDs for asserts; LIKE for finding your test footprints.",
+    "code": "SELECT email FROM customers WHERE email LIKE 'qa.order+%@test.com';",
+    "lang": "sql",
+    "deep": "<h4>How to say it in an interview</h4><p>“I use LIKE to locate my seeded QA data quickly, then assert on exact primary keys for pass/fail evidence.”</p>"
+  },
+  {
+    "id": "sqlt-transactions",
+    "category": "sql-testing",
+    "difficulty": "advanced",
+    "tags": [
+      "V.Imp",
+      "transactions",
+      "atomicity"
+    ],
+    "question": "Why do testers care about database transactions?",
+    "answer": "<p>Transactions keep multi-step writes atomic — all succeed or all roll back. Testers should verify failure paths don’t leave partial data (order header without items, payment captured without order).</p>",
+    "tip": "Partial commits after errors are high-severity data integrity bugs.",
+    "code": "-- After failed payment attempt, order should not be PAID\nSELECT status FROM orders WHERE order_id='ORD-1001';",
+    "lang": "sql",
+    "deep": "<h4>Example scenario</h4><p>API create order + reserve inventory + charge payment. If payment fails, inventory reservation and order state should roll back or compensate consistently — verify with SQL.</p><h4>How to say it in an interview</h4><p>“I specially test failure paths for partial writes. If payment fails, I confirm we don’t end up with inconsistent order/payment/inventory rows.”</p>"
+  },
+  {
+    "id": "sqlt-indexes-testers",
+    "category": "sql-testing",
+    "difficulty": "intermediate",
+    "tags": [
+      "index",
+      "performance",
+      "awareness"
+    ],
+    "question": "Do testers need to know indexes? What should you understand?",
+    "answer": "<p>You don’t design DBs daily, but you should know indexes speed lookups and that missing indexes can make QA checks/jobs slow. If a validation query on large tables is extremely slow, raise it — it may affect app performance too.</p>",
+    "tip": "Mention indexes when discussing slow screens tied to search/filter APIs.",
+    "code": "-- Conceptual: email lookup benefits from index on customers(email)",
+    "lang": "sql",
+    "deep": "<h4>How to say it in an interview</h4><p>“I understand indexes improve read performance. If search-by-order-id is slow in QA with production-like volume, I flag it as a performance risk, not only a test inconvenience.”</p>"
+  },
+  {
+    "id": "sqlt-data-mapping",
+    "category": "sql-testing",
+    "difficulty": "intermediate",
+    "tags": [
+      "V.Imp",
+      "mapping",
+      "ui-api-db"
+    ],
+    "question": "How do you validate UI/API field mapping to database columns?",
+    "answer": "<p>Build a mapping checklist: each important UI/API field → DB column/table. After create/update, compare values field-by-field (types, enums, rounding for money, trimming spaces).</p>",
+    "tip": "Money and enums are where mapping bugs hide.",
+    "code": "API totalAmount=99.90  <=>  orders.total_amount=99.90\nAPI status=CREATED     <=>  orders.status='CREATED'",
+    "lang": "text",
+    "deep": "<h4>Example defect</h4><p>UI shows city from shipping address, DB saved billing city — mapping mismatch.</p><h4>How to say it in an interview</h4><p>“I keep a field mapping for critical objects and verify UI/API values against DB columns after writes, especially amounts and status enums.”</p>"
+  },
+  {
+    "id": "sqlt-soft-delete",
+    "category": "sql-testing",
+    "difficulty": "intermediate",
+    "tags": [
+      "soft-delete",
+      "status-flags"
+    ],
+    "question": "How do you test soft delete vs hard delete in DB?",
+    "answer": "<p><strong>Hard delete</strong> removes the row. <strong>Soft delete</strong> keeps the row but marks it inactive (<code class=\"inline\">is_deleted</code>/<code class=\"inline\">deleted_at</code>/status). Tests should verify the chosen behaviour: row gone vs flagged, and that APIs no longer return deleted entities.</p>",
+    "tip": "Ask which delete model the product uses before filing a bug.",
+    "code": "SELECT customer_id, is_deleted, deleted_at\nFROM customers\nWHERE email='qa+del@test.com';",
+    "lang": "sql",
+    "deep": "<h4>How to say it in an interview</h4><p>“I confirm whether delete is hard or soft. For soft delete I check the flag/timestamp and that GET APIs hide the record while audit data remains.”</p>"
+  },
+  {
+    "id": "sqlt-between-in",
+    "category": "sql-testing",
+    "difficulty": "beginner",
+    "tags": [
+      "in",
+      "between",
+      "filters"
+    ],
+    "question": "How do IN and BETWEEN help write validation queries?",
+    "answer": "<p><code class=\"inline\">IN</code> checks membership in a set of values (statuses, ids). <code class=\"inline\">BETWEEN</code> checks inclusive ranges (dates/amounts). Both make validation queries readable for multi-value assertions.</p>",
+    "tip": "BETWEEN is inclusive on both ends — confirm that matches the requirement.",
+    "code": "SELECT *\nFROM orders\nWHERE status IN ('CREATED','PAID')\n  AND total_amount BETWEEN 100 AND 500;",
+    "lang": "sql",
+    "deep": "<h4>How to say it in an interview</h4><p>“I use IN for allowed status sets and BETWEEN for range checks on amounts/dates when validating filters or business rules.”</p>"
+  },
+  {
+    "id": "sqlt-count-star-vs-column",
+    "category": "sql-testing",
+    "difficulty": "beginner",
+    "tags": [
+      "count",
+      "nulls"
+    ],
+    "question": "COUNT(*) vs COUNT(column) — why does it matter in testing?",
+    "answer": "<p><code class=\"inline\">COUNT(*)</code> counts rows. <code class=\"inline\">COUNT(column)</code> counts non-NULL values in that column. If you count a nullable column, you may under-count rows and misjudge data quality.</p>",
+    "tip": "For row existence use COUNT(*); for populated fields count the column.",
+    "code": "SELECT COUNT(*) AS rows_total,\n       COUNT(shipping_city) AS city_populated\nFROM orders\nWHERE created_at >= CURRENT_DATE;",
+    "lang": "sql",
+    "deep": "<h4>How to say it in an interview</h4><p>“I pick COUNT carefully. COUNT(*) tells me how many orders exist; COUNT(shipping_city) tells me how many have city filled — useful for mandatory-field audits.”</p>"
+  },
+  {
+    "id": "sqlt-reconciliation",
+    "category": "sql-testing",
+    "difficulty": "advanced",
+    "tags": [
+      "V.Imp",
+      "reconciliation",
+      "batch"
+    ],
+    "question": "How do you do data reconciliation testing with SQL?",
+    "answer": "<p>Reconciliation compares two sources of truth — e.g. source file vs DB, order service vs billing table, API totals vs SUM of lines. You check counts, totals, and mismatched keys between sets.</p>",
+    "tip": "Common in BSS/OSS and ecommerce order/billing landscapes.",
+    "code": "-- Orders missing in billing\nSELECT o.order_id\nFROM orders o\nLEFT JOIN bills b ON b.order_id = o.order_id\nWHERE o.status='DELIVERED' AND b.bill_id IS NULL;",
+    "lang": "sql",
+    "deep": "<h4>Practical approach</h4><ol><li>Define expected relationship.</li><li>Compare counts.</li><li>Find missing/extra keys.</li><li>Compare amount totals.</li><li>Sample mismatches for root cause.</li></ol><h4>How to say it in an interview</h4><p>“I reconcile across systems with count, key-match, and amount checks. For delivered orders I verify corresponding billing rows exist and totals match.”</p>"
   }
 ]
