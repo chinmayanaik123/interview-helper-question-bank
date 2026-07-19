@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
-  "version": 22,
-  "updatedAt": "2026-07-19T07:16:10.354Z",
-  "totalQuestions": 963,
+  "version": 23,
+  "updatedAt": "2026-07-19T12:30:28.490Z",
+  "totalQuestions": 966,
   "groups": [
     {
       "id": "frontend",
@@ -73,8 +73,8 @@
       "label": "HTML",
       "group": "frontend",
       "color": "#D9531E",
-      "count": 29,
-      "hash": "0190c9f673fc"
+      "count": 30,
+      "hash": "592489a03bc6"
     },
     {
       "id": "css",
@@ -145,8 +145,8 @@
       "label": "LeetCode",
       "group": "backend",
       "color": "#a80362",
-      "count": 8,
-      "hash": "2fc4e7c7e732"
+      "count": 10,
+      "hash": "db6609f80292"
     },
     {
       "id": "springboot",
@@ -221,5 +221,5 @@
       "hash": "d36017bc1528"
     }
   ],
-  "contentHash": "b7c43dafd7bdc70c1c9f50ac059951481c6e372b"
+  "contentHash": "c124be6ae8d5aa24ce041a327e6907164f4489fc"
 }
