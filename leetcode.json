@@ -129,5 +129,38 @@
     "lang": "java",
     "deep": "<h4>Problem intuition</h4><p>Although the input array is sorted, squaring negative numbers changes their order. The largest square always comes from either the leftmost negative number or the rightmost positive number.</p><h4>Approaches</h4><ul><li><strong>Brute Force:</strong> Square every element and sort again. Time Complexity: <strong>O(n log n)</strong>.</li><li><strong>Optimal:</strong> Compare absolute values using two pointers.</li></ul><pre><code>nums = [-4,-1,0,3,10]\n\nCompare |-4| and |10| → 100\nCompare |-4| and |3| → 16\nCompare |-1| and |3| → 9\n...\n\nResult = [0,1,9,16,100]</code></pre><h4>Why Two Pointers work</h4><p>The maximum square always comes from one of the two ends of the sorted array. Fill the result array from right to left.</p><h4>Common mistakes</h4><ul><li>Squaring first and assuming the array remains sorted.</li><li>Sorting after squaring instead of using two pointers.</li><li>Comparing actual values instead of absolute values.</li></ul><h4>Interview Tip</h4><p>Whenever the input is sorted but a transformation changes the order, think about using <strong>two pointers</strong> instead of sorting again.</p>",
     "youtube": "https://youtu.be/FPCZsG_AkUg"
+  },
+    {
+    "id": "leetcode-longest-repeating-character-replacement",
+    "category": "leetcode",
+    "difficulty": "intermediate",
+    "tags": [
+      "string",
+      "sliding-window",
+      "hashmap"
+    ],
+    "question": "Longest Repeating Character Replacement",
+    "answer": "<p>Given a string <code class=\"inline\">s</code> and an integer <code class=\"inline\">k</code>, you can replace at most <code class=\"inline\">k</code> characters. Return the length of the longest substring containing the same letter after performing at most <code class=\"inline\">k</code> replacements.</p><p><strong>Optimal Approach:</strong> Use a <code class=\"inline\">Sliding Window</code>. Maintain the frequency of characters inside the window and keep track of the highest frequency character. If the number of characters that need replacement exceeds <code class=\"inline\">k</code>, shrink the window from the left.</p><ul><li>Time Complexity: <strong>O(n)</strong></li><li>Space Complexity: <strong>O(1)</strong> (26 uppercase letters)</li></ul>",
+    "tip": "Whenever you hear <strong>longest substring with at most K changes</strong>, think <strong>Sliding Window</strong>.",
+    "code": "public int characterReplacement(String s, int k) {\n    int[] freq = new int[26];\n    int left = 0;\n    int maxFreq = 0;\n    int maxLength = 0;\n\n    for (int right = 0; right < s.length(); right++) {\n        maxFreq = Math.max(maxFreq, ++freq[s.charAt(right) - 'A']);\n\n        while ((right - left + 1) - maxFreq > k) {\n            freq[s.charAt(left) - 'A']--;\n            left++;\n        }\n\n        maxLength = Math.max(maxLength, right - left + 1);\n    }\n\n    return maxLength;\n}",
+    "lang": "java",
+    "deep": "<h4>Problem intuition</h4><p>Inside every window, we want to make all characters the same. The best choice is to keep the character that already appears the most and replace all the others.</p><h4>Approaches</h4><ul><li><strong>Brute Force:</strong> Check every substring and count character frequencies. Time Complexity: <strong>O(n²)</strong>.</li><li><strong>Optimal:</strong> Use Sliding Window with a frequency array.</li></ul><pre><code>s = \"AABABBA\", k = 1\n\nWindow = \"AABA\"\nMost frequent = A (3)\nWindow size = 4\nNeed replacements = 4 - 3 = 1\nValid window\n\nExpand...\nIf replacements > k,\nmove left pointer.</code></pre><h4>Why Sliding Window works</h4><p>The minimum replacements required for a window is <code class=\"inline\">windowSize - maxFrequency</code>. If this exceeds <code class=\"inline\">k</code>, the window becomes invalid and must shrink.</p><h4>Common mistakes</h4><ul><li>Recomputing the maximum frequency every time.</li><li>Using a HashMap when only uppercase English letters are present.</li><li>Shrinking the window too early.</li></ul><h4>Interview Tip</h4><p>Whenever you see <strong>longest substring</strong> with a constraint like <strong>at most K replacements</strong>, Sliding Window is usually the optimal solution.</p>",
+    "youtube": "https://youtu.be/gqXU1UyA8pk"
+  },
+  {
+    "id": "leetcode-maximum-average-subarray-i",
+    "category": "leetcode",
+    "difficulty": "beginner",
+    "tags": [
+      "array",
+      "sliding-window"
+    ],
+    "question": "Maximum Average Subarray I",
+    "answer": "<p>Given an integer array <code class=\"inline\">nums</code> consisting of <code class=\"inline\">n</code> elements and an integer <code class=\"inline\">k</code>, find the contiguous subarray of length <code class=\"inline\">k</code> that has the maximum average value and return that value.</p><p><strong>Optimal Approach:</strong> Compute the sum of the first window of size <code class=\"inline\">k</code>. Then slide the window by removing the leftmost element and adding the next element. Track the maximum window sum.</p><ul><li>Time Complexity: <strong>O(n)</strong></li><li>Space Complexity: <strong>O(1)</strong></li></ul>",
+    "tip": "Whenever you need a fixed-size contiguous subarray, think <strong>Sliding Window</strong>.",
+    "code": "public double findMaxAverage(int[] nums, int k) {\n    int sum = 0;\n\n    for (int i = 0; i < k; i++) {\n        sum += nums[i];\n    }\n\n    int maxSum = sum;\n\n    for (int i = k; i < nums.length; i++) {\n        sum = sum - nums[i - k] + nums[i];\n        maxSum = Math.max(maxSum, sum);\n    }\n\n    return (double) maxSum / k;\n}",
+    "lang": "java",
+    "deep": "<h4>Problem intuition</h4><p>Instead of recalculating the sum of every subarray of size <code class=\"inline\">k</code>, reuse the previous window's sum. Remove the outgoing element and add the incoming element.</p><h4>Approaches</h4><ul><li><strong>Brute Force:</strong> Compute every subarray sum separately. Time Complexity: <strong>O(n × k)</strong>.</li><li><strong>Optimal:</strong> Maintain a running window sum.</li></ul><pre><code>nums = [1,12,-5,-6,50,3], k = 4\n\nWindow1 = 1+12-5-6 = 2\nWindow2 = 2-1+50 = 51\nWindow3 = 51-12+3 = 42\n\nMaximum Sum = 51\nAverage = 51 / 4</code></pre><h4>Why Sliding Window works</h4><p>Each new window differs from the previous one by only one outgoing and one incoming element. Therefore, each update takes constant time.</p><h4>Common mistakes</h4><ul><li>Recalculating the entire window sum every iteration.</li><li>Forgetting to compute the first window separately.</li><li>Performing integer division instead of returning a double.</li></ul><h4>Interview Tip</h4><p>Whenever the problem asks for a <strong>fixed-size contiguous subarray</strong>, Sliding Window should be your first choice.</p>",
+    "youtube": "https://youtu.be/6jY2vD7rNfM"
   }
 ]
