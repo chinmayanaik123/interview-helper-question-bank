@@ -162,5 +162,58 @@
     "lang": "java",
     "deep": "<h4>Problem intuition</h4><p>Instead of recalculating the sum of every subarray of size <code class=\"inline\">k</code>, reuse the previous window's sum. Remove the outgoing element and add the incoming element.</p><h4>Approaches</h4><ul><li><strong>Brute Force:</strong> Compute every subarray sum separately. Time Complexity: <strong>O(n × k)</strong>.</li><li><strong>Optimal:</strong> Maintain a running window sum.</li></ul><pre><code>nums = [1,12,-5,-6,50,3], k = 4\n\nWindow1 = 1+12-5-6 = 2\nWindow2 = 2-1+50 = 51\nWindow3 = 51-12+3 = 42\n\nMaximum Sum = 51\nAverage = 51 / 4</code></pre><h4>Why Sliding Window works</h4><p>Each new window differs from the previous one by only one outgoing and one incoming element. Therefore, each update takes constant time.</p><h4>Common mistakes</h4><ul><li>Recalculating the entire window sum every iteration.</li><li>Forgetting to compute the first window separately.</li><li>Performing integer division instead of returning a double.</li></ul><h4>Interview Tip</h4><p>Whenever the problem asks for a <strong>fixed-size contiguous subarray</strong>, Sliding Window should be your first choice.</p>",
     "youtube": "https://youtu.be/6jY2vD7rNfM"
+  },
+  {
+    "id": "leetcode-next-greater-element-i",
+    "category": "leetcode",
+    "difficulty": "easy",
+    "tags": [
+      "array",
+      "stack",
+      "monotonic-stack",
+      "hashmap"
+    ],
+    "question": "Next Greater Element I",
+    "answer": "<p>You are given two arrays <code class=\"inline\">nums1</code> and <code class=\"inline\">nums2</code>, where <code class=\"inline\">nums1</code> is a subset of <code class=\"inline\">nums2</code>. For each element in <code class=\"inline\">nums1</code>, find the first greater element to its right in <code class=\"inline\">nums2</code>. If none exists, return <code class=\"inline\">-1</code>.</p><p><strong>Optimal Approach:</strong> Traverse <code class=\"inline\">nums2</code> using a <code class=\"inline\">Monotonic Decreasing Stack</code>. Whenever the current number is greater than the stack's top, it becomes the next greater element for all smaller numbers popped from the stack. Store these mappings in a <code class=\"inline\">HashMap</code>.</p><ul><li>Time Complexity: <strong>O(n + m)</strong></li><li>Space Complexity: <strong>O(n)</strong></li></ul>",
+    "tip": "Whenever you hear <strong>Next Greater</strong> or <strong>Next Smaller</strong>, think <strong>Monotonic Stack</strong>.",
+    "code": "public int[] nextGreaterElement(int[] nums1, int[] nums2) {\n    Stack<Integer> stack = new Stack<>();\n    Map<Integer, Integer> map = new HashMap<>();\n\n    for (int num : nums2) {\n        while (!stack.isEmpty() && num > stack.peek()) {\n            map.put(stack.pop(), num);\n        }\n        stack.push(num);\n    }\n\n    while (!stack.isEmpty()) {\n        map.put(stack.pop(), -1);\n    }\n\n    int[] result = new int[nums1.length];\n    for (int i = 0; i < nums1.length; i++) {\n        result[i] = map.get(nums1[i]);\n    }\n\n    return result;\n}",
+    "lang": "java",
+    "deep": "<h4>Problem intuition</h4><p>Instead of searching to the right for every element, process the array once while maintaining a decreasing stack. As soon as a larger value appears, it becomes the next greater element for every smaller value waiting in the stack.</p><h4>Approaches</h4><ul><li><strong>Brute Force:</strong> For every element, search to its right. Time Complexity: <strong>O(n²)</strong>.</li><li><strong>Optimal:</strong> Monotonic Decreasing Stack with a HashMap.</li></ul><pre><code>nums2 = [1,3,4,2]\n\nStack = []\n1 → push\n3 → pop 1 → map[1]=3\n4 → pop 3 → map[3]=4\n2 → push\nRemaining → -1</code></pre><h4>Why Monotonic Stack works</h4><p>The stack stores elements waiting for their next greater value. Each element is pushed and popped at most once, making the solution linear.</p><h4>Common mistakes</h4><ul><li>Using nested loops.</li><li>Forgetting to assign -1 to remaining stack elements.</li><li>Building the map from <code class=\"inline\">nums1</code> instead of <code class=\"inline\">nums2</code>.</li></ul><h4>Interview Tip</h4><p>Whenever the question contains <strong>next greater</strong>, <strong>next smaller</strong>, or <strong>nearest greater</strong>, Monotonic Stack is usually the optimal approach.</p>",
+    "youtube": "https://youtu.be/Du881K7Jtk8"
+  },
+  {
+    "id": "leetcode-next-greater-element-ii",
+    "category": "leetcode",
+    "difficulty": "medium",
+    "tags": [
+      "array",
+      "stack",
+      "monotonic-stack",
+      "circular-array"
+    ],
+    "question": "Next Greater Element II",
+    "answer": "<p>Given a circular integer array <code class=\"inline\">nums</code>, return the next greater number for every element. If no greater element exists, return <code class=\"inline\">-1</code>.</p><p><strong>Optimal Approach:</strong> Since the array is circular, iterate through it twice using modulo (<code class=\"inline\">i % n</code>). Maintain a <code class=\"inline\">Monotonic Decreasing Stack</code> of indices. Whenever a greater value is found, update the answer for indices popped from the stack.</p><ul><li>Time Complexity: <strong>O(n)</strong></li><li>Space Complexity: <strong>O(n)</strong></li></ul>",
+    "tip": "For circular arrays, think of traversing the array twice using modulo indexing.",
+    "code": "public int[] nextGreaterElements(int[] nums) {\n    int n = nums.length;\n    int[] result = new int[n];\n    Arrays.fill(result, -1);\n\n    Stack<Integer> stack = new Stack<>();\n\n    for (int i = 0; i < 2 * n; i++) {\n        int index = i % n;\n\n        while (!stack.isEmpty() && nums[index] > nums[stack.peek()]) {\n            result[stack.pop()] = nums[index];\n        }\n\n        if (i < n) {\n            stack.push(index);\n        }\n    }\n\n    return result;\n}",
+    "lang": "java",
+    "deep": "<h4>Problem intuition</h4><p>The only difference from Next Greater Element I is that the array wraps around. We simulate the circular behavior by traversing the array twice.</p><h4>Approaches</h4><ul><li><strong>Brute Force:</strong> Search circularly for every element. Time Complexity: <strong>O(n²)</strong>.</li><li><strong>Optimal:</strong> Traverse twice using modulo with a Monotonic Stack.</li></ul><pre><code>nums = [1,2,1]\n\nFirst pass:\n1 → push\n2 → pop 1\n1 → push\n\nSecond pass:\n2 becomes next greater for last 1\n\nAnswer = [2,-1,2]</code></pre><h4>Why it works</h4><p>Traversing twice ensures every element can look beyond the end of the array while still maintaining linear complexity.</p><h4>Common mistakes</h4><ul><li>Pushing indices during the second pass.</li><li>Traversing only once.</li><li>Not initializing the result array with -1.</li></ul><h4>Interview Tip</h4><p>Whenever you see a <strong>circular array</strong>, consider doubling the traversal using modulo arithmetic.</p>",
+    "youtube": "https://youtu.be/rSf9vPtKcmI"
+  },
+  {
+    "id": "leetcode-daily-temperatures",
+    "category": "leetcode",
+    "difficulty": "medium",
+    "tags": [
+      "array",
+      "stack",
+      "monotonic-stack"
+    ],
+    "question": "Daily Temperatures",
+    "answer": "<p>Given an array <code class=\"inline\">temperatures</code>, return an array where each element represents the number of days you have to wait until a warmer temperature. If there is no future warmer day, return <code class=\"inline\">0</code>.</p><p><strong>Optimal Approach:</strong> Use a <code class=\"inline\">Monotonic Decreasing Stack</code> that stores indices. Whenever a warmer temperature is found, pop indices from the stack and calculate the distance between the current day and the popped day.</p><ul><li>Time Complexity: <strong>O(n)</strong></li><li>Space Complexity: <strong>O(n)</strong></li></ul>",
+    "tip": "Whenever you need the next greater value along with its distance or index, think <strong>Monotonic Stack of Indices</strong>.",
+    "code": "public int[] dailyTemperatures(int[] temperatures) {\n    int n = temperatures.length;\n    int[] answer = new int[n];\n    Stack<Integer> stack = new Stack<>();\n\n    for (int i = 0; i < n; i++) {\n        while (!stack.isEmpty() && temperatures[i] > temperatures[stack.peek()]) {\n            int index = stack.pop();\n            answer[index] = i - index;\n        }\n        stack.push(i);\n    }\n\n    return answer;\n}",
+    "lang": "java",
+    "deep": "<h4>Problem intuition</h4><p>Each day waits for the next warmer day. Instead of checking every future day, keep unresolved days in a decreasing stack. Once a warmer temperature appears, resolve all waiting days.</p><h4>Approaches</h4><ul><li><strong>Brute Force:</strong> Search forward from every day. Time Complexity: <strong>O(n²)</strong>.</li><li><strong>Optimal:</strong> Monotonic Decreasing Stack storing indices.</li></ul><pre><code>temps = [73,74,75,71,69,72,76,73]\n\n73 → push\n74 → pop 73 (1 day)\n75 → pop 74 (1 day)\n71 → push\n69 → push\n72 → pop 69 (1)\n72 → pop 71 (2)\n76 → pop 72\n76 → pop 75\n...</code></pre><h4>Why Monotonic Stack works</h4><p>The stack keeps unresolved indices in decreasing order of temperature. Each index is pushed and popped once, resulting in linear complexity.</p><h4>Common mistakes</h4><ul><li>Storing temperatures instead of indices.</li><li>Using nested loops.</li><li>Returning -1 instead of 0 for days without a warmer temperature.</li></ul><h4>Interview Tip</h4><p>If the problem asks for the <strong>distance to the next greater element</strong>, store <strong>indices</strong> in a Monotonic Stack instead of values.</p>",
+    "youtube": "https://youtu.be/cTBiBSnjO3c"
   }
 ]
