@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
-  "version": 32,
-  "updatedAt": "2026-07-22T10:02:40.519Z",
-  "totalQuestions": 1448,
+  "version": 33,
+  "updatedAt": "2026-07-22T10:19:04.624Z",
+  "totalQuestions": 1482,
   "groups": [
     {
       "id": "frontend",
@@ -54,6 +54,15 @@
       "color": "#C3002F",
       "count": 83,
       "hash": "5252e7a26ca1"
+    },
+    {
+      "id": "react",
+      "file": "react.json",
+      "label": "React",
+      "group": "frontend",
+      "color": "#61DAFB",
+      "count": 34,
+      "hash": "65a1fafb9935"
     },
     {
       "id": "ngcoding",
@@ -425,5 +434,5 @@
       "hash": "893f393fd000"
     }
   ],
-  "contentHash": "d30d8f9c045a16da4681d28afc2453812c3d14fc"
+  "contentHash": "8be2c856b5ae1e650065b05ca9007e96529ec759"
 }
