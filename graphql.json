@@ -1,0 +1,307 @@
+[
+  {
+    "id": "gql-what-is",
+    "category": "graphql",
+    "difficulty": "beginner",
+    "tags": [
+      "basics",
+      "query-language",
+      "schema"
+    ],
+    "question": "What is GraphQL and how does it work at a high level?",
+    "answer": "<p>GraphQL is a <strong>query language and runtime</strong> for APIs. The server exposes a <strong>typed schema</strong> describing what can be queried; the client sends a <strong>single request</strong> describing exactly which fields it needs, and the server returns JSON matching that shape.</p><ul><li><strong>Schema-first contract</strong> — types, fields, and relationships are declared upfront (<code class=\"inline\">User</code>, <code class=\"inline\">Post</code>, <code class=\"inline\">Query</code>, <code class=\"inline\">Mutation</code>).</li><li><strong>Client-driven selection</strong> — no over-fetching or under-fetching; one round trip can fetch a user and their posts.</li><li><strong>Single endpoint</strong> — typically <code class=\"inline\">POST /graphql</code> instead of many REST URLs.</li><li><strong>Strong typing</strong> — every field has a type; invalid queries are rejected before execution.</li></ul><p>GraphQL is not a database technology — it's an API layer. Resolvers behind the schema can talk to SQL, NoSQL, REST services, or anything else.</p>",
+    "tip": "Lead with 'schema + client-specified shape + single endpoint.' The trap is calling it a database or a replacement for SQL — it's a query language for APIs.",
+    "code": "query {\n  user(id: \"42\") {\n    name\n    email\n    posts { title publishedAt }\n  }\n}",
+    "lang": "graphql",
+    "deep": "<h4>The three core operations</h4><p>Every GraphQL API exposes three operation types in the schema:</p><ul><li><code class=\"inline\">Query</code> — read data (like GET, but flexible).</li><li><code class=\"inline\">Mutation</code> — write data (create, update, delete).</li><li><code class=\"inline\">Subscription</code> — real-time push over WebSocket (optional).</li></ul><h4>Request lifecycle</h4><pre><code>Client sends POST /graphql with { query, variables }\n  -> Server parses and validates against schema\n  -> Execution engine walks the selection set\n  -> Resolvers fetch data field by field\n  -> Response JSON mirrors the query shape</code></pre><h4>What makes it different from ad-hoc JSON</h4><p>REST returns a fixed resource shape. GraphQL returns <em>exactly</em> what the client asked for — no more, no less. That flexibility is the whole value proposition, but it shifts complexity from the client (multiple calls, DTO mapping) to the server (resolver design, N+1 prevention, query cost limits).</p><h4>How to say it in an interview</h4><p>“GraphQL is a typed query language for APIs. The server publishes a schema; the client sends one request specifying the exact fields it needs, and gets back JSON in that shape. It's not a database — resolvers behind the schema fetch from whatever data sources I wire up. The win is fewer round trips and no over-fetching; the cost is more server-side complexity.”</p>"
+  },
+  {
+    "id": "gql-vs-rest",
+    "category": "graphql",
+    "difficulty": "beginner",
+    "tags": [
+      "rest",
+      "comparison",
+      "api-design"
+    ],
+    "question": "How does GraphQL differ from REST?",
+    "answer": "<table><tr><th></th><th>REST</th><th>GraphQL</th></tr><tr><td><strong>Endpoints</strong></td><td>Many resource URLs (<code class=\"inline\">/users/1</code>, <code class=\"inline\">/users/1/posts</code>)</td><td>Usually one (<code class=\"inline\">/graphql</code>)</td></tr><tr><td><strong>Data shape</strong></td><td>Server decides response structure</td><td>Client selects fields in the query</td></tr><tr><td><strong>Over-fetching</strong></td><td>Common — you get the whole resource</td><td>Avoided — request only needed fields</td></tr><tr><td><strong>Under-fetching</strong></td><td>Multiple requests for related data</td><td>Nested queries in one request</td></tr><tr><td><strong>Caching</strong></td><td>HTTP caching (ETag, CDN) works naturally</td><td>Harder — POST to one URL; needs client-side cache (Apollo) or persisted queries</td></tr><tr><td><strong>Versioning</strong></td><td><code class=\"inline\">/v1/</code>, <code class=\"inline\">/v2/</code> URL paths</td><td>Schema evolution — deprecate fields instead of new versions</td></tr></table><p>REST is simpler for file uploads, caching, and public APIs. GraphQL shines when many clients need different views of the same data.</p>",
+    "tip": "Don't say GraphQL is always better. The interviewer wants trade-off awareness — caching and simple CRUD are REST strengths.",
+    "code": "# REST: two round trips\nGET /users/42\nGET /users/42/posts\n\n# GraphQL: one round trip\nquery { user(id: \"42\") { name posts { title } } }",
+    "lang": "graphql",
+    "deep": "<h4>Over-fetching example</h4><pre><code>GET /users/42\n// returns 30 fields; mobile app needs only name + avatar</code></pre><p>GraphQL fixes this by letting the client request <code class=\"inline\">{ user { name avatarUrl } }</code>. REST fixes it with sparse fieldsets (<code class=\"inline\">?fields=name,avatar</code>) or separate lightweight endpoints — but those are conventions, not built into the protocol.</p><h4>Under-fetching example</h4><p>A dashboard showing user + orders + recommendations might need three REST calls. GraphQL nests them in one query — but the server must resolve all three efficiently (hello, N+1 problem).</p><h4>HTTP semantics</h4><p>REST maps cleanly to HTTP verbs and status codes. GraphQL almost always uses <code class=\"inline\">POST</code> and returns <code class=\"inline\">200 OK</code> even when errors occur — errors live inside the JSON <code class=\"inline\">errors</code> array. That's a real operational difference for monitoring and CDN caching.</p><h4>When REST still wins</h4><ul><li>Simple CRUD with one client shape.</li><li>Heavy HTTP caching at the CDN edge.</li><li>Binary/file uploads without multipart extensions.</li><li>Public APIs where query complexity attacks are a concern.</li></ul><h4>How to say it in an interview</h4><p>“REST gives me resource URLs, HTTP caching, and clear semantics. GraphQL gives me a single endpoint where the client picks the shape, which kills over-fetching and under-fetching. I pick REST for simple, cacheable resources; GraphQL when I have multiple clients with different data needs and want to avoid chatty APIs.”</p>"
+  },
+  {
+    "id": "gql-schema-types",
+    "category": "graphql",
+    "difficulty": "beginner",
+    "tags": [
+      "schema",
+      "types",
+      "sdl"
+    ],
+    "question": "Explain the GraphQL schema and core type system.",
+    "answer": "<p>The schema is the <strong>contract</strong> between client and server, usually written in SDL (Schema Definition Language). It defines what queries are valid and what types they return.</p><ul><li><strong>Scalar types</strong> — <code class=\"inline\">String</code>, <code class=\"inline\">Int</code>, <code class=\"inline\">Float</code>, <code class=\"inline\">Boolean</code>, <code class=\"inline\">ID</code>. Custom scalars like <code class=\"inline\">DateTime</code> are common.</li><li><strong>Object types</strong> — <code class=\"inline\">type User { id: ID! name: String! email: String }</code></li><li><strong>Enums</strong> — <code class=\"inline\">enum Role { ADMIN USER }</code></li><li><strong>Interfaces &amp; Unions</strong> — polymorphism: <code class=\"inline\">interface Node { id: ID! }</code> or <code class=\"inline\">union SearchResult = User | Post</code></li><li><strong>Input types</strong> — for mutation arguments: <code class=\"inline\">input CreateUserInput { name: String! email: String! }</code></li><li><strong>Non-null (<code class=\"inline\">!</code>)</strong> — field cannot be <code class=\"inline\">null</code>; a non-null parent with a null child bubbles an error up.</li><li><strong>Lists</strong> — <code class=\"inline\">[Post!]!</code> means a non-null list of non-null posts.</li></ul><p>Root types: <code class=\"inline\">Query</code> (required), <code class=\"inline\">Mutation</code>, <code class=\"inline\">Subscription</code> (optional).</p>",
+    "tip": "Know the nullability syntax cold: String (nullable), String! (required), [String!]! (required list of required strings). Interviewers love asking what happens when a non-null field resolves to null.",
+    "code": "type Query {\n  user(id: ID!): User\n  users(limit: Int = 10): [User!]!\n}\n\ntype User {\n  id: ID!\n  name: String!\n  role: Role!\n  posts: [Post!]!\n}\n\nenum Role { ADMIN USER }",
+    "lang": "graphql"
+  },
+  {
+    "id": "gql-queries",
+    "category": "graphql",
+    "difficulty": "beginner",
+    "tags": [
+      "queries",
+      "variables",
+      "aliases"
+    ],
+    "question": "How do GraphQL queries work?",
+    "answer": "<p>A <strong>query</strong> is a read operation. The client sends a selection set of fields; the server executes resolvers and returns JSON in the same shape.</p><ul><li><strong>Arguments</strong> — pass values to fields: <code class=\"inline\">user(id: \"42\")</code></li><li><strong>Variables</strong> — externalise arguments: <code class=\"inline\">query($id: ID!) { user(id: $id) { name } }</code></li><li><strong>Aliases</strong> — rename fields in the response: <code class=\"inline\">boss: user(id: \"1\") { name }</code></li><li><strong>Fragments</strong> — reusable field sets: <code class=\"inline\">fragment UserFields on User { id name }</code></li><li><strong>Directives</strong> — conditional inclusion: <code class=\"inline\">email @include(if: $showEmail)</code></li></ul><p>Queries should be side-effect free. Any write belongs in a <code class=\"inline\">mutation</code>.</p>",
+    "tip": "Always use variables in production — never string-interpolate user input into queries. That's the GraphQL equivalent of SQL injection.",
+    "code": "query GetUser($id: ID!, $showEmail: Boolean!) {\n  user(id: $id) {\n    id\n    name\n    email @include(if: $showEmail)\n  }\n}",
+    "lang": "graphql"
+  },
+  {
+    "id": "gql-mutations",
+    "category": "graphql",
+    "difficulty": "beginner",
+    "tags": [
+      "mutations",
+      "writes",
+      "input-types"
+    ],
+    "question": "What are mutations and how do they differ from queries?",
+    "answer": "<p><strong>Mutations</strong> are write operations — create, update, delete. They live on the root <code class=\"inline\">Mutation</code> type and can have side effects.</p><ul><li><strong>Input types</strong> — group arguments: <code class=\"inline\">createUser(input: CreateUserInput!): UserPayload!</code></li><li><strong>Payload pattern</strong> — return the changed object plus errors: <code class=\"inline\">type UserPayload { user: User errors: [Error!]! }</code></li><li><strong>Sequential execution</strong> — unlike queries (which can run fields in parallel), mutation root fields execute <strong>serially</strong> top to bottom to avoid race conditions.</li><li><strong>Return useful data</strong> — clients often request the created/updated fields in the same request to avoid a follow-up query.</li></ul>",
+    "tip": "Mention serial execution — it's a subtle spec detail that separates candidates who've built APIs from those who've only read docs.",
+    "code": "mutation CreateUser($input: CreateUserInput!) {\n  createUser(input: $input) {\n    user { id name email }\n    errors { field message }\n  }\n}",
+    "lang": "graphql"
+  },
+  {
+    "id": "gql-subscriptions",
+    "category": "graphql",
+    "difficulty": "intermediate",
+    "tags": [
+      "subscriptions",
+      "websocket",
+      "real-time"
+    ],
+    "question": "What are GraphQL subscriptions and when would you use them?",
+    "answer": "<p><strong>Subscriptions</strong> push real-time updates from server to client when an event occurs. They use a persistent connection — typically <strong>WebSocket</strong> (graphql-ws protocol) — instead of request/response.</p><ul><li>Defined on the root <code class=\"inline\">Subscription</code> type: <code class=\"inline\">messageAdded(channelId: ID!): Message!</code></li><li>Server publishes events via a pub/sub backbone (Redis, Kafka, in-memory).</li><li>Client subscribes and receives incremental payloads as events fire.</li></ul><p>Use subscriptions for chat, live notifications, or collaborative editing. For simple polling scenarios or infrequent updates, a query with polling or SSE is often simpler to operate.</p>",
+    "tip": "Subscriptions add operational complexity (connection management, auth on WebSocket, scaling pub/sub). Say you'd reach for them only when the UX genuinely needs push.",
+    "code": "subscription OnMessageAdded($channelId: ID!) {\n  messageAdded(channelId: $channelId) {\n    id\n    text\n    author { name }\n  }\n}",
+    "lang": "graphql"
+  },
+  {
+    "id": "gql-resolvers",
+    "category": "graphql",
+    "difficulty": "intermediate",
+    "tags": [
+      "resolvers",
+      "execution",
+      "context"
+    ],
+    "question": "What are resolvers and how does GraphQL execute a query?",
+    "answer": "<p>A <strong>resolver</strong> is a function that returns the value for a single field. Every field in the schema maps to a resolver (explicit or default).</p><ul><li><strong>Signature</strong> — <code class=\"inline\">(parent, args, context, info) =&gt; value</code></li><li><strong>parent</strong> — result of the parent field's resolver (e.g. a <code class=\"inline\">User</code> object when resolving <code class=\"inline\">User.posts</code>).</li><li><strong>args</strong> — field arguments (<code class=\"inline\">id</code>, <code class=\"inline\">limit</code>).</li><li><strong>context</strong> — per-request shared object: DB connection, authenticated user, DataLoaders.</li><li><strong>info</strong> — AST metadata about the query (used for field selection optimisation).</li></ul><p>Execution walks the query tree depth-first: resolve the root <code class=\"inline\">Query</code> field, then each child field, in parallel at each level unless constrained.</p>",
+    "tip": "Context is where you put auth and DataLoaders — one instance per request, shared across all resolvers. That's the pattern interviewers probe for.",
+    "code": "const resolvers = {\n  Query: {\n    user: (_, { id }, ctx) => ctx.db.users.findById(id)\n  },\n  User: {\n    posts: (user, _, ctx) => ctx.loaders.postsByUserId.load(user.id)\n  }\n};",
+    "lang": "javascript",
+    "deep": "<h4>Default resolver</h4><p>If you don't define a resolver for a field, GraphQL uses the default: look up <code class=\"inline\">parent[fieldName]</code>. That's why a <code class=\"inline\">User.name</code> resolver is often unnecessary when the parent object already has a <code class=\"inline\">name</code> property.</p><h4>Execution order</h4><pre><code>query { user(id: \"1\") { name posts { title } } }\n\n1. Query.user resolver -> returns User object\n2. User.name resolver (default) -> user.name\n3. User.posts resolver -> returns [Post]\n4. Post.title resolver for each post (parallel)</code></pre><p>Sibling fields at the same level run in parallel. Nested levels run after the parent resolves. Mutations at the root run serially.</p><h4>Context pattern</h4><pre><code>context: ({ req }) => ({\n  user: req.user,                    // from JWT middleware\n  db,\n  loaders: {\n    postsByUserId: new DataLoader(ids => batchLoadPosts(ids))\n  }\n})</code></pre><p>Never put DataLoaders in a global singleton — they must be created per request so their cache doesn't leak across users.</p><h4>How to say it in an interview</h4><p>“Each field has a resolver — a function receiving parent, args, context, and info. The engine walks the query tree: resolve the root, then children in parallel at each level. I put per-request dependencies like the authenticated user and DataLoaders in context, created fresh for every request.”</p>"
+  },
+  {
+    "id": "gql-n-plus-one",
+    "category": "graphql",
+    "difficulty": "intermediate",
+    "tags": [
+      "n+1",
+      "dataloader",
+      "performance"
+    ],
+    "question": "What is the N+1 problem in GraphQL and how do you solve it?",
+    "answer": "<p>The <strong>N+1 problem</strong> happens when resolving a list triggers one database query per item instead of one batched query.</p><p>Example: a query fetches 100 users, then each user's <code class=\"inline\">posts</code> resolver runs a separate <code class=\"inline\">SELECT * FROM posts WHERE user_id = ?</code> — that's <strong>1 + 100 = 101 queries</strong>.</p><p><strong>DataLoader</strong> is the standard fix:</p><ul><li>Collects all <code class=\"inline\">load()</code> calls within a single tick of the event loop.</li><li>Deduplicates keys.</li><li>Calls one batch function: <code class=\"inline\">SELECT * FROM posts WHERE user_id IN (...)</code></li><li>Returns results in the same order as requested keys.</li></ul><p>Other approaches: JOIN/fetch-join at the parent resolver, lookahead/field-collection optimisation, or a query-planning layer (Hasura, Postgraphile).</p>",
+    "tip": "DataLoader must be per-request, not global. A global instance caches across requests and leaks data between users.",
+    "code": "const postsByUserId = new DataLoader(async (userIds) => {\n  const posts = await db.posts.findByUserIds(userIds);\n  return userIds.map(id => posts.filter(p => p.userId === id));\n});\n\n// In resolver:\nposts: (user, _, ctx) => ctx.loaders.postsByUserId.load(user.id)",
+    "lang": "javascript",
+    "deep": "<h4>Why GraphQL makes this worse than REST</h4><p>REST often returns nested data in one SQL JOIN. GraphQL's field-level resolvers encourage lazy loading — each nested field is a separate function call, so N+1 is the default failure mode unless you design against it.</p><h4>DataLoader mechanics</h4><pre><code>// Within one request, these three calls:\nloader.load(1)\nloader.load(2)\nloader.load(1)   // deduplicated\n\n// Become ONE batch function call:\nbatchLoad([1, 2])  ->  [postsFor1, postsFor2]</code></pre><p>DataLoader also caches within a request — calling <code class=\"inline\">load(1)</code> twice returns the same promise.</p><h4>Spring GraphQL equivalent</h4><p>Spring GraphQL supports <code class=\"inline\">@BatchMapping</code> — a method that receives a list of parent objects and returns a <code class=\"inline\">Map&lt;K, V&gt;</code>:</p><pre><code>@BatchMapping\nMap&lt;User, List&lt;Post&gt;&gt; posts(List&lt;User&gt; users) {\n  return postService.findByUserIds(users);\n}</code></pre><h4>Detection</h4><p>Enable query logging in dev. If you see the same SQL pattern repeated N times per request, you have N+1. Tools like Apollo Studio and OpenTelemetry traces surface this in production.</p><h4>How to say it in an interview</h4><p>“GraphQL resolves field by field, so fetching 100 users and their posts naively runs 101 queries. I fix it with DataLoader — batch and cache loads within a single request — or with @BatchMapping in Spring GraphQL. The key rule is one DataLoader instance per request, never global.”</p>"
+  },
+  {
+    "id": "gql-pagination",
+    "category": "graphql",
+    "difficulty": "intermediate",
+    "tags": [
+      "pagination",
+      "cursor",
+      "relay"
+    ],
+    "question": "How do you implement pagination in GraphQL?",
+    "answer": "<p>Two common patterns:</p><p><strong>Offset-based</strong> — simple but unstable under concurrent inserts/deletes:</p><ul><li><code class=\"inline\">users(limit: 10, offset: 20)</code></li><li>Easy to implement; bad for large offsets (DB scans rows it discards).</li></ul><p><strong>Cursor-based (Relay spec)</strong> — recommended for production:</p><ul><li>Return a <code class=\"inline\">Connection</code>: <code class=\"inline\">{ edges { node cursor } pageInfo { hasNextPage endCursor } }</code></li><li>Client passes <code class=\"inline\">after: \"cursor123\"</code> to get the next page.</li><li>Cursor is an opaque token (often base64-encoded ID + sort key).</li><li>Stable under data changes; works well with infinite scroll.</li></ul><p>Relay's <code class=\"inline\">PageInfo</code> tells the client whether more pages exist without a separate count query.</p>",
+    "tip": "Say you prefer cursor pagination for user-facing lists and offset only for admin tables or small datasets. Mention that offset pagination doesn't compose well with real-time feeds.",
+    "code": "query UsersPage($first: Int!, $after: String) {\n  users(first: $first, after: $after) {\n    edges { node { id name } cursor }\n    pageInfo { hasNextPage endCursor }\n  }\n}",
+    "lang": "graphql"
+  },
+  {
+    "id": "gql-error-handling",
+    "category": "graphql",
+    "difficulty": "intermediate",
+    "tags": [
+      "errors",
+      "partial-results",
+      "validation"
+    ],
+    "question": "How does GraphQL handle errors?",
+    "answer": "<p>GraphQL has a distinctive error model:</p><ul><li><strong>HTTP 200 with errors</strong> — a response can contain both <code class=\"inline\">data</code> and <code class=\"inline\">errors</code>. Partial success is valid: some fields resolve, others fail.</li><li><strong>errors array</strong> — each entry has <code class=\"inline\">message</code>, <code class=\"inline\">path</code> (field path), <code class=\"inline\">locations</code>, and optional <code class=\"inline\">extensions</code> (error code, stack trace in dev).</li><li><strong>Validation errors</strong> — malformed queries fail before execution (no <code class=\"inline\">data</code> key).</li><li><strong>Null bubbling</strong> — if a non-null field (<code class=\"inline\">!</code>) resolver throws, the field becomes null and the error propagates up to the nearest nullable parent.</li></ul><p>Best practice: put domain errors in the payload for mutations (<code class=\"inline\">errors: [{ field, message }]</code>) and reserve the top-level <code class=\"inline\">errors</code> array for unexpected/system failures.</p>",
+    "tip": "The null-bubbling rule is a favourite follow-up: a non-null child error nullifies the entire parent object. Design nullable boundaries intentionally.",
+    "code": "{\n  \"data\": { \"user\": { \"name\": \"Ada\", \"posts\": null } },\n  \"errors\": [{\n    \"message\": \"Posts service unavailable\",\n    \"path\": [\"user\", \"posts\"],\n    \"extensions\": { \"code\": \"POSTS_TIMEOUT\" }\n  }]\n}",
+    "lang": "json"
+  },
+  {
+    "id": "gql-authentication",
+    "category": "graphql",
+    "difficulty": "intermediate",
+    "tags": [
+      "authentication",
+      "authorization",
+      "jwt"
+    ],
+    "question": "How do you handle authentication and authorization in GraphQL?",
+    "answer": "<p><strong>Authentication</strong> (who are you) happens <strong>before</strong> execution — typically in HTTP middleware that validates a JWT or session cookie and attaches the user to <strong>context</strong>.</p><p><strong>Authorization</strong> (what can you do) happens <strong>inside resolvers</strong> or via a schema directive:</p><ul><li><strong>Resolver-level</strong> — check permissions in each resolver: <code class=\"inline\">if (!ctx.user.isAdmin) throw forbidden()</code></li><li><strong>Directive-based</strong> — <code class=\"inline\">@auth(requires: ADMIN)</code> on fields; a schema transformer wraps resolvers with the check.</li><li><strong>Field-level</strong> — return <code class=\"inline\">null</code> for unauthorized fields (GraphQL won't tell the client the field exists vs. is denied — be careful with this info-leak pattern).</li><li><strong>Mutation guards</strong> — always authorize writes explicitly; never rely on query-only checks.</li></ul><p>GraphQL introspection can expose your full schema — disable it in production or protect it behind auth.</p>",
+    "tip": "Don't put auth tokens in query strings — use the Authorization header. For subscriptions, authenticate during the WebSocket connection handshake.",
+    "code": "context: async ({ req }) => {\n  const token = req.headers.authorization?.replace('Bearer ', '');\n  const user = token ? await verifyJwt(token) : null;\n  return { user, db };\n}\n\n// Resolver\nupdateUser: (_, { id, input }, ctx) => {\n  if (ctx.user?.id !== id && !ctx.user?.isAdmin)\n    throw new GraphQLError('Forbidden', { extensions: { code: 'FORBIDDEN' } });\n  return ctx.db.users.update(id, input);\n}",
+    "lang": "javascript"
+  },
+  {
+    "id": "gql-caching",
+    "category": "graphql",
+    "difficulty": "intermediate",
+    "tags": [
+      "caching",
+      "apollo",
+      "cdn"
+    ],
+    "question": "How does caching work with GraphQL?",
+    "answer": "<p>GraphQL's single POST endpoint makes <strong>HTTP/CDN caching</strong> harder than REST. Caching happens at two levels:</p><p><strong>Server-side:</strong></p><ul><li>Response cache keyed by query + variables hash (Redis, in-memory).</li><li>DataLoader per-request cache (prevents duplicate fetches within one query).</li><li>Persisted queries — client sends a hash instead of the full query; server looks up the stored query, enabling GET requests and CDN caching.</li></ul><p><strong>Client-side (Apollo Client):</strong></p><ul><li><strong>Normalized cache</strong> — stores objects by <code class=\"inline\">__typename + id</code>; updating one field updates every query that references that object.</li><li><strong>fetchPolicy</strong> — <code class=\"inline\">cache-first</code>, <code class=\"inline\">network-only</code>, <code class=\"inline\">cache-and-network</code>.</li><li><strong>cache updates</strong> — after a mutation, write to the cache or refetch affected queries.</li></ul>",
+    "tip": "Mention persisted queries if you want to sound production-ready — they let you cache at the CDN edge despite GraphQL's POST default.",
+    "code": "// Apollo normalized cache key: User:42\n// Updating User:42.name automatically updates\n// every query that fetched that user.\n\nconst client = new ApolloClient({\n  cache: new InMemoryCache(),\n  link: new HttpLink({ uri: '/graphql' })\n});",
+    "lang": "javascript"
+  },
+  {
+    "id": "gql-federation",
+    "category": "graphql",
+    "difficulty": "advanced",
+    "tags": [
+      "federation",
+      "microservices",
+      "apollo"
+    ],
+    "question": "What is GraphQL federation?",
+    "answer": "<p><strong>Apollo Federation</strong> (the dominant approach) lets multiple <strong>subgraphs</strong> (microservices) each own part of the schema, composed into one <strong>supergraph</strong> by a gateway/router.</p><ul><li>Each service defines its types: <code class=\"inline\">type User @key(fields: \"id\") { id: ID! name: String! }</code></li><li>Another service extends it: <code class=\"inline\">extend type User @key(fields: \"id\") { orders: [Order!]! }</code></li><li>The <strong>gateway</strong> (Apollo Router) receives the client query, builds an execution plan, fans out to subgraphs, and stitches the response.</li><li><code class=\"inline\">@requires</code>, <code class=\"inline\">@provides</code>, <code class=\"inline\">@external</code> directives control cross-service field dependencies.</li></ul><p>Alternative: schema stitching (manual, older) or GraphQL Mesh (multi-source aggregator). Federation is the standard for microservice GraphQL at scale.</p>",
+    "tip": "Federation solves the 'who owns the User type?' problem in microservices. Each team owns their slice; the gateway composes the graph.",
+    "code": "# Users subgraph\ntype User @key(fields: \"id\") {\n  id: ID!\n  name: String!\n}\n\n# Orders subgraph\nextend type User @key(fields: \"id\") {\n  id: ID! @external\n  orders: [Order!]!\n}",
+    "lang": "graphql"
+  },
+  {
+    "id": "gql-spring-graphql",
+    "category": "graphql",
+    "difficulty": "intermediate",
+    "tags": [
+      "spring",
+      "spring-graphql",
+      "java"
+    ],
+    "question": "How do you build a GraphQL API with Spring GraphQL?",
+    "answer": "<p><strong>Spring for GraphQL</strong> (<code class=\"inline\">spring-boot-starter-graphql</code>) integrates GraphQL Java into Spring Boot:</p><ul><li><strong>Schema</strong> — place <code class=\"inline\">.graphqls</code> files under <code class=\"inline\">src/main/resources/graphql/</code>; they're auto-loaded.</li><li><strong>Controllers</strong> — <code class=\"inline\">@QueryMapping</code>, <code class=\"inline\">@MutationMapping</code>, <code class=\"inline\">@SubscriptionMapping</code> on methods matching schema field names.</li><li><strong>Arguments</strong> — <code class=\"inline\">@Argument</code> binds field arguments; <code class=\"inline\">@ContextValue</code> injects from GraphQL context.</li><li><strong>Batch loading</strong> — <code class=\"inline\">@BatchMapping</code> solves N+1 natively.</li><li><strong>HTTP endpoint</strong> — defaults to <code class=\"inline\">/graphql</code>; GraphiQL at <code class=\"inline\">/graphiql</code> in dev.</li><li><strong>Testing</strong> — <code class=\"inline\">@GraphQlTest</code> + <code class=\"inline\">GraphQlTester</code> for slice tests without a full HTTP round trip.</li></ul>",
+    "tip": "Spring GraphQL uses the same annotation style as Spring MVC — @QueryMapping is the GraphQL equivalent of @GetMapping. Mention @BatchMapping to show you've thought about performance.",
+    "code": "@Controller\npublic class UserController {\n\n  @QueryMapping\n  User user(@Argument String id) {\n    return userService.findById(id);\n  }\n\n  @BatchMapping\n  Map<User, List<Post>> posts(List<User> users) {\n    return postService.findByUsers(users);\n  }\n\n  @MutationMapping\n  User createUser(@Argument CreateUserInput input) {\n    return userService.create(input);\n  }\n}",
+    "lang": "java"
+  },
+  {
+    "id": "gql-apollo-client",
+    "category": "graphql",
+    "difficulty": "beginner",
+    "tags": [
+      "apollo",
+      "client",
+      "frontend"
+    ],
+    "question": "What is Apollo Client and how do you use it?",
+    "answer": "<p><strong>Apollo Client</strong> is the most popular GraphQL client for JavaScript/TypeScript frontends. It handles querying, caching, and state management.</p><ul><li><strong>ApolloClient</strong> — configured with a link chain (HTTP, auth, error handling) and an <code class=\"inline\">InMemoryCache</code>.</li><li><strong>useQuery</strong> — declarative data fetching in React; returns <code class=\"inline\">{ data, loading, error }</code>.</li><li><strong>useMutation</strong> — execute mutations; optionally update the cache or refetch queries.</li><li><strong>Normalized cache</strong> — deduplicates and updates objects by <code class=\"inline\">__typename:id</code> across queries.</li><li><strong>Code generation</strong> — GraphQL Code Generator produces typed hooks from your schema.</li></ul><p>Alternatives: urql (lighter), Relay (Facebook, stricter conventions), TanStack Query + graphql-request (minimal).</p>",
+    "tip": "Know fetchPolicy options — cache-first vs network-only comes up when discussing stale data and optimistic updates.",
+    "code": "const { data, loading, error } = useQuery(GET_USER, {\n  variables: { id: '42' },\n  fetchPolicy: 'cache-and-network'\n});\n\nconst [createUser] = useMutation(CREATE_USER, {\n  refetchQueries: [{ query: LIST_USERS }]\n});",
+    "lang": "javascript"
+  },
+  {
+    "id": "gql-introspection",
+    "category": "graphql",
+    "difficulty": "beginner",
+    "tags": [
+      "introspection",
+      "schema",
+      "tooling"
+    ],
+    "question": "What is GraphQL introspection?",
+    "answer": "<p><strong>Introspection</strong> lets clients query the schema itself. Special meta-fields like <code class=\"inline\">__schema</code> and <code class=\"inline\">__type</code> reveal available types, fields, arguments, and descriptions.</p><ul><li>Powers <strong>GraphiQL</strong>, Apollo Studio, and code generators.</li><li>Developers can explore the API without reading docs.</li><li><strong>Security risk in production</strong> — exposes your entire API surface to attackers. Disable it in prod or restrict to authenticated developers.</li></ul><p>In Spring GraphQL: <code class=\"inline\">spring.graphql.schema.introspection.enabled=false</code>. In Apollo Server: <code class=\"inline\">introspection: process.env.NODE_ENV !== 'production'</code>.</p>",
+    "tip": "Disabling introspection is a defense-in-depth measure, not a security boundary — attackers can still guess queries. Pair it with query depth/complexity limits.",
+    "code": "query IntrospectUser {\n  __type(name: \"User\") {\n    name\n    fields { name type { name kind } }\n  }\n}",
+    "lang": "graphql"
+  },
+  {
+    "id": "gql-versioning",
+    "category": "graphql",
+    "difficulty": "intermediate",
+    "tags": [
+      "versioning",
+      "deprecation",
+      "evolution"
+    ],
+    "question": "How do you version a GraphQL API?",
+    "answer": "<p>GraphQL deliberately avoids URL versioning (<code class=\"inline\">/v1</code>, <code class=\"inline\">/v2</code>). Instead, the schema <strong>evolves continuously</strong>:</p><ul><li><strong>Additive changes are safe</strong> — new fields, new types, new optional arguments. Old clients keep working.</li><li><strong>Deprecation</strong> — mark fields with <code class=\"inline\">@deprecated(reason: \"Use fullName instead\")</code>; monitor usage, then remove.</li><li><strong>Breaking changes</strong> — renaming or removing fields, changing types. Avoid if possible; if unavoidable, use field aliases or a migration period.</li><li><strong>Nullability tightening</strong> — making a nullable field non-null is breaking; loosening is safe.</li></ul><p>Tools like Apollo Studio's schema checks run breaking-change detection in CI against registered client operations.</p>",
+    "tip": "The GraphQL answer to versioning is 'don't.' Evolve the schema additively and deprecate. If they push on breaking changes, mention schema checks in CI.",
+    "code": "type User {\n  id: ID!\n  name: String! @deprecated(reason: \"Use displayName\")\n  displayName: String!\n  # new clients use displayName; old clients still get name\n}",
+    "lang": "graphql"
+  },
+  {
+    "id": "gql-when-to-use",
+    "category": "graphql",
+    "difficulty": "intermediate",
+    "tags": [
+      "trade-offs",
+      "api-design",
+      "decision"
+    ],
+    "question": "When should you choose GraphQL over REST (and vice versa)?",
+    "answer": "<p><strong>Choose GraphQL when:</strong></p><ul><li>Multiple clients (web, mobile, third-party) need <strong>different shapes</strong> of the same data.</li><li>Reducing <strong>round trips</strong> matters — nested queries replace chatty REST calls.</li><li>You want a <strong>strongly typed contract</strong> with auto-generated client code.</li><li>Frontend and backend teams work in parallel against the schema.</li></ul><p><strong>Stick with REST when:</strong></p><ul><li>Simple CRUD with one client and a stable response shape.</li><li><strong>HTTP caching</strong> at CDN edge is critical (public content, static resources).</li><li>File uploads/downloads are primary operations.</li><li>Team lacks GraphQL experience and operational tooling (complexity limits, N+1 monitoring).</li><li>Public API where <strong>query complexity attacks</strong> are a real threat without mitigation.</li></ul>",
+    "tip": "The senior answer: 'It depends on the client diversity and team maturity.' Never say GraphQL replaces REST universally.",
+    "code": "",
+    "lang": "",
+    "deep": "<h4>Decision matrix</h4><table><tr><th>Factor</th><th>REST</th><th>GraphQL</th></tr><tr><td>Multiple client shapes</td><td>DTOs per client or over-fetch</td><td>Natural fit</td></tr><tr><td>Caching</td><td>HTTP-native</td><td>Needs Apollo/persisted queries</td></tr><tr><td>Learning curve</td><td>Low</td><td>Medium-high</td></tr><tr><td>Real-time</td><td>SSE, WebSocket (manual)</td><td>Subscriptions (built-in spec)</td></tr><tr><td>Microservices</td><td>One service per resource</td><td>Federation composes the graph</td></tr></table><h4>Hybrid is valid</h4><p>Many production systems use REST for file uploads and webhooks, GraphQL for the main app API. BFF (Backend for Frontend) pattern can expose GraphQL to clients while services talk REST or gRPC internally.</p><h4>Hidden costs of GraphQL</h4><ul><li>Query complexity / depth limiting to prevent abuse.</li><li>N+1 monitoring and DataLoader plumbing on every nested field.</li><li>Harder to cache at the infrastructure layer.</li><li>Error handling is less intuitive for frontend devs (200 + errors array).</li><li>Subscription infrastructure (WebSocket scaling, pub/sub).</li></ul><h4>How to say it in an interview</h4><p>“I'd pick GraphQL when I have multiple clients with different data needs and want to kill over-fetching and chatty APIs. I'd stay with REST for simple CRUD, CDN-cacheable public resources, or when the team doesn't have the operational maturity for query cost controls and N+1 prevention. Hybrid setups are common — REST for files and webhooks, GraphQL for the app API.”</p>"
+  },
+  {
+    "id": "gql-variables-fragments",
+    "category": "graphql",
+    "difficulty": "beginner",
+    "tags": [
+      "variables",
+      "fragments",
+      "directives"
+    ],
+    "question": "What are variables, fragments, and directives in GraphQL?",
+    "answer": "<p>Three mechanisms for writing flexible, reusable queries:</p><ul><li><strong>Variables</strong> — typed parameters outside the query body. Declared with <code class=\"inline\">$name: Type</code> and passed in a separate JSON <code class=\"inline\">variables</code> object. Prevents string interpolation and enables query caching.</li><li><strong>Fragments</strong> — named reusable selection sets: <code class=\"inline\">fragment UserCard on User { id name avatarUrl }</code>. Spread with <code class=\"inline\">...UserCard</code>. Inline fragments (<code class=\"inline\">... on Post</code>) handle union/interface types.</li><li><strong>Directives</strong> — modify execution. Built-in: <code class=\"inline\">@include(if: Boolean)</code>, <code class=\"inline\">@skip(if: Boolean)</code>. Custom: <code class=\"inline\">@deprecated</code>, <code class=\"inline\">@auth</code> (server-defined).</li></ul>",
+    "tip": "Fragments are how codegen tools deduplicate types. Custom directives are the cleanest way to add cross-cutting concerns like auth without cluttering every resolver.",
+    "code": "fragment UserCard on User {\n  id\n  name\n  avatarUrl\n}\n\nquery Dashboard($withPosts: Boolean!) {\n  me { ...UserCard }\n  posts @include(if: $withPosts) { title }\n}",
+    "lang": "graphql"
+  },
+  {
+    "id": "gql-security-limits",
+    "category": "graphql",
+    "difficulty": "advanced",
+    "tags": [
+      "security",
+      "complexity",
+      "depth-limiting"
+    ],
+    "question": "What security concerns are unique to GraphQL and how do you mitigate them?",
+    "answer": "<p>GraphQL's flexibility creates attack surfaces REST doesn't have:</p><ul><li><strong>Query depth attacks</strong> — deeply nested queries (<code class=\"inline\">user { friend { friend { friend { ... } } } }</code>) exhaust server resources. Mitigate with <strong>max depth</strong> limits (e.g. 10 levels).</li><li><strong>Query complexity / cost analysis</strong> — assign costs to fields; reject queries exceeding a budget. Apollo Server and graphql-java support this.</li><li><strong>Batching abuse</strong> — aliasing 1000 queries in one request. Limit aliases and rate-limit by client.</li><li><strong>Introspection exposure</strong> — disable in production.</li><li><strong>Denial of service via expensive resolvers</strong> — timeout per resolver, pagination limits on list fields.</li></ul><p>Standard API security still applies: authenticate via context, authorize in resolvers, validate inputs, and rate-limit the endpoint.</p>",
+    "tip": "Mention depth + complexity limits together — depth alone doesn't catch wide queries (a user with 10,000 friends each resolving 10,000 posts).",
+    "code": "// Apollo Server\nconst server = new ApolloServer({\n  schema,\n  validationRules: [\n    depthLimit(10),\n    createComplexityLimitRule(1000)\n  ]\n});",
+    "lang": "javascript"
+  }
+]

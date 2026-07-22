@@ -1,0 +1,351 @@
+[
+  {
+    "id": "sd-what-is",
+    "category": "system-design",
+    "difficulty": "beginner",
+    "tags": [
+      "V.Imp",
+      "basics",
+      "interview-process"
+    ],
+    "question": "What is a system design interview, and what are interviewers evaluating?",
+    "answer": "<p>A <strong>system design interview</strong> asks you to design a real-world system (URL shortener, chat, feed, etc.) on a whiteboard or shared doc. Interviewers evaluate:</p><ul><li><strong>Structured thinking</strong> — clarify requirements before jumping to boxes.</li><li><strong>Trade-off reasoning</strong> — why this DB, why cache here, what breaks at scale.</li><li><strong>Scalability &amp; reliability</strong> — bottlenecks, failure modes, redundancy.</li><li><strong>Communication</strong> — narrate assumptions, ask questions, iterate.</li></ul><p>At 2–4 YOE, depth on every component isn't expected — a clear framework and sensible choices matter more than memorized architectures.</p>",
+    "tip": "Spend the first 5 minutes on requirements and scale estimates — interviewers reward clarity over speed.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "sd-functional-nonfunctional",
+    "category": "system-design",
+    "difficulty": "beginner",
+    "tags": [
+      "V.Imp",
+      "requirements",
+      "nfr"
+    ],
+    "question": "Functional vs non-functional requirements — how do you gather them?",
+    "answer": "<p><strong>Functional requirements</strong> describe <em>what</em> the system does: features, user flows, APIs, data stored.</p><p><strong>Non-functional requirements (NFRs)</strong> describe <em>how well</em> it must perform: latency, throughput, availability, consistency, security, cost.</p><p>Always clarify both before designing. Example for a URL shortener:</p><ul><li><strong>Functional:</strong> shorten URL, redirect, optional custom alias, analytics.</li><li><strong>Non-functional:</strong> 100M URLs, 10K redirects/sec, 99.9% uptime, redirect &lt; 100ms p99.</li></ul>",
+    "tip": "Write NFRs as numbers (QPS, DAU, p99 latency) — vague 'fast' and 'scalable' aren't design inputs.",
+    "code": "",
+    "lang": "",
+    "deep": "<h4>The framework interviewers want</h4><p>Start every design with four buckets:</p><ol><li><strong>Scope</strong> — what's in / out for this session?</li><li><strong>Functional</strong> — user-visible features and APIs.</li><li><strong>Non-functional</strong> — scale, latency, availability, durability, consistency.</li><li><strong>Constraints</strong> — budget, team size, existing stack, compliance.</li></ol><h4>Functional — sample questions to ask</h4><ul><li>Who are the users? Mobile, web, internal?</li><li>Core flows vs nice-to-have?</li><li>Read-heavy or write-heavy?</li><li>Do we need search, notifications, admin tools?</li></ul><h4>Non-functional — translate vague words into metrics</h4><table><thead><tr><th>Vague ask</th><th>Concrete NFR</th></tr></thead><tbody><tr><td>\"Fast\"</td><td>p99 latency &lt; 200ms for reads</td></tr><tr><td>\"Highly available\"</td><td>99.9% uptime (~8.7h downtime/year)</td></tr><tr><td>\"Scalable\"</td><td>10K writes/sec, 100K reads/sec at peak</td></tr><tr><td>\"Secure\"</td><td>auth required, PII encrypted at rest, audit logs</td></tr><tr><td>\"Eventually consistent is OK\"</td><td>stale reads up to 30s acceptable</td></tr></tbody></table><h4>Why NFRs drive architecture</h4><p>Same product, different NFRs → different designs:</p><ul><li><strong>1K users, low budget</strong> → monolith + single DB is fine.</li><li><strong>100M users, global</strong> → CDN, sharding, multi-region, caching layers.</li><li><strong>Financial ledger</strong> → strong consistency, SQL, audit trail — not eventual NoSQL.</li></ul><h4>How to say it in an interview</h4><p>\"Before drawing components, I'd clarify functional scope — core flows and what's out of scope — then nail down NFRs as numbers: DAU, read/write ratio, peak QPS, latency targets, and availability. Those numbers decide whether I need caching, replication, or can stay on a simple monolith.\"</p>"
+  },
+  {
+    "id": "sd-scaling",
+    "category": "system-design",
+    "difficulty": "beginner",
+    "tags": [
+      "scalability",
+      "vertical",
+      "horizontal"
+    ],
+    "question": "Vertical vs horizontal scaling — when do you use each?",
+    "answer": "<p><strong>Vertical scaling (scale up)</strong> — add more CPU/RAM/disk to one machine. Simple, but hits hardware limits and creates a single point of failure.</p><p><strong>Horizontal scaling (scale out)</strong> — add more machines behind a load balancer. Better fault tolerance and theoretically unlimited scale, but requires stateless app servers, distributed data, and operational complexity.</p><p>Typical path: optimize code → vertical scale → horizontal scale + caching + DB scaling.</p>",
+    "tip": "Horizontal scaling requires stateless services — session state must live in Redis/DB, not server memory.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "sd-load-balancing",
+    "category": "system-design",
+    "difficulty": "intermediate",
+    "tags": [
+      "load-balancer",
+      "availability",
+      "networking"
+    ],
+    "question": "What is load balancing and what algorithms do you know?",
+    "answer": "<p>A <strong>load balancer</strong> distributes incoming traffic across multiple servers to improve throughput and availability. It also enables health checks and zero-downtime deploys.</p><p>Common algorithms:</p><ul><li><strong>Round robin</strong> — simple, even distribution.</li><li><strong>Least connections</strong> — send to server with fewest active connections.</li><li><strong>Consistent hashing</strong> — sticky routing by key (user ID) — useful for caches.</li><li><strong>IP hash</strong> — same client → same server (session stickiness).</li></ul><p>Layers: <strong>L4</strong> (TCP, fast) vs <strong>L7</strong> (HTTP-aware, path-based routing).</p>",
+    "tip": "L7 load balancers can route /api to API servers and /static to CDN — L4 only sees IPs and ports.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "sd-caching",
+    "category": "system-design",
+    "difficulty": "intermediate",
+    "tags": [
+      "V.Imp",
+      "caching",
+      "performance",
+      "redis"
+    ],
+    "question": "What caching strategies do you use in system design?",
+    "answer": "<p>Caching stores frequently accessed data closer to the consumer to reduce latency and DB load.</p><ul><li><strong>Cache-aside</strong> — app checks cache, on miss reads DB and populates cache. Most common.</li><li><strong>Read-through</strong> — cache library fetches from DB on miss.</li><li><strong>Write-through</strong> — write to cache and DB together.</li><li><strong>Write-behind</strong> — write to cache, async flush to DB (fast, riskier).</li></ul><p>Always plan for <strong>cache invalidation</strong>, TTLs, and cache stampede (many misses at once).</p>",
+    "tip": "Cache hot reads (profiles, product pages), not unique writes. A 90% hit rate can 10× reduce DB load.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "sd-cdn",
+    "category": "system-design",
+    "difficulty": "beginner",
+    "tags": [
+      "cdn",
+      "edge",
+      "performance"
+    ],
+    "question": "What is a CDN and when should you use one?",
+    "answer": "<p>A <strong>CDN (Content Delivery Network)</strong> caches static content (images, JS, CSS, videos) at edge servers geographically close to users. Benefits:</p><ul><li>Lower latency — content served from nearest PoP.</li><li>Reduced origin load — 80–95% of static traffic off your servers.</li><li>DDoS absorption and TLS termination at the edge.</li></ul><p>Use for static assets and cacheable API responses. Don't put personalized or highly dynamic data on CDN without careful cache keys.</p>",
+    "tip": "CDN + immutable hashed filenames (app.a1b2c3.js) = aggressive caching with safe deploys.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "sd-db-scaling",
+    "category": "system-design",
+    "difficulty": "intermediate",
+    "tags": [
+      "V.Imp",
+      "database",
+      "replication",
+      "sharding"
+    ],
+    "question": "How do you scale a database — read replicas and sharding?",
+    "answer": "<p><strong>Read replicas</strong> — copy primary DB data to replicas; route reads to replicas, writes to primary. Good for read-heavy workloads. Watch <strong>replication lag</strong> for stale reads.</p><p><strong>Sharding (partitioning)</strong> — split data across multiple DBs by a shard key (user_id, tenant_id). Scales writes and storage, but cross-shard queries and rebalancing are hard.</p><p>Typical progression: optimize queries → indexes → read replicas → caching → sharding → specialized stores.</p>",
+    "tip": "Choose a shard key you won't outgrow — resharding production data is painful. user_id is common.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "sd-cap-theorem",
+    "category": "system-design",
+    "difficulty": "intermediate",
+    "tags": [
+      "V.Imp",
+      "cap",
+      "distributed-systems",
+      "consistency"
+    ],
+    "question": "Explain the CAP theorem and what it means in practice.",
+    "answer": "<p><strong>CAP theorem:</strong> in a network partition, a distributed system can guarantee at most two of:</p><ul><li><strong>C — Consistency</strong> — every read returns the latest write.</li><li><strong>A — Availability</strong> — every request gets a response (not error/timeout).</li><li><strong>P — Partition tolerance</strong> — system works despite network failures between nodes.</li></ul><p>In practice, <strong>partitions happen</strong>, so you choose between <strong>CP</strong> (consistent but may reject requests) and <strong>AP</strong> (available but may return stale data). Most web systems are AP with tunable consistency.</p>",
+    "tip": "CAP is about behavior during a partition, not normal operation. Don't say 'pick two' without mentioning P is non-optional in distributed systems.",
+    "code": "",
+    "lang": "",
+    "deep": "<h4>What a partition actually is</h4><p>Network split between data centers or nodes — replicas can't talk. The system must decide: wait for consensus (sacrifice availability) or serve possibly stale data (sacrifice strong consistency).</p><h4>CP vs AP examples</h4><table><thead><tr><th>Type</th><th>Behavior on partition</th><th>Example systems</th></tr></thead><tbody><tr><td><strong>CP</strong></td><td>Reject writes/reads until quorum</td><td>ZooKeeper, etcd, HBase</td></tr><tr><td><strong>AP</strong></td><td>Accept reads/writes, reconcile later</td><td>Cassandra, DynamoDB, CouchDB</td></tr></tbody></table><h4>What CAP doesn't say</h4><ul><li>It's not \"pick 2 forever\" — it's a <strong>tradeoff during failure</strong>.</li><li><strong>PACELC</strong> extends it: if Partition → A vs C; Else → Latency vs Consistency.</li><li>Many systems offer <strong>tunable consistency</strong> — e.g. Cassandra QUORUM reads.</li></ul><h4>Interview application</h4><ul><li><strong>Bank balance</strong> → favor CP / strong consistency.</li><li><strong>Social media like count</strong> → AP is fine; stale count for seconds is OK.</li><li><strong>Shopping cart</strong> → often session-scoped; availability matters more than global consistency.</li></ul><h4>How to say it in an interview</h4><p>\"Partitions are inevitable in distributed systems, so I choose between consistency and availability during a split. For a payment ledger I'd use strong consistency and accept downtime on partition. For a feed or view counter I'd favor availability and eventual consistency, then use quorum reads or versioning where staleness matters.\"</p>"
+  },
+  {
+    "id": "sd-consistency-models",
+    "category": "system-design",
+    "difficulty": "intermediate",
+    "tags": [
+      "consistency",
+      "eventual-consistency",
+      "distributed-systems"
+    ],
+    "question": "Strong consistency vs eventual consistency — when to use each?",
+    "answer": "<p><strong>Strong consistency</strong> — after a write, all reads see the new value immediately. Requires coordination (single leader, quorum, locks). Higher latency, lower availability on failures.</p><p><strong>Eventual consistency</strong> — replicas converge over time; reads may be stale briefly. Higher availability and performance.</p><p>Variants: <strong>read-your-writes</strong>, <strong>monotonic reads</strong>, <strong>causal consistency</strong> — pragmatic middle ground for user-facing apps.</p>",
+    "tip": "Users tolerate eventual consistency for likes and view counts; not for account balance or inventory checkout.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "sd-api-rest-events",
+    "category": "system-design",
+    "difficulty": "intermediate",
+    "tags": [
+      "api-design",
+      "rest",
+      "events",
+      "integration"
+    ],
+    "question": "REST APIs vs event-driven design — when do you use each?",
+    "answer": "<p><strong>REST (synchronous)</strong> — client calls API, waits for response. Simple, good for request/response flows (CRUD, queries). Couples caller to callee availability.</p><p><strong>Events (asynchronous)</strong> — producer publishes event; consumers process independently via message broker. Decouples services, handles spikes, enables replay. Harder to debug; eventual consistency.</p><p>Use REST for user-facing queries and commands needing immediate feedback. Use events for side effects (send email, update search index, analytics).</p>",
+    "tip": "Hybrid is normal: REST for 'place order' → event for 'order placed' → notification, inventory, analytics consumers.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "sd-message-queues",
+    "category": "system-design",
+    "difficulty": "intermediate",
+    "tags": [
+      "messaging",
+      "kafka",
+      "async",
+      "decoupling"
+    ],
+    "question": "What role do message queues play in system design?",
+    "answer": "<p>Message queues (Kafka, RabbitMQ, SQS) enable <strong>async communication</strong> between services:</p><ul><li><strong>Decoupling</strong> — producer doesn't need consumer online.</li><li><strong>Buffering</strong> — absorb traffic spikes without overwhelming downstream.</li><li><strong>Reliability</strong> — retry failed processing; dead-letter queues for poison messages.</li><li><strong>Scalability</strong> — add consumers to parallelize work.</li></ul><p>Design for <strong>at-least-once delivery</strong> + idempotent consumers unless you truly need exactly-once.</p>",
+    "tip": "Queue between a fast producer and slow consumer — classic fix for email/notification backlogs.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "sd-rate-limiting",
+    "category": "system-design",
+    "difficulty": "intermediate",
+    "tags": [
+      "rate-limiting",
+      "security",
+      "api-gateway"
+    ],
+    "question": "How does rate limiting work and where do you apply it?",
+    "answer": "<p><strong>Rate limiting</strong> caps requests per user/IP/API key over a time window to prevent abuse, DDoS, and cost overruns.</p><p>Algorithms:</p><ul><li><strong>Token bucket</strong> — tokens refill at fixed rate; burst allowed up to bucket size.</li><li><strong>Fixed window</strong> — N requests per minute; simple but boundary spikes.</li><li><strong>Sliding window</strong> — smoother; more accurate, slightly more complex.</li></ul><p>Implement at <strong>API gateway</strong> or edge (Cloudflare, Kong). Store counters in <strong>Redis</strong> for distributed rate limiting. Return <strong>429 Too Many Requests</strong> with <code class=\"inline\">Retry-After</code> header.</p>",
+    "tip": "Rate limit per API key for partners, per IP for public endpoints, per user ID for authenticated APIs.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "sd-url-shortener",
+    "category": "system-design",
+    "difficulty": "intermediate",
+    "tags": [
+      "V.Imp",
+      "design-problem",
+      "hashing",
+      "classic"
+    ],
+    "question": "Design a URL shortener (like bit.ly).",
+    "answer": "<p><strong>Functional:</strong> shorten long URL → short code; redirect short → long; optional custom alias, expiry, click analytics.</p><p><strong>High-level:</strong> API servers → cache (Redis) → DB (SQL or NoSQL). Load balancer in front. CDN optional for redirect edge caching.</p><p><strong>ID generation:</strong> base62 encode auto-increment ID, or hash (MD5 truncated — collision risk). Store mapping <code class=\"inline\">short_code → long_url</code>.</p><p><strong>Redirect flow:</strong> GET /{code} → cache lookup → 301/302 redirect. Read-heavy — cache aggressively.</p>",
+    "tip": "301 = permanent (browser caches, fewer hits); 302 = temporary (better for analytics). Clarify which.",
+    "code": "",
+    "lang": "",
+    "deep": "<h4>Requirements &amp; estimates</h4><ul><li>100M URLs stored, 10:1 read:write ratio.</li><li>Write: ~100/sec; Read: ~10K/sec peak.</li><li>Short code: 6–7 base62 chars = 56–62 bits of space.</li></ul><h4>API design</h4><pre><code>POST /api/v1/urls   { longUrl, customAlias?, expiry? }  → { shortUrl }\nGET  /{shortCode}                                      → 302 redirect</code></pre><h4>Data model</h4><pre><code>urls: short_code (PK), long_url, user_id, created_at, expires_at, click_count</code></pre><h4>ID generation options</h4><table><thead><tr><th>Approach</th><th>Pros</th><th>Cons</th></tr></thead><tbody><tr><td>Auto-increment + base62</td><td>No collisions, short codes</td><td>Single writer bottleneck; use range allocator per server</td></tr><tr><td>Hash (MD5/SHA) truncate</td><td>Distributed</td><td>Collisions — must check DB and retry</td></tr><tr><td>Pre-generated key pool</td><td>Fast writes</td><td>Operational overhead</td></tr></tbody></table><h4>Scaling reads</h4><ul><li>Redis cache-aside for hot codes (80/20 rule).</li><li>Read replicas if cache miss rate grows.</li><li>CDN cache 302 responses for viral links (careful with analytics).</li></ul><h4>Analytics</h4><p>Don't sync-write click counts — async via Kafka → aggregate in analytics DB. Redirect path stays fast.</p><h4>How to say it in an interview</h4><p>\"Read-heavy redirect service with rare writes. I'd use base62-encoded IDs from a distributed ID generator, store mappings in SQL with a Redis cache-aside layer, and put a load balancer in front of stateless API servers. Analytics and click counting go async so redirects stay under 100ms.\"</p>"
+  },
+  {
+    "id": "sd-notification",
+    "category": "system-design",
+    "difficulty": "intermediate",
+    "tags": [
+      "V.Imp",
+      "design-problem",
+      "async",
+      "multi-channel"
+    ],
+    "question": "Design a notification system (push, email, SMS).",
+    "answer": "<p><strong>Functional:</strong> send notifications via push/email/SMS; support templates, user preferences, scheduling, delivery status.</p><p><strong>Architecture:</strong> API receives send request → validate → publish to <strong>message queue</strong> → channel-specific workers (email worker, push worker, SMS worker) → third-party providers (SendGrid, FCM, Twilio).</p><p>Store notification history and user preferences. Use <strong>priority queues</strong> for OTP vs marketing. Retry with backoff; dead-letter queue for failures.</p>",
+    "tip": "Never send notifications synchronously in the request path — always queue and return 202 Accepted.",
+    "code": "",
+    "lang": "",
+    "deep": "<h4>Requirements</h4><ul><li>1M notifications/day; bursts during campaigns.</li><li>Channels: push, email, SMS, in-app.</li><li>User can opt out per channel and category.</li><li>OTP: deliver in &lt; 5s; marketing: can be delayed.</li></ul><h4>Flow</h4><pre><code>Service → Notification API → Kafka topic(s) → Workers → Provider APIs\n                ↓\n         Preferences DB + Template store + Delivery log</code></pre><h4>Key components</h4><ul><li><strong>Template engine</strong> — parameterized messages per locale.</li><li><strong>Preference service</strong> — filter before enqueue (don't queue what user opted out of).</li><li><strong>Rate limiter</strong> — per user and per provider to avoid spam flags.</li><li><strong>Idempotency</strong> — dedupe by notification_id to prevent double-send on retry.</li><li><strong>Scheduler</strong> — delayed jobs via scheduled queue or cron scanning due table.</li></ul><h4>Priority &amp; fan-out</h4><p>Separate topics: <code class=\"inline\">notifications.high</code> (OTP, security) and <code class=\"inline\">notifications.low</code> (marketing). High-priority workers scale independently.</p><h4>Failure handling</h4><ul><li>Provider down → retry 3× with exponential backoff.</li><li>Permanent failure (invalid email) → mark undeliverable, don't retry.</li><li>DLQ for manual inspection.</li></ul><h4>How to say it in an interview</h4><p>\"Async by design — API validates and enqueues, workers handle delivery per channel. I'd check user preferences before enqueue, use priority queues for transactional vs marketing, and track delivery status with idempotent workers so retries don't double-send.\"</p>"
+  },
+  {
+    "id": "sd-chat",
+    "category": "system-design",
+    "difficulty": "advanced",
+    "tags": [
+      "V.Imp",
+      "design-problem",
+      "websocket",
+      "real-time"
+    ],
+    "question": "Design a chat/messaging system (1:1 and group).",
+    "answer": "<p><strong>Functional:</strong> 1:1 and group chat, message history, online status, read receipts, media attachments.</p><p><strong>Real-time:</strong> <strong>WebSockets</strong> (or long polling fallback) between client and chat servers. Use a <strong>gateway</strong> layer for persistent connections.</p><p><strong>Storage:</strong> messages in NoSQL/Cassandra (write-heavy, time-ordered) or SQL sharded by conversation_id. Media in object storage (S3).</p><p><strong>Delivery:</strong> publish message to queue → fan-out to recipient's connected server via pub/sub (Redis). Offline users fetch history on reconnect.</p>",
+    "tip": "WebSocket connections are stateful — use consistent hashing so a user's socket lands on the same chat server.",
+    "code": "",
+    "lang": "",
+    "deep": "<h4>Requirements</h4><ul><li>50M DAU, 1:1 and groups up to 500 members.</li><li>Messages delivered in &lt; 500ms when online.</li><li>Store history; support offline catch-up.</li></ul><h4>Connection layer</h4><pre><code>Client ←WebSocket→ Chat Gateway (stateful) ←→ Message Service ←→ DB\n                         ↑\n                    Redis Pub/Sub (route to correct gateway)</code></pre><p>Each user connects to one gateway instance. On message send, service publishes to Redis channel for recipient's gateway.</p><h4>Message flow (1:1)</h4><ol><li>Sender POSTs/WebSocket sends message.</li><li>Service assigns message_id (snowflake), persists to DB.</li><li>Publish to recipient's gateway via pub/sub.</li><li>Gateway pushes to recipient's WebSocket.</li><li>Sender gets ACK with message_id.</li></ol><h4>Group chat fan-out</h4><ul><li><strong>Small groups (&lt;50):</strong> fan-out on write — write N inbox entries or publish N events.</li><li><strong>Large groups:</strong> fan-out on read — store once, recipients pull on open.</li></ul><h4>Data model</h4><pre><code>messages: conversation_id, message_id, sender_id, body, timestamp\nconversations: id, type (1:1/group), participants[]\nuser_inbox: user_id, conversation_id, last_message_at (for chat list)</code></pre><h4>Presence &amp; read receipts</h4><p>Online status in Redis with TTL heartbeat. Read cursor per user per conversation. Eventual consistency OK for \"last seen\".</p><h4>How to say it in an interview</h4><p>\"Stateful WebSocket gateways for real-time delivery, stateless message service behind them. Persist messages in a write-optimized store sharded by conversation_id. Use pub/sub to route messages to the right gateway. For groups I'd fan-out on write for small groups and fan-out on read for large channels.\"</p>"
+  },
+  {
+    "id": "sd-ecommerce-cart",
+    "category": "system-design",
+    "difficulty": "intermediate",
+    "tags": [
+      "design-problem",
+      "ecommerce",
+      "consistency",
+      "session"
+    ],
+    "question": "Design an e-commerce shopping cart.",
+    "answer": "<p><strong>Functional:</strong> add/remove items, update quantity, view cart, merge guest → logged-in cart, checkout handoff.</p><p><strong>Storage:</strong> cart data in <strong>Redis</strong> (fast, TTL for abandoned carts) keyed by user_id or session_id. Persist to DB on login or checkout.</p><p><strong>Inventory:</strong> don't hard-reserve on add-to-cart — show availability from inventory service. Reserve stock at checkout with a short TTL lock.</p><p><strong>Consistency:</strong> cart is per-user/session; eventual consistency OK. Price snapshot at checkout, not on every cart view.</p>",
+    "tip": "Cart is not an order — keep it lightweight in Redis. The hard part is inventory reservation at checkout.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "sd-microservices-monolith",
+    "category": "system-design",
+    "difficulty": "intermediate",
+    "tags": [
+      "V.Imp",
+      "architecture",
+      "microservices",
+      "monolith"
+    ],
+    "question": "Microservices vs monolith — tradeoffs and when to choose each.",
+    "answer": "<p><strong>Monolith</strong> — single deployable unit. Pros: simple dev, debug, deploy, transactions. Cons: scales as one block, tight coupling over time.</p><p><strong>Microservices</strong> — independently deployable services. Pros: team autonomy, scale per service, tech diversity. Cons: distributed complexity, network latency, eventual consistency, operational overhead.</p><p>At 2–4 YOE startups: <strong>start monolith</strong>, split when you have clear bounded contexts and team pain — not preemptively.</p>",
+    "tip": "Microservices solve organizational scaling more than technical scaling. Don't split before you feel monolith pain.",
+    "code": "",
+    "lang": "",
+    "deep": "<h4>Monolith advantages</h4><ul><li>Single codebase — easy refactor, IDE navigation, local dev.</li><li>ACID transactions across domains — no distributed saga.</li><li>One deploy pipeline; no service mesh needed.</li><li>Lower latency — in-process calls, not HTTP.</li></ul><h4>Microservices advantages</h4><ul><li>Independent deploys — ship orders service without touching catalog.</li><li>Independent scaling — scale search separately from checkout.</li><li>Team ownership — Conway's law: architecture mirrors org structure.</li><li>Fault isolation — search down shouldn't take down checkout (if designed well).</li></ul><h4>Microservices costs (often underestimated)</h4><ul><li><strong>Distributed transactions</strong> → sagas, compensating actions, idempotency.</li><li><strong>Obsability</strong> → need tracing across services (Jaeger, Zipkin).</li><li><strong>Testing</strong> → integration tests harder; contract tests needed.</li><li><strong>Ops</strong> → K8s, service discovery, API gateway, CI per service.</li><li><strong>Data</strong> → each service owns its DB; no shared tables.</li></ul><h4>When to split</h4><p>Split when:</p><ul><li>One domain has very different scaling needs.</li><li>Teams step on each other in the same codebase.</li><li>Deploy frequency blocked by unrelated changes.</li></ul><p>Don't split when:</p><ul><li>Team &lt; 10 engineers and no scaling pain.</li><li>Domain boundaries are unclear.</li></ul><h4>Pragmatic middle ground</h4><p><strong>Modular monolith</strong> — clear module boundaries inside one deploy. Extract to microservice when a module needs independent scale or team.</p><h4>How to say it in an interview</h4><p>\"I'd default to a well-structured monolith early — simpler transactions and ops. I'd extract microservices when a bounded context has distinct scaling needs or team ownership boundaries. The split introduces distributed tracing, sagas, and deployment complexity that must be justified by real pain, not architecture fashion.\"</p>"
+  },
+  {
+    "id": "sd-observability",
+    "category": "system-design",
+    "difficulty": "intermediate",
+    "tags": [
+      "observability",
+      "logging",
+      "metrics",
+      "tracing"
+    ],
+    "question": "What is observability — logs, metrics, and traces?",
+    "answer": "<p><strong>Observability</strong> is the ability to understand system health and debug issues from external outputs.</p><ul><li><strong>Logs</strong> — discrete events with context (errors, request details). Centralize with ELK/Datadog. Structured JSON logs are searchable.</li><li><strong>Metrics</strong> — aggregated numbers over time (QPS, latency p99, error rate, CPU). Alert on thresholds. Prometheus + Grafana.</li><li><strong>Traces</strong> — follow one request across services (trace_id spans). Essential for microservices. Jaeger, Zipkin, OpenTelemetry.</li></ul><p>Design for observability from day one — you can't debug production without it.</p>",
+    "tip": "The golden signals: latency, traffic, errors, saturation (Google SRE). Alert on symptoms, not causes.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "sd-estimation",
+    "category": "system-design",
+    "difficulty": "beginner",
+    "tags": [
+      "estimation",
+      "capacity-planning",
+      "basics"
+    ],
+    "question": "Back-of-envelope estimation basics for system design.",
+    "answer": "<p>Round aggressively. Useful numbers:</p><ul><li>1 day ≈ 86,400 sec ≈ <strong>100K sec</strong></li><li>1M requests/day ≈ <strong>12/sec</strong> average (×10 for peak ≈ 120/sec)</li><li>1 char ≈ 1 byte; 1 KB text ≈ 1K chars</li><li>1M users × 1 KB profile ≈ <strong>1 GB</strong></li><li>SSD read ≈ 1ms; network round-trip ≈ 1–100ms</li></ul><p>Template: users → actions/day → QPS → storage per record × records → bandwidth.</p>",
+    "tip": "Write assumptions on the board. Interviewers care about your math process, not exact numbers.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "sd-spof",
+    "category": "system-design",
+    "difficulty": "beginner",
+    "tags": [
+      "reliability",
+      "availability",
+      "fault-tolerance"
+    ],
+    "question": "What are single points of failure and how do you eliminate them?",
+    "answer": "<p>A <strong>single point of failure (SPOF)</strong> is any component whose failure takes down the whole system.</p><p>Common SPOFs: single app server, single DB, single load balancer, single region.</p><p>Mitigations:</p><ul><li><strong>Redundancy</strong> — multiple instances behind load balancer.</li><li><strong>Replication</strong> — DB primary + replicas with automatic failover.</li><li><strong>Multi-AZ / multi-region</strong> — survive datacenter outage.</li><li><strong>Health checks</strong> — LB removes unhealthy nodes.</li></ul>",
+    "tip": "Walk through your diagram and ask 'what if this box dies?' for every component.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "sd-idempotency",
+    "category": "system-design",
+    "difficulty": "intermediate",
+    "tags": [
+      "V.Imp",
+      "reliability",
+      "api-design",
+      "distributed-systems"
+    ],
+    "question": "What is idempotency and why does it matter in distributed systems?",
+    "answer": "<p>An operation is <strong>idempotent</strong> if performing it multiple times has the same effect as once.</p><p>Critical because networks fail and clients <strong>retry</strong>. Without idempotency:</p><ul><li>Retrying POST /pay → double charge.</li><li>Retrying message queue consumer → duplicate email.</li></ul><p>Solutions: <strong>idempotency keys</strong> (client sends unique key, server dedupes), natural idempotency (PUT, DELETE), or store processed IDs and skip duplicates.</p>",
+    "tip": "Payment and order APIs should require an Idempotency-Key header — Stripe does this.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "sd-sql-nosql",
+    "category": "system-design",
+    "difficulty": "intermediate",
+    "tags": [
+      "V.Imp",
+      "database",
+      "sql",
+      "nosql"
+    ],
+    "question": "SQL vs NoSQL — how do you choose a database?",
+    "answer": "<p><strong>SQL (PostgreSQL, MySQL)</strong> — structured schema, ACID transactions, joins, strong consistency. Best for relational data: orders, accounts, inventory with constraints.</p><p><strong>NoSQL</strong> — flexible schema, horizontal scale, eventual consistency. Types:</p><ul><li><strong>Document</strong> (MongoDB) — nested JSON, catalogs.</li><li><strong>Key-value</strong> (Redis, DynamoDB) — caching, sessions.</li><li><strong>Wide-column</strong> (Cassandra) — time-series, high writes.</li><li><strong>Graph</strong> (Neo4j) — social connections, recommendations.</li></ul><p>Default to SQL unless you have a clear reason for NoSQL (massive write scale, flexible schema, geo-distribution).</p>",
+    "tip": "Polyglot persistence is normal — SQL for orders, Redis for cache, Elasticsearch for search, S3 for files.",
+    "code": "",
+    "lang": ""
+  }
+]

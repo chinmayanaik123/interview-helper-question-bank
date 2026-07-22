@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
-  "version": 29,
-  "updatedAt": "2026-07-22T09:08:55.560Z",
-  "totalQuestions": 1206,
+  "version": 32,
+  "updatedAt": "2026-07-22T10:02:40.519Z",
+  "totalQuestions": 1448,
   "groups": [
     {
       "id": "frontend",
@@ -38,6 +38,11 @@
       "id": "ai",
       "label": "AI",
       "color": "#7C3AED"
+    },
+    {
+      "id": "architecture",
+      "label": "System Design",
+      "color": "#0F172A"
     }
   ],
   "categories": [
@@ -123,6 +128,15 @@
       "hash": "b759ac2a292f"
     },
     {
+      "id": "microfrontends",
+      "file": "microfrontends.json",
+      "label": "Microfrontends",
+      "group": "frontend",
+      "color": "#BE185D",
+      "count": 18,
+      "hash": "0bd094a30e01"
+    },
+    {
       "id": "general",
       "file": "general.json",
       "label": "General",
@@ -146,8 +160,8 @@
       "label": "LeetCode",
       "group": "backend",
       "color": "#a80362",
-      "count": 10,
-      "hash": "db6609f80292"
+      "count": 13,
+      "hash": "9eca7630cf79"
     },
     {
       "id": "springboot",
@@ -177,13 +191,85 @@
       "hash": "a99da6c49a22"
     },
     {
+      "id": "c",
+      "file": "c.json",
+      "label": "C",
+      "group": "backend",
+      "color": "#A8B9CC",
+      "count": 20,
+      "hash": "db9dd14080ce"
+    },
+    {
+      "id": "cpp",
+      "file": "cpp.json",
+      "label": "C++",
+      "group": "backend",
+      "color": "#00599C",
+      "count": 23,
+      "hash": "86411bff630b"
+    },
+    {
+      "id": "quarkus",
+      "file": "quarkus.json",
+      "label": "Quarkus",
+      "group": "backend",
+      "color": "#4695EB",
+      "count": 22,
+      "hash": "b7ae50359a83"
+    },
+    {
+      "id": "kafka",
+      "file": "kafka.json",
+      "label": "Kafka",
+      "group": "backend",
+      "color": "#231F20",
+      "count": 22,
+      "hash": "af8eeec4eb83"
+    },
+    {
+      "id": "rabbitmq",
+      "file": "rabbitmq.json",
+      "label": "RabbitMQ",
+      "group": "backend",
+      "color": "#FF6600",
+      "count": 19,
+      "hash": "218b62d25f71"
+    },
+    {
+      "id": "redis",
+      "file": "redis.json",
+      "label": "Redis",
+      "group": "backend",
+      "color": "#DC382D",
+      "count": 23,
+      "hash": "e5c372433c9a"
+    },
+    {
+      "id": "graphql",
+      "file": "graphql.json",
+      "label": "GraphQL",
+      "group": "backend",
+      "color": "#E10098",
+      "count": 20,
+      "hash": "0e61ff8265af"
+    },
+    {
       "id": "sql",
       "file": "sql.json",
       "label": "SQL",
       "group": "backend",
       "color": "#0E7C93",
-      "count": 12,
-      "hash": "9e1b4aa77a40"
+      "count": 20,
+      "hash": "8f07963b370c"
+    },
+    {
+      "id": "postgresql",
+      "file": "postgresql.json",
+      "label": "PostgreSQL",
+      "group": "backend",
+      "color": "#336791",
+      "count": 20,
+      "hash": "d816cdf0b773"
     },
     {
       "id": "git",
@@ -193,6 +279,15 @@
       "color": "#D9491F",
       "count": 10,
       "hash": "b6b4110eb546"
+    },
+    {
+      "id": "docker-kubernetes",
+      "file": "docker-kubernetes.json",
+      "label": "Docker & Kubernetes",
+      "group": "devops",
+      "color": "#326CE5",
+      "count": 22,
+      "hash": "8e49c1abde29"
     },
     {
       "id": "behavioral",
@@ -319,7 +414,16 @@
       "color": "#6366F1",
       "count": 24,
       "hash": "98d0786384c5"
+    },
+    {
+      "id": "system-design",
+      "file": "system-design.json",
+      "label": "System Design",
+      "group": "architecture",
+      "color": "#0F172A",
+      "count": 22,
+      "hash": "893f393fd000"
     }
   ],
-  "contentHash": "442b62b1197ed6433ad40a7c15f28f5846f75f0e"
+  "contentHash": "d30d8f9c045a16da4681d28afc2453812c3d14fc"
 }

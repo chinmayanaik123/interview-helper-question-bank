@@ -166,5 +166,93 @@
     "tip": "Parameterized queries are the fix — the ORM/JDBC binds values safely.",
     "code": "-- safe (bound parameter):\nSELECT * FROM users WHERE email = ?;",
     "lang": "sql"
+  },
+  {
+    "id": "sql-exists-in",
+    "category": "sql",
+    "difficulty": "intermediate",
+    "tags": ["exists", "subquery"],
+    "question": "EXISTS vs IN — when to use each?",
+    "answer": "<p><strong>IN</strong> — checks if a value matches any value in a list or subquery result. Simple and readable for small sets.</p><p><strong>EXISTS</strong> — returns true if the subquery returns at least one row. Short-circuits on first match — often faster for correlated subqueries and large datasets.</p><p>For NULL safety, EXISTS handles NULLs more predictably than NOT IN.</p>",
+    "tip": "NOT IN with NULLs in the subquery returns no rows — use NOT EXISTS instead.",
+    "code": "SELECT * FROM users u\nWHERE EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id);",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-case-when",
+    "category": "sql",
+    "difficulty": "beginner",
+    "tags": ["case", "conditional"],
+    "question": "How does CASE WHEN work?",
+    "answer": "<p>Conditional logic in SQL — like if/else in programming:</p><p><strong>Simple CASE</strong> — compare one expression to multiple values.<br><strong>Searched CASE</strong> — evaluate multiple conditions independently.</p><p>Use in SELECT, WHERE, ORDER BY, and aggregations.</p>",
+    "tip": "CASE in SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) is the classic conditional aggregation pattern.",
+    "code": "SELECT name,\n  CASE status\n    WHEN 'active' THEN 'Active'\n    WHEN 'inactive' THEN 'Inactive'\n    ELSE 'Unknown'\n  END AS status_label\nFROM users;",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-union",
+    "category": "sql",
+    "difficulty": "intermediate",
+    "tags": ["union", "combine"],
+    "question": "UNION vs UNION ALL.",
+    "answer": "<p><strong>UNION</strong> — combines result sets and <strong>removes duplicates</strong> (requires sort/distinct — slower).</p><p><strong>UNION ALL</strong> — combines without deduplication — faster when you know sets are disjoint or duplicates are acceptable.</p><p>Both require matching column count and compatible types.</p>",
+    "tip": "Default to UNION ALL unless you explicitly need duplicate removal.",
+    "code": "SELECT email FROM users\nUNION ALL\nSELECT email FROM archived_users;",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-self-join",
+    "category": "sql",
+    "difficulty": "intermediate",
+    "tags": ["self-join", "hierarchy"],
+    "question": "What is a self join?",
+    "answer": "<p>A table joined to <strong>itself</strong> — typically with table aliases. Used for hierarchical data (employee → manager), comparing rows within the same table, or finding duplicates.</p>",
+    "tip": "Recursive CTEs (PostgreSQL) often replace deep self-join chains for tree traversal.",
+    "code": "SELECT e.name AS employee, m.name AS manager\nFROM employees e\nLEFT JOIN employees m ON e.manager_id = m.id;",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-views",
+    "category": "sql",
+    "difficulty": "intermediate",
+    "tags": ["views", "abstraction"],
+    "question": "What is a database view?",
+    "answer": "<p>A <strong>saved query</strong> that acts like a virtual table. Simplifies complex joins for consumers, enforces access control, and provides a stable interface even if underlying schema changes.</p><p><strong>Materialized views</strong> store the result physically — faster reads but need refresh. Standard views compute on every query.</p>",
+    "tip": "Views don't improve performance by themselves — materialized views do, at the cost of staleness.",
+    "code": "CREATE VIEW active_users AS\nSELECT id, name, email FROM users WHERE active = true;",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-constraints",
+    "category": "sql",
+    "difficulty": "beginner",
+    "tags": ["constraints", "integrity"],
+    "question": "Common SQL constraints.",
+    "answer": "<ul><li><strong>NOT NULL</strong> — column must have a value.</li><li><strong>UNIQUE</strong> — no duplicate values.</li><li><strong>PRIMARY KEY</strong> — unique + not null.</li><li><strong>FOREIGN KEY</strong> — referential integrity.</li><li><strong>CHECK</strong> — custom validation (e.g. <code class=\"inline\">age &gt;= 18</code>).</li><li><strong>DEFAULT</strong> — value when none provided.</li></ul>",
+    "tip": "Enforce business rules at the DB level — don't rely only on application validation.",
+    "code": "CREATE TABLE products (\n  price NUMERIC CHECK (price > 0),\n  status TEXT DEFAULT 'draft'\n);",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-execution-order",
+    "category": "sql",
+    "difficulty": "intermediate",
+    "tags": ["query", "execution"],
+    "question": "SQL query execution order.",
+    "answer": "<p>Logical order (not written order):</p><ol><li>FROM / JOIN</li><li>WHERE</li><li>GROUP BY</li><li>HAVING</li><li>SELECT</li><li>DISTINCT</li><li>ORDER BY</li><li>LIMIT / OFFSET</li></ol><p>That's why you can't use a SELECT alias in WHERE — it hasn't been computed yet. Use a CTE or subquery instead.</p>",
+    "tip": "Interview classic: 'why can't I filter on an alias in WHERE?' — execution order.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "sql-pagination",
+    "category": "sql",
+    "difficulty": "intermediate",
+    "tags": ["pagination", "limit"],
+    "question": "OFFSET vs cursor-based pagination.",
+    "answer": "<p><strong>OFFSET/LIMIT</strong> — <code class=\"inline\">LIMIT 20 OFFSET 100</code>. Simple but slow on large offsets (DB still scans skipped rows).</p><p><strong>Cursor (keyset)</strong> — <code class=\"inline\">WHERE id &gt; last_seen_id ORDER BY id LIMIT 20</code>. Consistent performance regardless of page depth; no skipped/duplicate rows when data changes during paging.</p>",
+    "tip": "Use cursor pagination for infinite scroll and large datasets; OFFSET is fine for admin UIs with shallow pages.",
+    "code": "-- cursor pagination\nSELECT * FROM orders\nWHERE id > 1024\nORDER BY id\nLIMIT 20;",
+    "lang": "sql"
   }
 ]

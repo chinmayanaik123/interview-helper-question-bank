@@ -1,0 +1,223 @@
+[
+  {
+    "id": "c-what-is",
+    "category": "c",
+    "difficulty": "beginner",
+    "tags": ["basics", "language"],
+    "question": "What is C and what is it used for?",
+    "answer": "<p>C is a <strong>procedural, compiled, low-level</strong> language created in 1972. It provides direct memory access via pointers and maps closely to machine operations.</p><p>Used for: operating systems (Linux kernel), embedded systems, device drivers, databases (PostgreSQL, Redis), language runtimes (Python interpreter, JVM), and performance-critical libraries.</p>",
+    "tip": "C is the foundation — most systems software and many languages are built on or influenced by C.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "c-pointers",
+    "category": "c",
+    "difficulty": "beginner",
+    "tags": ["pointers", "memory"],
+    "question": "What is a pointer in C?",
+    "answer": "<p>A <strong>pointer</strong> is a variable that stores the <em>memory address</em> of another variable. Declared with <code class=\"inline\">*</code>: <code class=\"inline\">int *p;</code></p><ul><li><code class=\"inline\">&amp;x</code> — address-of operator (get address of x).</li><li><code class=\"inline\">*p</code> — dereference (access value at address).</li></ul><p>Pointers enable dynamic memory, arrays, strings, function callbacks, and efficient parameter passing by reference.</p>",
+    "tip": "Uninitialized pointers and dangling pointers are the #1 source of crashes in C.",
+    "code": "int x = 42;\nint *p = &x;   // p holds address of x\nprintf(\"%d\", *p);  // 42",
+    "lang": "c",
+    "deep": "<h4>Why pointers exist</h4><p>C passes function arguments by value (copies). Pointers let you modify the caller's data, avoid copying large structs, and allocate memory that outlives the function.</p><h4>Common pointer mistakes</h4><ul><li><strong>NULL dereference</strong> — always check before use.</li><li><strong>Dangling pointer</strong> — pointing to freed/stack memory.</li><li><strong>Memory leak</strong> — malloc without free.</li><li><strong>Buffer overflow</strong> — writing past array bounds.</li></ul><h4>How to say it in an interview</h4><p>“A pointer stores an address. I use &amp; to get an address and * to dereference. Pointers are essential for dynamic memory, passing by reference, and data structures — but they require careful lifetime and bounds management.”</p>"
+  },
+  {
+    "id": "c-malloc-free",
+    "category": "c",
+    "difficulty": "intermediate",
+    "tags": ["malloc", "heap", "dynamic-memory"],
+    "question": "malloc, calloc, realloc, and free.",
+    "answer": "<ul><li><strong>malloc(size)</strong> — allocate uninitialized bytes on the heap. Returns void* or NULL on failure.</li><li><strong>calloc(n, size)</strong> — allocate and zero-initialize n elements.</li><li><strong>realloc(ptr, new_size)</strong> — resize existing allocation (may move memory).</li><li><strong>free(ptr)</strong> — release heap memory. Must match every malloc/calloc/realloc.</li></ul><p>Heap memory persists until freed — unlike stack variables that die when the function returns.</p>",
+    "tip": "After free(ptr), set ptr = NULL to prevent double-free bugs.",
+    "code": "int *arr = malloc(10 * sizeof(int));\nif (arr == NULL) { /* handle error */ }\n// use arr...\nfree(arr);\narr = NULL;",
+    "lang": "c"
+  },
+  {
+    "id": "c-stack-vs-heap",
+    "category": "c",
+    "difficulty": "beginner",
+    "tags": ["stack", "heap", "memory"],
+    "question": "Stack vs heap memory.",
+    "answer": "<table><tr><th></th><th>Stack</th><th>Heap</th></tr><tr><td><strong>Allocation</strong></td><td>Automatic (local variables)</td><td>Manual (malloc/free)</td></tr><tr><td><strong>Lifetime</strong></td><td>Function scope</td><td>Until freed</td></tr><tr><td><strong>Speed</strong></td><td>Very fast</td><td>Slower</td></tr><tr><td><strong>Size</strong></td><td>Limited (~1-8 MB)</td><td>Limited by RAM</td></tr><tr><td><strong>Fragmentation</strong></td><td>None</td><td>Possible</td></tr></table>",
+    "tip": "Returning a pointer to a local stack variable is undefined behavior — the stack frame is destroyed.",
+    "code": "int* bad() {\n  int x = 5;\n  return &x;  // BUG: x is on the stack\n}",
+    "lang": "c"
+  },
+  {
+    "id": "c-arrays-pointers",
+    "category": "c",
+    "difficulty": "intermediate",
+    "tags": ["arrays", "pointers"],
+    "question": "Relationship between arrays and pointers.",
+    "answer": "<p>An array name <strong>decays to a pointer</strong> to its first element in most contexts. <code class=\"inline\">arr[i]</code> is equivalent to <code class=\"inline\">*(arr + i)</code>.</p><p>Key differences: <code class=\"inline\">sizeof(arr)</code> gives total array size; <code class=\"inline\">sizeof(ptr)</code> gives pointer size (8 bytes on 64-bit). Arrays can't be reassigned; pointers can.</p>",
+    "tip": "When passing an array to a function, you lose the size — always pass the length as a separate parameter.",
+    "code": "void print(int *arr, int len) {\n  for (int i = 0; i < len; i++)\n    printf(\"%d \", arr[i]);\n}",
+    "lang": "c"
+  },
+  {
+    "id": "c-strings",
+    "category": "c",
+    "difficulty": "beginner",
+    "tags": ["strings", "char-array"],
+    "question": "How are strings represented in C?",
+    "answer": "<p>C has no built-in string type. Strings are <strong>null-terminated char arrays</strong> — the <code class=\"inline\">'\\0'</code> character marks the end.</p><p>Use <code class=\"inline\">string.h</code>: <code class=\"inline\">strlen</code>, <code class=\"inline\">strcpy</code>, <code class=\"inline\">strncpy</code> (safer), <code class=\"inline\">strcmp</code>, <code class=\"inline\">strcat</code>. Always ensure the destination buffer is large enough.</p>",
+    "tip": "strcpy is dangerous — prefer strncpy or snprintf to prevent buffer overflows.",
+    "code": "char name[50];\nstrncpy(name, \"Alice\", sizeof(name) - 1);\nname[sizeof(name) - 1] = '\\0';",
+    "lang": "c"
+  },
+  {
+    "id": "c-struct",
+    "category": "c",
+    "difficulty": "beginner",
+    "tags": ["struct", "data-structures"],
+    "question": "What is a struct?",
+    "answer": "<p>A <strong>struct</strong> groups related variables under one type. Members are stored contiguously in memory (with possible padding for alignment).</p><p>Access with dot notation (<code class=\"inline\">s.field</code>) or arrow (<code class=\"inline\">ptr-&gt;field</code>) for pointers to structs.</p>",
+    "tip": "Structs are the foundation for custom data types in C — linked lists, trees, and records are all built from structs + pointers.",
+    "code": "struct Point { int x; int y; };\nstruct Point p = {10, 20};\nstruct Point *ptr = &p;\nprintf(\"%d\", ptr->x);",
+    "lang": "c"
+  },
+  {
+    "id": "c-function-pointers",
+    "category": "c",
+    "difficulty": "intermediate",
+    "tags": ["function-pointer", "callbacks"],
+    "question": "What are function pointers?",
+    "answer": "<p>A variable that stores the address of a function. Syntax: <code class=\"inline\">return_type (*name)(param_types)</code>.</p><p>Used for: callbacks (qsort comparator, signal handlers), plugin architectures, state machines, and implementing polymorphism-like behavior in C.</p>",
+    "tip": "typedef makes function pointer syntax readable: typedef int (*compare_fn)(const void*, const void*);",
+    "code": "int add(int a, int b) { return a + b; }\n\nint (*op)(int, int) = add;\nprintf(\"%d\", op(3, 4));  // 7",
+    "lang": "c"
+  },
+  {
+    "id": "c-preprocessor",
+    "category": "c",
+    "difficulty": "intermediate",
+    "tags": ["preprocessor", "macros"],
+    "question": "C preprocessor directives.",
+    "answer": "<ul><li><code class=\"inline\">#include</code> — paste header file contents (<> for system, \"\" for local).</li><li><code class=\"inline\">#define</code> — text substitution / macros.</li><li><code class=\"inline\">#ifdef / #ifndef / #endif</code> — conditional compilation (header guards).</li><li><code class=\"inline\">#pragma once</code> — non-standard but widely supported header guard.</li></ul><p>Macros are processed before compilation — no type checking.</p>",
+    "tip": "Prefer inline functions over macros for type safety. Use include guards in every header.",
+    "code": "#ifndef MY_HEADER_H\n#define MY_HEADER_H\n// declarations\n#endif",
+    "lang": "c"
+  },
+  {
+    "id": "c-storage-classes",
+    "category": "c",
+    "difficulty": "intermediate",
+    "tags": ["static", "extern", "storage"],
+    "question": "static, extern, const, and volatile.",
+    "answer": "<ul><li><strong>static (variable)</strong> — persists between function calls; file scope if at file level.</li><li><strong>extern</strong> — declares a variable defined elsewhere (shared across files).</li><li><strong>const</strong> — read-only; compiler may place in read-only memory.</li><li><strong>volatile</strong> — tells compiler the value may change unexpectedly (hardware registers, ISR). No optimization caching.</li></ul>",
+    "tip": "static at file scope = internal linkage (not visible to other translation units).",
+    "code": "static int count = 0;  // persists between calls\nvoid increment() { count++; }",
+    "lang": "c"
+  },
+  {
+    "id": "c-undefined-behavior",
+    "category": "c",
+    "difficulty": "advanced",
+    "tags": ["undefined-behavior", "pitfalls"],
+    "question": "What is undefined behavior in C?",
+    "answer": "<p>Behavior the C standard does not define — the program can do <em>anything</em> (crash, wrong result, appear to work). Common sources:</p><ul><li>Dereferencing NULL or dangling pointers</li><li>Signed integer overflow</li><li>Buffer overflow / out-of-bounds access</li><li>Use after free</li><li>Uninitialized variables</li><li>Modifying a string literal</li></ul>",
+    "tip": "UB is not just a crash — the compiler may optimize assuming UB never happens, making bugs invisible in debug builds.",
+    "code": "char *s = \"hello\";\ns[0] = 'H';  // UB: string literals are read-only",
+    "lang": "c"
+  },
+  {
+    "id": "c-bitwise",
+    "category": "c",
+    "difficulty": "intermediate",
+    "tags": ["bitwise", "operators"],
+    "question": "Bitwise operators in C.",
+    "answer": "<ul><li><code class=\"inline\">&amp;</code> AND — mask bits</li><li><code class=\"inline\">|</code> OR — set bits</li><li><code class=\"inline\">^</code> XOR — toggle bits</li><li><code class=\"inline\">~</code> NOT — flip all bits</li><li><code class=\"inline\">&lt;&lt;</code> left shift — multiply by 2^n</li><li><code class=\"inline\">&gt;&gt;</code> right shift — divide by 2^n</li></ul><p>Used for: flags, embedded registers, fast arithmetic, permission bitmasks.</p>",
+    "tip": "n &amp; 1 checks if n is odd. n &lt;&lt; 1 doubles n (for unsigned).",
+    "code": "#define FLAG_READ  0x01\n#define FLAG_WRITE 0x02\nint perms = FLAG_READ | FLAG_WRITE;\nif (perms & FLAG_READ) { /* can read */ }",
+    "lang": "c"
+  },
+  {
+    "id": "c-recursion",
+    "category": "c",
+    "difficulty": "beginner",
+    "tags": ["recursion"],
+    "question": "Recursion in C — how does it work?",
+    "answer": "<p>A function calls itself with a smaller subproblem until a <strong>base case</strong> stops recursion. Each call pushes a new stack frame.</p><p>Risks: stack overflow on deep recursion (limited stack size). Tail recursion may be optimized by the compiler but isn't guaranteed in C.</p>",
+    "tip": "Every recursive function needs a clear base case — otherwise infinite recursion and stack overflow.",
+    "code": "int factorial(int n) {\n  if (n <= 1) return 1;       // base case\n  return n * factorial(n - 1);\n}",
+    "lang": "c"
+  },
+  {
+    "id": "c-file-io",
+    "category": "c",
+    "difficulty": "beginner",
+    "tags": ["file-io", "stdio"],
+    "question": "File I/O in C.",
+    "answer": "<p>Use <code class=\"inline\">FILE*</code> from <code class=\"inline\">stdio.h</code>:</p><ul><li><code class=\"inline\">fopen(path, mode)</code> — open ('r', 'w', 'a', 'rb').</li><li><code class=\"inline\">fread/fwrite</code> — binary I/O.</li><li><code class=\"inline\">fgets/fprintf</code> — text I/O.</li><li><code class=\"inline\">fclose</code> — always close; flush buffers.</li></ul><p>Check return values — fopen returns NULL on failure.</p>",
+    "tip": "Always fclose in all code paths — use a goto cleanup pattern or wrap in a function.",
+    "code": "FILE *f = fopen(\"data.txt\", \"r\");\nif (!f) { perror(\"fopen\"); return -1; }\nchar buf[256];\nwhile (fgets(buf, sizeof(buf), f)) printf(\"%s\", buf);\nfclose(f);",
+    "lang": "c"
+  },
+  {
+    "id": "c-linked-list",
+    "category": "c",
+    "difficulty": "intermediate",
+    "tags": ["linked-list", "data-structures"],
+    "question": "Implement a singly linked list node in C.",
+    "answer": "<p>A node is a struct with data and a pointer to the next node. The list is a pointer to the head node.</p><p>Operations: insert (head/tail), delete, search, traverse. Memory must be manually managed with malloc/free.</p>",
+    "tip": "Drawing pointers on paper is the fastest way to debug linked list code in interviews.",
+    "code": "struct Node {\n  int data;\n  struct Node *next;\n};\n\nvoid push_front(struct Node **head, int val) {\n  struct Node *n = malloc(sizeof(struct Node));\n  n->data = val;\n  n->next = *head;\n  *head = n;\n}",
+    "lang": "c"
+  },
+  {
+    "id": "c-enum-typedef",
+    "category": "c",
+    "difficulty": "beginner",
+    "tags": ["enum", "typedef"],
+    "question": "enum and typedef.",
+    "answer": "<p><strong>enum</strong> — named integer constants. Compiler assigns sequential values unless specified. Improves readability over magic numbers.</p><p><strong>typedef</strong> — creates an alias for an existing type. Simplifies complex types (especially function pointers and structs).</p>",
+    "tip": "Use enum for state machines and error codes. typedef struct { ... } Name; avoids writing 'struct' everywhere.",
+    "code": "typedef enum { IDLE, RUNNING, STOPPED } State;\n\ntypedef struct Node Node;\nstruct Node { int data; Node *next; };",
+    "lang": "c"
+  },
+  {
+    "id": "c-sizeof-alignment",
+    "category": "c",
+    "difficulty": "intermediate",
+    "tags": ["sizeof", "alignment", "padding"],
+    "question": "sizeof and struct padding.",
+    "answer": "<p><code class=\"inline\">sizeof</code> returns the size in bytes of a type or variable. <code class=\"inline\">sizeof(arr)/sizeof(arr[0])</code> gives array length.</p><p>Structs may have <strong>padding</strong> — the compiler inserts unused bytes so members align to their natural boundaries (e.g. int on 4-byte boundary). Reordering members can reduce struct size.</p>",
+    "tip": "If sizeof(struct) seems too large, check member ordering — put largest members first to minimize padding.",
+    "code": "struct Bad  { char a; int b; };  // likely 8 bytes (3 padding)\nstruct Good { int b; char a; };  // likely 8 bytes (3 padding at end)",
+    "lang": "c"
+  },
+  {
+    "id": "c-void-pointer",
+    "category": "c",
+    "difficulty": "intermediate",
+    "tags": ["void-pointer", "generic"],
+    "question": "What is a void pointer?",
+    "answer": "<p><code class=\"inline\">void*</code> is a generic pointer that can point to any data type. Cannot be dereferenced directly — must be cast to the correct type first.</p><p>Used in: malloc (returns void*), qsort/bsearch callbacks, generic data structures, and low-level system programming.</p>",
+    "tip": "malloc returns void* which implicitly converts to any pointer type in C (unlike C++).",
+    "code": "void *generic = malloc(100);\nint *ints = (int *)generic;\nfree(generic);",
+    "lang": "c"
+  },
+  {
+    "id": "c-header-guards",
+    "category": "c",
+    "difficulty": "beginner",
+    "tags": ["headers", "include"],
+    "question": "Why do header files need include guards?",
+    "answer": "<p>Without guards, including a header twice causes <strong>duplicate definition</strong> errors. Include guards prevent re-processing:</p><p><code class=\"inline\">#ifndef FILE_H / #define FILE_H / ... / #endif</code> or <code class=\"inline\">#pragma once</code>.</p><p>Headers declare (function prototypes, types); source files (.c) define (implementations).</p>",
+    "tip": "One .c file per module + matching .h for public API is the standard C project structure.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "c-segfault-debug",
+    "category": "c",
+    "difficulty": "intermediate",
+    "tags": ["debugging", "segfault"],
+    "question": "What causes a segmentation fault and how do you debug it?",
+    "answer": "<p>A <strong>segfault</strong> occurs when a program accesses memory it doesn't have permission to access. Common causes:</p><ul><li>NULL pointer dereference</li><li>Buffer overflow</li><li>Use after free</li><li>Stack overflow (deep recursion)</li><li>Writing to read-only memory</li></ul><p>Debug with: gdb (core dumps), Valgrind (memory errors), AddressSanitizer (-fsanitize=address).</p>",
+    "tip": "Compile with -g for debug symbols and -Wall -Wextra to catch warnings that become bugs.",
+    "code": "gcc -g -Wall -fsanitize=address -o app app.c\ngdb ./app\n# run, then: bt (backtrace on crash)",
+    "lang": "bash"
+  }
+]

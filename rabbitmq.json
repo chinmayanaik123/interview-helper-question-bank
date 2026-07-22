@@ -1,0 +1,213 @@
+[
+  {
+    "id": "rmq-what-is",
+    "category": "rabbitmq",
+    "difficulty": "beginner",
+    "tags": ["basics", "messaging"],
+    "question": "What is RabbitMQ and what is AMQP?",
+    "answer": "<p>RabbitMQ is an <strong>open-source message broker</strong> implementing the <strong>AMQP 0-9-1</strong> protocol. It receives messages from producers, routes them through exchanges to queues, and delivers them to consumers.</p><p>Core value: <strong>decoupling</strong> services — producers don't need to know about consumers, enabling async processing, load levelling, and reliable delivery.</p>",
+    "tip": "RabbitMQ is a smart broker / dumb consumer model — the broker handles routing, consumers just process.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "rmq-architecture",
+    "category": "rabbitmq",
+    "difficulty": "beginner",
+    "tags": ["architecture", "exchange", "queue"],
+    "question": "Explain exchanges, queues, bindings, and routing keys.",
+    "answer": "<p>Message flow: <strong>Producer</strong> → <strong>Exchange</strong> → (binding) → <strong>Queue</strong> → <strong>Consumer</strong></p><ul><li><strong>Exchange</strong> — receives messages and routes to queues based on rules.</li><li><strong>Queue</strong> — stores messages until consumed (FIFO).</li><li><strong>Binding</strong> — link between exchange and queue with a routing key pattern.</li><li><strong>Routing key</strong> — attribute on the message used by the exchange for routing decisions.</li></ul>",
+    "tip": "Producers never send directly to queues — always to an exchange. The exchange decides which queue(s) receive the message.",
+    "code": "",
+    "lang": "",
+    "deep": "<h4>The four exchange types</h4><pre><code>direct   -> routing key exact match\nfanout   -> broadcast to ALL bound queues (ignores routing key)\ntopic    -> routing key pattern match (order.*, order.#)\nheaders  -> match on message headers, not routing key</code></pre><h4>Topic exchange wildcards</h4><p><code class=\"inline\">*</code> matches one word. <code class=\"inline\">#</code> matches zero or more words. Routing key <code class=\"inline\">order.created.us</code> matches pattern <code class=\"inline\">order.*.us</code> and <code class=\"inline\">order.#</code>.</p><h4>How to say it in an interview</h4><p>“Producers publish to exchanges. Bindings connect exchanges to queues with routing rules. I use direct for point-to-point, fanout for broadcast, and topic when consumers need flexible subscription patterns.”</p>"
+  },
+  {
+    "id": "rmq-exchange-types",
+    "category": "rabbitmq",
+    "difficulty": "intermediate",
+    "tags": ["exchange", "routing"],
+    "question": "Direct vs fanout vs topic vs headers exchanges.",
+    "answer": "<ul><li><strong>Direct</strong> — routing key must exactly match binding key. One-to-one or one-to-few. Example: task dispatch by type.</li><li><strong>Fanout</strong> — ignores routing key; broadcasts to all bound queues. Example: cache invalidation notifications.</li><li><strong>Topic</strong> — routing key matched against binding pattern with <code class=\"inline\">*</code> and <code class=\"inline\">#</code> wildcards. Example: event bus (<code class=\"inline\">order.created</code>, <code class=\"inline\">user.deleted</code>).</li><li><strong>Headers</strong> — routes based on message header attributes. Rarely used; more flexible but slower.</li></ul>",
+    "tip": "Topic exchanges are the most versatile — use them as a default for event-driven architectures.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "rmq-acknowledgments",
+    "category": "rabbitmq",
+    "difficulty": "intermediate",
+    "tags": ["ack", "reliability"],
+    "question": "What are acknowledgments and why do they matter?",
+    "answer": "<p><strong>Publisher confirms</strong> — broker acks that it received the message from the producer.</p><p><strong>Consumer acknowledgments</strong> — consumer tells broker it successfully processed the message. Until acked, the message stays in the queue (or is redelivered on disconnect).</p><ul><li><strong>Manual ack</strong> (<code class=\"inline\">basicAck</code>) — ack after processing. Safe but consumer must not forget.</li><li><strong>Auto ack</strong> — broker acks on delivery, before processing. Risk: message lost if consumer crashes mid-processing.</li><li><strong>Nack / reject</strong> — negative ack; requeue or send to dead letter.</li></ul>",
+    "tip": "Always use manual ack in production — auto ack loses messages on consumer crash.",
+    "code": "channel.basicConsume(queue, false, (tag, delivery) -> {\n  try {\n    process(delivery.getBody());\n    channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);\n  } catch (Exception e) {\n    channel.basicNack(delivery.getEnvelope().getDeliveryTag(), false, true);\n  }\n}, tag -> {});",
+    "lang": "java"
+  },
+  {
+    "id": "rmq-prefetch",
+    "category": "rabbitmq",
+    "difficulty": "intermediate",
+    "tags": ["prefetch", "qos", "performance"],
+    "question": "What is prefetch (QoS) and how do you tune it?",
+    "answer": "<p><code class=\"inline\">basicQos(prefetchCount)</code> limits how many unacknowledged messages a consumer can hold at once. Default: unlimited (broker pushes all messages to consumer).</p><p>Low prefetch (1–10): fair distribution across consumers, slower throughput. High prefetch (50–100): better throughput but one slow consumer hoards messages.</p><p>Set per-channel: <code class=\"inline\">channel.basicQos(10)</code> — each consumer gets max 10 unacked messages.</p>",
+    "tip": "prefetch=1 gives round-robin fairness. prefetch=0 means unlimited — can starve other consumers.",
+    "code": "channel.basicQos(10);  // max 10 unacked messages per consumer",
+    "lang": "java"
+  },
+  {
+    "id": "rmq-durability",
+    "category": "rabbitmq",
+    "difficulty": "intermediate",
+    "tags": ["durability", "persistence"],
+    "question": "How do you make messages and queues survive broker restarts?",
+    "answer": "<p>Three things must be durable:</p><ol><li><strong>Durable queue</strong> — <code class=\"inline\">queueDeclare(name, durable=true, ...)</code>. Survives broker restart.</li><li><strong>Persistent messages</strong> — <code class=\"inline\">deliveryMode=2</code> (or <code class=\"inline\">MessageProperties.PERSISTENT_TEXT_PLAIN</code>). Written to disk.</li><li><strong>Durable exchange</strong> — survives restart (default for most types).</li></ol><p>Non-durable queues and transient messages are lost on restart — fine for ephemeral tasks.</p>",
+    "tip": "Durable queue + persistent messages still has a small window of loss during broker crash before disk write — use publisher confirms for full guarantee.",
+    "code": "channel.queueDeclare(\"orders\", true, false, false, null);\nchannel.basicPublish(\"\", \"orders\",\n  MessageProperties.PERSISTENT_TEXT_PLAIN, body);",
+    "lang": "java"
+  },
+  {
+    "id": "rmq-dead-letter",
+    "category": "rabbitmq",
+    "difficulty": "intermediate",
+    "tags": ["dead-letter", "dlx", "error-handling"],
+    "question": "What is a Dead Letter Exchange (DLX)?",
+    "answer": "<p>Messages that are <strong>rejected</strong> (nack without requeue), <strong>expire</strong> (TTL exceeded), or exceed <strong>queue length limit</strong> are routed to a Dead Letter Exchange, which forwards them to a dead letter queue for inspection.</p><p>Configure on the original queue: <code class=\"inline\">x-dead-letter-exchange</code> and <code class=\"inline\">x-dead-letter-routing-key</code>.</p>",
+    "tip": "DLX + retry queue with TTL is a common pattern: fail → DLX → wait → re-route to main queue.",
+    "code": "Map<String, Object> args = new HashMap<>();\nargs.put(\"x-dead-letter-exchange\", \"dlx\");\nchannel.queueDeclare(\"orders\", true, false, false, args);",
+    "lang": "java",
+    "deep": "<h4>Retry pattern with DLX</h4><pre><code>Main queue -> fail -> DLX -> retry queue (TTL 30s) -> back to main queue\nAfter N retries -> parking lot queue for manual review</code></pre><h4>How to say it in an interview</h4><p>“I configure a DLX on every production queue. Failed messages land in a dead letter queue with the original headers intact. For transient failures, I use a retry queue with TTL that routes back to the main queue. Persistent failures go to a parking lot for manual triage.”</p>"
+  },
+  {
+    "id": "rmq-ttl",
+    "category": "rabbitmq",
+    "difficulty": "intermediate",
+    "tags": ["ttl", "expiration"],
+    "question": "Message TTL and queue TTL.",
+    "answer": "<p><strong>Per-message TTL</strong> — set <code class=\"inline\">expiration</code> property (milliseconds as string). Message is discarded or dead-lettered after TTL expires (even if sitting in queue unprocessed).</p><p><strong>Per-queue TTL</strong> — <code class=\"inline\">x-message-ttl</code> argument on queue declaration. Applies to all messages in the queue.</p><p>Use cases: time-sensitive notifications, retry delays, cache-like behaviour.</p>",
+    "tip": "Per-message TTL only checks at the head of the queue — a message won't expire if it's behind a non-expiring message.",
+    "code": "AMQP.BasicProperties props = new AMQP.BasicProperties.Builder()\n  .expiration(\"60000\")  // 60 seconds\n  .build();",
+    "lang": "java"
+  },
+  {
+    "id": "rmq-vs-kafka",
+    "category": "rabbitmq",
+    "difficulty": "intermediate",
+    "tags": ["comparison", "kafka"],
+    "question": "RabbitMQ vs Kafka — when to use each?",
+    "answer": "<p>See Kafka category for full table. Summary:</p><ul><li><strong>RabbitMQ</strong> — complex routing, task queues, request-reply, moderate throughput, messages deleted after ack. Like a post office with smart sorting.</li><li><strong>Kafka</strong> — high-throughput event streaming, message replay, log retention, simple routing. Like a newspaper printing press.</li></ul><p>Many systems use both: RabbitMQ for task dispatch, Kafka for event streaming.</p>",
+    "tip": "If consumers need to re-read old messages, Kafka. If messages should disappear after processing, RabbitMQ.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "rmq-rpc-pattern",
+    "category": "rabbitmq",
+    "difficulty": "intermediate",
+    "tags": ["rpc", "request-reply"],
+    "question": "How does the RPC (request-reply) pattern work in RabbitMQ?",
+    "answer": "<p>Client sends a message with two special properties:</p><ul><li><code class=\"inline\">replyTo</code> — name of a temporary callback queue.</li><li><code class=\"inline\">correlationId</code> — matches request to response.</li></ul><p>Server processes the request and publishes the response to the <code class=\"inline\">replyTo</code> queue with the same <code class=\"inline\">correlationId</code>. Client correlates and returns the result.</p><p>Built into Spring AMQP's <code class=\"inline\">RabbitTemplate.convertSendAndReceive()</code>.</p>",
+    "tip": "RPC over messaging adds latency vs HTTP — use for async workflows, not synchronous user-facing calls.",
+    "code": "Object response = rabbitTemplate.convertSendAndReceive(\"rpc-queue\", request);",
+    "lang": "java"
+  },
+  {
+    "id": "rmq-clustering",
+    "category": "rabbitmq",
+    "difficulty": "intermediate",
+    "tags": ["clustering", "high-availability"],
+    "question": "RabbitMQ clustering and high availability.",
+    "answer": "<p><strong>Clustering</strong> — multiple RabbitMQ nodes share metadata (exchanges, queues, bindings). Queues live on one node (master) but can be mirrored.</p><p><strong>Classic mirrored queues</strong> — copies on multiple nodes (deprecated). <strong>Quorum queues</strong> — Raft-based replication (recommended). Survive node failures with automatic leader election.</p><p>For multi-datacenter: Federation or Shovel plugins replicate messages between independent brokers.</p>",
+    "tip": "Use quorum queues for new deployments — they're more reliable than classic mirrored queues.",
+    "code": "Map<String, Object> args = Map.of(\"x-queue-type\", \"quorum\");\nchannel.queueDeclare(\"orders\", true, false, false, args);",
+    "lang": "java"
+  },
+  {
+    "id": "rmq-spring-amqp",
+    "category": "rabbitmq",
+    "difficulty": "intermediate",
+    "tags": ["spring", "amqp"],
+    "question": "Using RabbitMQ with Spring Boot (Spring AMQP).",
+    "answer": "<p><code class=\"inline\">spring-boot-starter-amqp</code> provides:</p><ul><li><code class=\"inline\">@RabbitListener(queues = \"orders\")</code> — declarative consumer.</li><li><code class=\"inline\">RabbitTemplate</code> — send messages.</li><li><code class=\"inline\">@Bean Queue/Exchange/Binding</code> — declare topology in code.</li><li>Auto-config from <code class=\"inline\">spring.rabbitmq.*</code> properties.</li><li>Retry with <code class=\"inline\">@Retryable</code> or <code class=\"inline\">RetryInterceptorBuilder</code>.</li></ul>",
+    "tip": "Define queues and exchanges as @Bean — Spring creates them on startup if they don't exist.",
+    "code": "@RabbitListener(queues = \"orders\")\npublic void handle(Order order) {\n  orderService.process(order);\n}",
+    "lang": "java"
+  },
+  {
+    "id": "rmq-poison-messages",
+    "category": "rabbitmq",
+    "difficulty": "intermediate",
+    "tags": ["poison-message", "errors"],
+    "question": "How do you handle poison messages?",
+    "answer": "<p>A <strong>poison message</strong> always fails processing — infinite requeue loop blocks the consumer. Solutions:</p><ul><li><strong>Retry limit</strong> — track retry count in message headers; after N failures, nack without requeue → DLX.</li><li><strong>DLX to parking lot</strong> — dead letter queue for manual inspection.</li><li><strong>Skip and log</strong> — ack the message, log the error (data loss).</li></ul><p>Spring AMQP: <code class=\"inline\">ConditionalRejectingErrorHandler</code> + <code class=\"inline\">FatalExceptionStrategy</code>.</p>",
+    "tip": "Include x-death header info in DLQ messages — it tells you how many times the message was dead-lettered.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "rmq-connections-channels",
+    "category": "rabbitmq",
+    "difficulty": "beginner",
+    "tags": ["connection", "channel"],
+    "question": "Connection vs channel in RabbitMQ.",
+    "answer": "<p><strong>Connection</strong> — TCP connection to the broker (expensive to create). Use a connection pool; one per app instance is typical.</p><p><strong>Channel</strong> — lightweight virtual connection inside a TCP connection. Most operations (publish, consume, declare) happen on channels. Create a channel per thread; channels are not thread-safe.</p><p>Pattern: one Connection (shared), one Channel per consumer thread.</p>",
+    "tip": "Opening too many connections exhausts broker resources — always pool/reuse connections.",
+    "code": "Connection conn = factory.newConnection();\nChannel channel = conn.createChannel();  // one per thread",
+    "lang": "java"
+  },
+  {
+    "id": "rmq-priority-queues",
+    "category": "rabbitmq",
+    "difficulty": "intermediate",
+    "tags": ["priority", "queues"],
+    "question": "How do priority queues work?",
+    "answer": "<p>Declare queue with <code class=\"inline\">x-max-priority</code> (e.g. 10). Set <code class=\"inline\">priority</code> (0–10) on messages. Higher priority messages are delivered before lower ones in the queue.</p><p>Use for: urgent notifications, VIP task processing. Not a replacement for separate queues — priority only works among messages already in the same queue.</p>",
+    "tip": "Priority queues have overhead — only use when you genuinely need in-queue prioritisation.",
+    "code": "args.put(\"x-max-priority\", 10);\nchannel.queueDeclare(\"tasks\", true, false, false, args);",
+    "lang": "java"
+  },
+  {
+    "id": "rmq-work-queues",
+    "category": "rabbitmq",
+    "difficulty": "beginner",
+    "tags": ["work-queue", "load-balancing"],
+    "question": "What is the work queue (competing consumers) pattern?",
+    "answer": "<p>Multiple consumers listen to the <strong>same queue</strong>. RabbitMQ distributes messages round-robin among consumers — each message goes to exactly one consumer. Enables <strong>load levelling</strong>: burst of tasks spread across workers.</p><p>Combine with prefetch for fair dispatch. Add more consumers to scale throughput (up to the queue's capacity).</p>",
+    "tip": "This is the simplest RabbitMQ pattern — one queue, many workers, automatic load balancing.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "rmq-pub-sub",
+    "category": "rabbitmq",
+    "difficulty": "beginner",
+    "tags": ["pub-sub", "fanout"],
+    "question": "How do you implement pub/sub in RabbitMQ?",
+    "answer": "<p>Use a <strong>fanout exchange</strong>. Each consumer creates its own <strong>exclusive, auto-delete queue</strong> bound to the fanout exchange. Every message published to the fanout goes to all bound queues — each subscriber gets a copy.</p><p>Unlike work queues (one consumer per message), pub/sub delivers to <em>every</em> subscriber.</p>",
+    "tip": "For selective pub/sub (not broadcast), use a topic exchange so subscribers bind to patterns they care about.",
+    "code": "channel.exchangeDeclare(\"events\", \"fanout\");\nString queueName = channel.queueDeclare().getQueue();  // auto-named, exclusive\nchannel.queueBind(queueName, \"events\", \"\");",
+    "lang": "java"
+  },
+  {
+    "id": "rmq-monitoring",
+    "category": "rabbitmq",
+    "difficulty": "intermediate",
+    "tags": ["monitoring", "management"],
+    "question": "How do you monitor RabbitMQ?",
+    "answer": "<p><strong>Management UI</strong> — built-in web UI (port 15672) showing queues, rates, connections, consumers.</p><p>Key metrics:</p><ul><li><strong>Queue depth</strong> — messages ready + unacked. Growing = consumers can't keep up.</li><li><strong>Publish/deliver rates</strong> — throughput.</li><li><strong>Consumer utilisation</strong> — are consumers busy or idle?</li><li><strong>Memory/disk alarms</strong> — broker blocks publishers when resources are low.</li></ul><p>Prometheus plugin for Grafana dashboards. Alert on queue depth thresholds.</p>",
+    "tip": "Set queue max-length limits to prevent unbounded growth from crashing the broker.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "rmq-message-size",
+    "category": "rabbitmq",
+    "difficulty": "intermediate",
+    "tags": ["performance", "design"],
+    "question": "Best practices for message size and content.",
+    "answer": "<p>RabbitMQ handles small messages (KB) best. For large payloads:</p><ul><li>Store the data elsewhere (S3, DB) and send a <strong>reference</strong> (URL/ID) in the message.</li><li>Default max message size is 128MB but large messages hurt performance and memory.</li><li>Keep messages serialisable (JSON, Avro, Protobuf) — avoid sending non-serialisable objects.</li><li>Include correlation ID, timestamp, and content-type in message properties.</li></ul>",
+    "tip": "If messages are consistently >1MB, you're probably using the wrong tool — consider Kafka or direct file transfer.",
+    "code": "",
+    "lang": ""
+  }
+]

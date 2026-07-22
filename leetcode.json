@@ -166,7 +166,7 @@
   {
     "id": "leetcode-next-greater-element-i",
     "category": "leetcode",
-    "difficulty": "easy",
+    "difficulty": "beginner",
     "tags": [
       "array",
       "stack",
@@ -184,7 +184,7 @@
   {
     "id": "leetcode-next-greater-element-ii",
     "category": "leetcode",
-    "difficulty": "medium",
+    "difficulty": "intermediate",
     "tags": [
       "array",
       "stack",
@@ -202,7 +202,7 @@
   {
     "id": "leetcode-daily-temperatures",
     "category": "leetcode",
-    "difficulty": "medium",
+    "difficulty": "intermediate",
     "tags": [
       "array",
       "stack",

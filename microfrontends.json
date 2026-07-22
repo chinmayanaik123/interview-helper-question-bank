@@ -1,0 +1,284 @@
+[
+  {
+    "id": "mfe-what-are",
+    "category": "microfrontends",
+    "difficulty": "beginner",
+    "tags": [
+      "basics",
+      "architecture",
+      "spa"
+    ],
+    "question": "What are microfrontends and why do teams adopt them?",
+    "answer": "<p><strong>Microfrontends</strong> extend the microservices idea to the browser: a large web UI is split into smaller, independently owned front-end applications that compose into one product experience.</p><p>Each MFE is typically owned by a squad, has its own repo (or workspace package), build pipeline, and release cadence. A <strong>shell / host</strong> loads and orchestrates them at runtime or build time.</p><p>Teams adopt MFEs to scale delivery — multiple Angular squads can ship without blocking each other on a single monolithic SPA release.</p>",
+    "tip": "Lead with the business reason (team autonomy, independent deploys), then mention the technical composition pattern.",
+    "code": "",
+    "lang": "",
+    "deep": "<h4>Definition in one sentence</h4><p>Microfrontends are independently deployable front-end applications that together form a single user-facing product, composed by a shell or integration layer.</p><h4>Core characteristics</h4><ul><li><strong>Independent deployability</strong> — each MFE can ship to production without redeploying the entire UI.</li><li><strong>Team ownership</strong> — a bounded context (billing, catalog, admin) maps to one squad and one MFE.</li><li><strong>Technology flexibility</strong> — squads may share Angular but can differ on versions or tooling within guardrails.</li><li><strong>Composition</strong> — host loads remotes via Module Federation, single-spa, iframes, or build-time imports.</li></ul><h4>How it looks in Angular</h4><pre><code>Shell (host Angular app)\n├── loads Remote: Product Catalog MFE\n├── loads Remote: Order Management MFE\n└── loads Remote: Customer 360 MFE</code></pre><p>The user sees one SPA; under the hood several bundles cooperate.</p><h4>Enterprise / Netcracker context</h4><p>Large BSS/OSS portals (product catalog, order capture, service inventory) often outgrow a single Angular repo. MFEs let platform teams own the shell (auth, layout, global nav) while domain squads own feature remotes — aligned with scaled agile and multi-tenant delivery.</p><h4>What MFEs are NOT</h4><ul><li>Not just lazy-loaded feature modules inside one app (that's modular monolith).</li><li>Not automatically faster — they trade build-time simplicity for runtime/orchestration complexity.</li><li>Not a substitute for good domain boundaries in the backend.</li></ul><h4>How to say it in an interview</h4><p>\"Microfrontends let multiple teams ship separate Angular apps that compose into one experience. We use a host shell for shared chrome and load domain remotes at runtime so teams deploy independently without blocking the whole portal.\"</p>"
+  },
+  {
+    "id": "mfe-vs-monolith",
+    "category": "microfrontends",
+    "difficulty": "beginner",
+    "tags": [
+      "architecture",
+      "monolith",
+      "trade-offs"
+    ],
+    "question": "How do microfrontends differ from a monolithic Angular SPA?",
+    "answer": "<p>A <strong>monolithic SPA</strong> is one Angular workspace: one build, one deploy artifact, shared <code class=\"inline\">AppModule</code> or standalone bootstrap, and lazy-loaded feature modules inside the same bundle graph.</p><p><strong>Microfrontends</strong> are separate deployable apps. Each has its own build output; the shell stitches them together at runtime (Module Federation) or via an orchestrator (single-spa).</p><table><thead><tr><th>Monolith SPA</th><th>Microfrontends</th></tr></thead><tbody><tr><td>One repo / one pipeline</td><td>Multiple repos or packages, multiple pipelines</td></tr><tr><td>Shared DI tree by default</td><td>Separate Angular platforms; integration is explicit</td></tr><tr><td>Simpler routing &amp; state</td><td>Cross-MFE routing and shared libs need design</td></tr><tr><td>One version of Angular</td><td>Version alignment becomes a governance topic</td></tr></tbody></table>",
+    "tip": "Lazy loading inside one app is NOT microfrontends — independent deployment is the dividing line.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "mfe-shell-remote",
+    "category": "microfrontends",
+    "difficulty": "beginner",
+    "tags": [
+      "shell",
+      "host",
+      "remote",
+      "composition"
+    ],
+    "question": "What is the shell (host) vs a remote MFE in Angular?",
+    "answer": "<p>The <strong>shell / host</strong> is the container application users land in first. It usually owns:</p><ul><li>Global layout, header, sidebar, and branding</li><li>Authentication bootstrap and route guards</li><li>Loading remote bundles and mounting them in the DOM</li><li>Shared design system and cross-cutting concerns</li></ul><p>A <strong>remote</strong> is a standalone Angular app exposed as a federated module or registered micro-app. It focuses on a domain (e.g. \"Partner Onboarding\") and is consumed by the host — it does not own the full page chrome.</p>",
+    "tip": "Draw two boxes: Host = platform + router shell; Remote = domain feature that plugs into a router outlet or custom element slot.",
+    "code": "// Host routes (conceptual)\n{\n  path: 'catalog',\n  loadChildren: () =>\n    loadRemoteModule({\n      type: 'module',\n      remoteEntry: 'https://catalog.example.com/remoteEntry.js',\n      exposedModule: './CatalogRoutes'\n    }).then(m => m.CATALOG_ROUTES)\n}",
+    "lang": "ts"
+  },
+  {
+    "id": "mfe-module-federation",
+    "category": "microfrontends",
+    "difficulty": "intermediate",
+    "tags": [
+      "module-federation",
+      "webpack",
+      "V.Imp",
+      "runtime"
+    ],
+    "question": "Explain Webpack Module Federation and how it works with Angular.",
+    "answer": "<p><strong>Module Federation</strong> (Webpack 5+, supported in Angular via <code class=\"inline\">@angular-architects/module-federation</code> or Nx) lets a <strong>host</strong> dynamically import JavaScript from a <strong>remote</strong> at runtime.</p><p>The remote publishes a <code class=\"inline\">remoteEntry.js</code> manifest. The host declares remotes in <code class=\"inline\">webpack.config</code> / <code class=\"inline\">federation.config.js</code> and loads exposed modules (routes, components, NgModules) on demand.</p><p>Shared dependencies (e.g. <code class=\"inline\">@angular/core</code>) can be configured as <strong>singletons</strong> so only one copy runs in the browser.</p>",
+    "tip": "Mention remoteEntry.js, exposed modules, shared singletons, and loadRemoteModule — that's the Angular interview checklist.",
+    "code": "// federation.config.js (remote)\nmodule.exports = withModuleFederationPlugin({\n  name: 'catalog',\n  exposes: {\n    './CatalogRoutes': './src/app/catalog.routes.ts',\n  },\n  shared: {\n    '@angular/core': { singleton: true, strictVersion: true, requiredVersion: 'auto' },\n    '@angular/router': { singleton: true, strictVersion: true, requiredVersion: 'auto' },\n  },\n});",
+    "lang": "js",
+    "deep": "<h4>Key artifacts</h4><ul><li><code class=\"inline\">remoteEntry.js</code> — runtime manifest listing exposed modules and shared dependency metadata.</li><li><code class=\"inline\">exposes</code> — public API surface of the remote (routes, components, services).</li><li><code class=\"inline\">remotes</code> — URLs the host uses to fetch remoteEntry at runtime.</li><li><code class=\"inline\">shared</code> — libraries deduplicated across host and remotes (Angular, RxJS, design system).</li></ul><h4>Runtime flow</h4><ol><li>User navigates to <code class=\"inline\">/catalog</code> in the host.</li><li>Host calls <code class=\"inline\">loadRemoteModule()</code> (from <code class=\"inline\">@angular-architects/module-federation</code>).</li><li>Browser fetches <code class=\"inline\">remoteEntry.js</code> from the catalog deployment URL.</li><li>Webpack runtime resolves shared Angular singletons and loads the exposed route config.</li><li>Angular router registers child routes; remote components render inside the host layout.</li></ol><h4>Angular integration patterns</h4><ul><li><strong>Route-level federation</strong> — expose <code class=\"inline\">Routes</code> from a remote; host lazy-loads them (most common).</li><li><strong>Component federation</strong> — expose a standalone component; host imports it into a template.</li><li><strong>Native Federation</strong> — esbuild-based alternative for faster builds in newer Angular workspaces.</li></ul><h4>Shared config pitfalls</h4><table><thead><tr><th>Setting</th><th>Purpose</th></tr></thead><tbody><tr><td><code class=\"inline\">singleton: true</code></td><td>One instance of @angular/core across apps</td></tr><tr><td><code class=\"inline\">strictVersion: true</code></td><td>Fail fast on incompatible peer versions</td></tr><tr><td><code class=\"inline\">requiredVersion</code></td><td>Semver range host and remote must satisfy</td></tr></tbody></table><p>Without singleton Angular, you get <em>NG0900</em> or multiple platform instances — a common production bug.</p><h4>Deployment implication</h4><p>Host and remotes deploy to different URLs/CDN paths. Only <code class=\"inline\">remoteEntry.js</code> URL must be reachable from the host config (or environment). Remotes can redeploy without rebuilding the host if exposed API stays compatible.</p><h4>How to say it in an interview</h4><p>\"We use Module Federation so the Angular host loads each squad's remoteEntry at runtime. Remotes expose route configs or components; shared Angular packages are singletons. That gives independent deploys while keeping one Angular zone and one router tree in the shell.\"</p>"
+  },
+  {
+    "id": "mfe-single-spa",
+    "category": "microfrontends",
+    "difficulty": "intermediate",
+    "tags": [
+      "single-spa",
+      "orchestration",
+      "framework-agnostic"
+    ],
+    "question": "What is single-spa and when would you use it over Module Federation?",
+    "answer": "<p><strong>single-spa</strong> is a framework-agnostic orchestrator. It registers multiple micro-apps (Angular, React, Vue) and mounts/unmounts them based on URL activity functions — not tied to Webpack.</p><p>Each Angular app is wrapped with <code class=\"inline\">single-spa-angular</code>, exposing bootstrap/mount/unmount lifecycles. A root config decides which app is active for a route.</p><p>Use <strong>single-spa</strong> when you need multi-framework composition or a central runtime router across heterogeneous apps. Prefer <strong>Module Federation</strong> when all squads are Angular and you want native lazy route integration with less wrapper code.</p>",
+    "tip": "single-spa = lifecycle orchestrator; Module Federation = bundle sharing/loading mechanism. They can be combined.",
+    "code": "// single-spa root config (simplified)\nregisterApplication({\n  name: '@org/catalog',\n  app: () => System.import('https://cdn.example.com/catalog/main.js'),\n  activeWhen: ['/catalog'],\n});",
+    "lang": "js"
+  },
+  {
+    "id": "mfe-shared-deps",
+    "category": "microfrontends",
+    "difficulty": "advanced",
+    "tags": [
+      "shared-dependencies",
+      "versioning",
+      "singleton",
+      "V.Imp"
+    ],
+    "question": "How do you manage shared dependencies and Angular version alignment across MFEs?",
+    "answer": "<p>Shared libraries (<code class=\"inline\">@angular/*</code>, RxJS, your design system) must be <strong>singletons</strong> at runtime — duplicate Angular cores break DI, change detection, and routing.</p><p>Strategies:</p><ul><li><strong>Aligned versions</strong> — pin the same Angular minor across host and remotes (recommended for 0–4 YOE teams).</li><li><strong>Module Federation shared config</strong> — <code class=\"inline\">singleton</code>, <code class=\"inline\">strictVersion</code>, <code class=\"inline\">requiredVersion</code>.</li><li><strong>Internal npm feed</strong> — publish <code class=\"inline\">@company/ui-kit</code> and <code class=\"inline\">@company/auth</code> as versioned packages.</li><li><strong>Monorepo (Nx)</strong> — one lockfile, affected builds, consistent deps with federated deploy targets.</li></ul>",
+    "tip": "Say you'd rather upgrade Angular in lockstep across MFEs than debug two NgZones in production.",
+    "code": "shared: {\n  '@angular/core': { singleton: true, strictVersion: true, requiredVersion: '^19.0.0' },\n  '@company/design-system': { singleton: true, requiredVersion: '^2.4.0' },\n  rxjs: { singleton: true, strictVersion: false },\n}",
+    "lang": "js",
+    "deep": "<h4>Why singletons matter</h4><p>Angular assumes one platform injector tree. If Remote A bundles its own <code class=\"inline\">@angular/core</code>, you may see:</p><ul><li>Components not detecting changes from another MFE's services</li><li><code class=\"inline\">NullInjectorError</code> for tokens provided in the \"other\" Angular</li><li>Router outlets behaving inconsistently</li></ul><h4>Version governance model</h4><table><thead><tr><th>Approach</th><th>Pros</th><th>Cons</th></tr></thead><tbody><tr><td>Lockstep Angular upgrades</td><td>Predictable, fewer runtime surprises</td><td>Coordination overhead</td></tr><tr><td>Shared internal packages</td><td>Consistent UI/auth APIs</td><td>Semver discipline required</td></tr><tr><td>strictVersion + CI matrix</td><td>Catches mismatches in pipeline</td><td>Build failures until aligned</td></tr><tr><td>Monorepo + Nx</td><td>One source of truth for deps</td><td>Repo scale / access control</td></tr></tbody></table><h4>What to share vs not share</h4><p><strong>Share:</strong> Angular framework, RxJS, design tokens, auth/session SDK, logging.</p><p><strong>Don't share blindly:</strong> domain-specific NgRx feature state, heavy chart libs used by one MFE, experimental deps.</p><h4>Enterprise practice</h4><p>Platform team publishes a <em>compatibility matrix</em> (Host 19.2.x + Remotes 19.2.x). CI on each remote verifies federation shared resolution against the current host manifest before promote to prod.</p><h4>How to say it in an interview</h4><p>\"We treat Angular as a shared singleton with strict semver. Internal UI and auth libs are versioned packages. CI fails if a remote's requiredVersion doesn't match the host, so we never ship incompatible bundles to production.\"</p>"
+  },
+  {
+    "id": "mfe-routing",
+    "category": "microfrontends",
+    "difficulty": "intermediate",
+    "tags": [
+      "routing",
+      "shell",
+      "deep-linking",
+      "V.Imp"
+    ],
+    "question": "How does routing work across microfrontends in an Angular shell?",
+    "answer": "<p>The <strong>host owns the top-level router</strong>. Each route segment delegates to a remote's child routes via dynamic <code class=\"inline\">loadChildren</code> / <code class=\"inline\">loadRemoteModule</code>.</p><p>Pattern: host defines <code class=\"inline\">/catalog/**</code> → loads Catalog remote routes; <code class=\"inline\">/orders/**</code> → Order remote. Remotes export a <code class=\"inline\">Routes</code> array with paths relative to their mount point.</p><p>Deep links and browser back/forward must work — URL is the contract between teams. Avoid remotes registering conflicting root paths.</p>",
+    "tip": "Emphasize URL ownership by the shell and that remotes mount as child routes, not parallel root routers.",
+    "code": "// Host app.routes.ts\nexport const APP_ROUTES: Routes = [\n  { path: '', component: ShellLayoutComponent, children: [\n    { path: 'catalog', loadChildren: () => loadRemoteModule({...}).then(m => m.CATALOG_ROUTES) },\n    { path: 'orders', loadChildren: () => loadRemoteModule({...}).then(m => m.ORDER_ROUTES) },\n  ]},\n];",
+    "lang": "ts",
+    "deep": "<h4>Routing ownership rules</h4><ol><li><strong>Shell defines route prefixes</strong> — platform team documents reserved paths (<code class=\"inline\">/admin</code>, <code class=\"inline\">/catalog</code>).</li><li><strong>Remotes own sub-routes</strong> — e.g. <code class=\"inline\">/catalog/products/:id</code> lives in the catalog remote's <code class=\"inline\">Routes</code>.</li><li><strong>One Angular Router</strong> — remotes don't call <code class=\"inline\">bootstrapApplication</code> with their own root router in production; they export routes/components to the host.</li></ol><h4>Lazy activation flow</h4><pre><code>User → /orders/123\nHost router matches 'orders'\n→ fetch orders remoteEntry.js\n→ merge ORDER_ROUTES as children\n→ OrderDetailComponent renders in shell router-outlet</code></pre><h4>Guards &amp; resolvers</h4><p>Auth guards usually live in the <strong>shell</strong> (single sign-on, role check). Remotes can add feature guards for domain rules. Shared <code class=\"inline\">AuthService</code> must be a federated singleton.</p><h4>404 and fallbacks</h4><p>Host provides a wildcard route. If a remote fails to load (CDN blip), show a shell error boundary and retry — don't leave a blank outlet.</p><h4>single-spa contrast</h4><p>single-spa uses <code class=\"inline\">activeWhen</code> path prefixes per app; Module Federation + Angular Router uses familiar <code class=\"inline\">Routes</code> merging. Pick one orchestration model per product.</p><h4>How to say it in an interview</h4><p>\"The shell router owns the URL namespace. Each MFE exposes child routes loaded via Module Federation. Deep links hit the host first, which lazy-loads the right remote — users get one coherent SPA navigation experience.\"</p>"
+  },
+  {
+    "id": "mfe-custom-events",
+    "category": "microfrontends",
+    "difficulty": "intermediate",
+    "tags": [
+      "communication",
+      "custom-events",
+      "decoupling"
+    ],
+    "question": "How can microfrontends communicate without tight coupling?",
+    "answer": "<p>Prefer <strong>loose integration</strong> over shared mutable singletons when domains are independent.</p><ul><li><strong>Custom events</strong> — <code class=\"inline\">window.dispatchEvent(new CustomEvent('cart:item-added', { detail }))</code>; other MFEs subscribe. Framework-agnostic and boundary-friendly.</li><li><strong>URL / query params</strong> — share context via router state (bookmarkable, debuggable).</li><li><strong>Shared event bus service</strong> — thin RxJS <code class=\"inline\">Subject</code> in a federated shared lib (use sparingly).</li><li><strong>Backend as source of truth</strong> — MFEs sync via APIs/WebSockets, not in-memory cross-app state.</li></ul>",
+    "tip": "Custom events are great for interview answers — simple, decoupled, and work across Angular zones if you design payloads as plain JSON.",
+    "code": "// Publisher (Catalog MFE)\nwindow.dispatchEvent(new CustomEvent('nc:product-selected', {\n  detail: { productId: 'SKU-42' },\n  bubbles: true,\n}));\n\n// Subscriber (Order MFE)\nwindow.addEventListener('nc:product-selected', (e: Event) => {\n  const { productId } = (e as CustomEvent).detail;\n});",
+    "lang": "ts"
+  },
+  {
+    "id": "mfe-ngrx-shared",
+    "category": "microfrontends",
+    "difficulty": "advanced",
+    "tags": [
+      "ngrx",
+      "state",
+      "shared-store"
+    ],
+    "question": "Can NgRx be shared across Angular microfrontends? What are the pitfalls?",
+    "answer": "<p>Technically yes — provide a <strong>shared Store</strong> via a federated singleton library — but it's risky for loosely coupled domains.</p><p><strong>Better patterns:</strong></p><ul><li><strong>Shell store for true cross-cutting state</strong> — auth user, tenant, theme, locale only.</li><li><strong>Feature stores inside each remote</strong> — catalog slice lives in catalog MFE.</li><li><strong>Event-driven sync</strong> — custom events or message bus instead of one giant global store.</li></ul><p>Pitfalls: remotes importing each other's selectors creates hidden coupling; lazy-loaded remotes may register duplicate feature keys if not namespaced.</p>",
+    "tip": "Recommend a minimal global store in the shell and local NgRx per MFE — interviewers like bounded context thinking.",
+    "code": "// Shared lib (federated singleton)\nexport const sharedStoreProviders = [\n  provideStore({ session: sessionReducer }),\n  provideState('session', sessionReducer),\n];\n\n// Host bootstrap\nbootstrapApplication(AppComponent, {\n  providers: [...sharedStoreProviders, provideRouter(APP_ROUTES)],\n});",
+    "lang": "ts"
+  },
+  {
+    "id": "mfe-deployment",
+    "category": "microfrontends",
+    "difficulty": "intermediate",
+    "tags": [
+      "deployment",
+      "ci-cd",
+      "independence"
+    ],
+    "question": "How does independent deployment work for microfrontends?",
+    "answer": "<p>Each MFE has its own CI/CD pipeline producing its own artifacts (e.g. <code class=\"inline\">remoteEntry.js</code> + chunks) deployed to a unique URL or CDN path.</p><p>The host references remotes by URL from <strong>environment config</strong> or a <strong>runtime manifest</strong> service — so a catalog squad can deploy v2.3 without rebuilding the shell.</p><p>Guardrails: contract tests, shared lib semver, and canary URLs. Rollback is per-MFE. Coordinate breaking changes to exposed modules via API versioning (<code class=\"inline\">./CatalogRoutesV2</code>).</p>",
+    "tip": "Mention environment-specific remote URLs and that the host config is the integration point — not a monolithic release train.",
+    "code": "// environment.prod.ts (host)\nexport const environment = {\n  remotes: {\n    catalog: 'https://cdn.example.com/catalog/v2.3/remoteEntry.js',\n    orders: 'https://cdn.example.com/orders/v1.8/remoteEntry.js',\n  },\n};",
+    "lang": "ts"
+  },
+  {
+    "id": "mfe-css-isolation",
+    "category": "microfrontends",
+    "difficulty": "intermediate",
+    "tags": [
+      "css",
+      "encapsulation",
+      "shadow-dom",
+      "styles"
+    ],
+    "question": "How do you prevent CSS conflicts between microfrontends?",
+    "answer": "<p>Angular's default <strong>emulated encapsulation</strong> scopes component styles, but global stylesheets and third-party CSS can still leak across MFEs loaded into one page.</p><ul><li><strong>Design system with prefixed utility classes</strong> — <code class=\"inline\">nc-btn-primary</code> namespace.</li><li><strong>Shadow DOM</strong> (<code class=\"inline\">ViewEncapsulation.ShadowDom</code>) for high-risk widgets.</li><li><strong>CSS Modules / BEM</strong> in shared libs.</li><li><strong>Strict rule:</strong> no global <code class=\"inline\">styles.css</code> overrides in remotes except tokens.</li><li><strong>iframes</strong> — strongest isolation, worst UX/integration cost (use only when necessary).</li></ul>",
+    "tip": "Say emulated encapsulation helps but isn't enough — team conventions and a shared token-based design system matter more.",
+    "code": "@Component({\n  selector: 'app-risky-widget',\n  encapsulation: ViewEncapsulation.ShadowDom,\n  template: `<button class=\"primary\">Buy</button>`,\n  styles: [`:host { display: block; } .primary { ... }`],\n})",
+    "lang": "ts"
+  },
+  {
+    "id": "mfe-angular-standalone",
+    "category": "microfrontends",
+    "difficulty": "intermediate",
+    "tags": [
+      "standalone",
+      "bootstrap",
+      "angular-19"
+    ],
+    "question": "How do Angular standalone components and routes fit into a microfrontend architecture?",
+    "answer": "<p>Modern Angular MFEs favor <strong>standalone</strong> bootstraps — no NgModule shell in remotes. A remote typically:</p><ol><li>Bootstraps locally for dev (<code class=\"inline\">bootstrapApplication</code>).</li><li><strong>Exports</strong> <code class=\"inline\">Routes</code> or standalone components via Module Federation for the host.</li></ol><p>Production remotes often skip full self-bootstrap and expose <code class=\"inline\">export const CATALOG_ROUTES: Routes = [...]</code> consumed by the host's <code class=\"inline\">provideRouter</code> tree — cleaner than sharing NgModules.</p>",
+    "tip": "Standalone + exposed Routes is the current Angular MFE best practice — mention @angular-architects/native-federation for esbuild projects.",
+    "code": "// catalog.routes.ts (exposed by remote)\nexport const CATALOG_ROUTES: Routes = [\n  { path: '', component: CatalogShellComponent, children: [\n    { path: 'products', loadComponent: () => import('./product-list.component') },\n  ]},\n];",
+    "lang": "ts"
+  },
+  {
+    "id": "mfe-pros-cons",
+    "category": "microfrontends",
+    "difficulty": "beginner",
+    "tags": [
+      "trade-offs",
+      "pros-cons",
+      "architecture"
+    ],
+    "question": "What are the main pros and cons of microfrontends?",
+    "answer": "<p><strong>Pros</strong></p><ul><li>Independent deploys and faster squad velocity at scale</li><li>Clear domain ownership and smaller codebases per team</li><li>Incremental upgrades (Angular version per remote — with governance)</li><li>Technology flexibility at integration boundaries</li></ul><p><strong>Cons</strong></p><ul><li>Higher operational complexity (orchestration, shared deps, observability)</li><li>Duplicated tooling and inconsistent UX without a strong platform team</li><li>Performance overhead — multiple bundles, runtime loading</li><li>Cross-cutting concerns (auth, analytics, i18n) need central design</li><li>Testing integration is harder than a monolith</li></ul>",
+    "tip": "Balance your answer — teams want to hear you won't adopt MFEs for a 3-developer app.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "mfe-when-not",
+    "category": "microfrontends",
+    "difficulty": "beginner",
+    "tags": [
+      "anti-patterns",
+      "decision",
+      "monolith"
+    ],
+    "question": "When should you NOT use microfrontends?",
+    "answer": "<p>Avoid MFEs when:</p><ul><li><strong>Small team / small app</strong> — a well-structured monolith with lazy routes is simpler.</li><li><strong>Tight UI coupling</strong> — features constantly share live state and components across domains.</li><li><strong>No DevOps maturity</strong> — independent deploys without CI contracts cause production breakage.</li><li><strong>Performance-critical single flow</strong> — checkout-like flows needing minimal JS may suffer from federation overhead.</li><li><strong>Organisation isn't aligned to domains</strong> — MFEs won't fix Conway's law; they'll amplify coordination cost.</li></ul><p>Start monolith → modular monolith → extract MFEs when team scale and release pain justify it.</p>",
+    "tip": "Quote the rule: don't pay the distributed-systems tax until organisational pain is real.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "mfe-testing",
+    "category": "microfrontends",
+    "difficulty": "advanced",
+    "tags": [
+      "testing",
+      "e2e",
+      "contract-tests"
+    ],
+    "question": "How do you test microfrontends effectively?",
+    "answer": "<p>Use a <strong>testing pyramid per MFE</strong> plus integration layers:</p><ul><li><strong>Unit tests</strong> — components, services, NgRx inside each remote (unchanged).</li><li><strong>Integration tests</strong> — remote boots with mocked host providers / shared libs.</li><li><strong>Contract tests</strong> — verify exposed federation modules export expected routes/components and semver.</li><li><strong>E2E (Cypress/Playwright)</strong> — run against composed environment (host + real remote URLs or stubs).</li><li><strong>Visual regression</strong> — per-MFE Storybook + optional full-shell snapshots for chrome consistency.</li></ul><p>Stub remotes in host CI with <code class=\"inline\">module-federation dev-server</code> proxies or mock <code class=\"inline\">remoteEntry.js</code> for fast PR checks.</p>",
+    "tip": "Mention contract tests on exposed modules — that's a mature answer for 3–4 years experience.",
+    "code": "// Contract test idea (Jest)\nit('exposes catalog routes', async () => {\n  const mod = await import('catalog/CatalogRoutes');\n  expect(mod.CATALOG_ROUTES).toBeDefined();\n  expect(mod.CATALOG_ROUTES[0].path).toBe('');\n});",
+    "lang": "ts"
+  },
+  {
+    "id": "mfe-enterprise-netcracker",
+    "category": "microfrontends",
+    "difficulty": "advanced",
+    "tags": [
+      "enterprise",
+      "netcracker",
+      "bss-oss",
+      "platform-team"
+    ],
+    "question": "How would you apply microfrontends in a large enterprise portal (e.g. Netcracker-style BSS/OSS)?",
+    "answer": "<p>Enterprise telecom/BSS portals are classic MFE candidates: many domains (catalog, quoting, inventory, billing), multiple squads, long-lived Angular codebases.</p><p><strong>Recommended shape:</strong></p><ul><li><strong>Platform shell</strong> — SSO, tenant context, global nav, design system, audit logging.</li><li><strong>Domain remotes</strong> — Product Catalog, Order Capture, Service Activation as federated Angular apps.</li><li><strong>Shared libraries</strong> — auth SDK, API clients, UI kit published internally with semver.</li><li><strong>Governance</strong> — architecture guild defines routing prefixes, event naming (<code class=\"inline\">nc:*</code>), Angular upgrade windows.</li><li><strong>Observability</strong> — correlate <code class=\"inline\">traceId</code> across MFE loads for support tickets.</li></ul><p>Align MFE boundaries to <strong>business capabilities</strong>, not org chart politics.</p>",
+    "tip": "Reference platform team vs domain squad split — mirrors how large integrators scale delivery.",
+    "code": "",
+    "lang": "",
+    "deep": "<h4>Typical portal decomposition</h4><pre><code>Platform Shell (host)\n├── Identity / Tenant / Navigation\n├── Remote: Product Catalog\n├── Remote: Configure Price Quote\n├── Remote: Order Management\n├── Remote: Service Inventory\n└── Remote: Customer 360</code></pre><h4>Cross-cutting platform services</h4><ul><li><strong>Authentication</strong> — OIDC/SAML via shell; remotes receive token claims through a shared AuthService singleton.</li><li><strong>Multi-tenancy</strong> — tenantId in shell store; HTTP interceptors in shared lib attach headers.</li><li><strong>Feature flags</strong> — central service decides which remotes/routes appear per tenant SKU.</li><li><strong>Compliance</strong> — unified audit trail and PII masking rules in platform layer.</li></ul><h4>Delivery model</h4><p>Each domain squad owns backlog → build → deploy for its remote. Monthly platform release upgrades Angular shell; squads align within the compatibility window. Hotfix path: deploy one remote without portal-wide downtime.</p><h4>Risks at enterprise scale</h4><ul><li>UX fragmentation without a mandated design system.</li><li>Duplicate API integration logic — mitigate with generated OpenAPI clients in shared packages.</li><li>Long-lived sessions — remotes must handle shell-driven logout and token refresh events.</li></ul><h4>How to say it in an interview</h4><p>\"I'd put SSO, layout, and tenant context in a platform shell, split BSS domains into federated Angular remotes, and govern shared Angular and UI-kit versions centrally. That lets catalog and order squads ship independently while customers see one cohesive portal.\"</p>"
+  },
+  {
+    "id": "mfe-integration-patterns",
+    "category": "microfrontends",
+    "difficulty": "intermediate",
+    "tags": [
+      "integration",
+      "iframe",
+      "build-time",
+      "web-components"
+    ],
+    "question": "Compare runtime integration patterns: Module Federation vs iframes vs build-time composition.",
+    "answer": "<table><thead><tr><th>Pattern</th><th>Deploy independence</th><th>Integration</th><th>Best for</th></tr></thead><tbody><tr><td><strong>Module Federation</strong></td><td>High</td><td>Shared DOM/router; needs version discipline</td><td>Angular-only squads, SPA UX</td></tr><tr><td><strong>iframes</strong></td><td>Very high</td><td>Strong isolation; clunky routing, height, messaging</td><td>Legacy embeds, third-party widgets</td></tr><tr><td><strong>Build-time (npm packages)</strong></td><td>Low — host rebuild</td><td>Simplest DX, type-safe imports</td><td>Modular monolith stepping stone</td></tr><tr><td><strong>Web Components</strong></td><td>Medium–high</td><td>Framework-neutral custom elements</td><td>Mixed stacks, embeddable widgets</td></tr></tbody></table><p>Most Angular enterprise portals pick <strong>runtime federation</strong> for deploy independence with a single-router UX.</p>",
+    "tip": "Show you know iframes aren't wrong — they're a deliberate isolation trade-off, not ignorance.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "mfe-performance",
+    "category": "microfrontends",
+    "difficulty": "advanced",
+    "tags": [
+      "performance",
+      "lazy-loading",
+      "caching"
+    ],
+    "question": "What performance considerations apply to Angular microfrontends?",
+    "answer": "<p>MFEs add <strong>runtime loading cost</strong> — each remote is an extra network round-trip for <code class=\"inline\">remoteEntry.js</code> and chunks.</p><ul><li><strong>Lazy load on route</strong> — never fetch all remotes at bootstrap.</li><li><strong>CDN + HTTP caching</strong> — hash filenames; long cache for chunks, short for remoteEntry.</li><li><strong>Shared dependency deduplication</strong> — federation shared config prevents duplicate Angular.</li><li><strong>Prefetch</strong> — host prefetches likely next remote after idle (optional).</li><li><strong>Budgets per MFE</strong> — enforce max bundle size in CI.</li><li><strong>One Angular zone</strong> — multiple bootstrapped platforms hurt performance and UX.</li></ul>",
+    "tip": "Tie performance to user-perceived navigation — measure LCP when switching between remotes, not just first paint.",
+    "code": "",
+    "lang": ""
+  }
+]
