@@ -1,8 +1,9 @@
 {
   "schemaVersion": 2,
-  "version": 33,
-  "updatedAt": "2026-07-22T10:19:04.624Z",
+  "version": 34,
+  "updatedAt": "2026-07-23T14:28:11.534Z",
   "totalQuestions": 1482,
+  "contentHash": "73726a147ec16165943b926336cc9722665acfc3",
   "groups": [
     {
       "id": "frontend",
@@ -43,6 +44,15 @@
       "id": "architecture",
       "label": "System Design",
       "color": "#0F172A"
+    }
+  ],
+  "packs": [
+    {
+      "id": "java-angular",
+      "file": "packs/java-angular.json",
+      "label": "Java + Angular",
+      "count": 793,
+      "hash": "023e90a1045a"
     }
   ],
   "categories": [
@@ -433,6 +443,5 @@
       "count": 22,
       "hash": "893f393fd000"
     }
-  ],
-  "contentHash": "8be2c856b5ae1e650065b05ca9007e96529ec759"
+  ]
 }

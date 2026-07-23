@@ -71,6 +71,43 @@ for (const cat of manifest.categories) {
   total += rows.length;
 }
 
+/* ---- packs: role-focused collections of existing questions ----
+   A pack (packs/<id>.json) names whole categories plus cherry-picked
+   question ids. Nothing is duplicated — the webapp resolves the pack
+   against the categories it already loaded. Here we only validate the
+   references and derive label/count/hash into manifest.packs. */
+const catIds = new Set(manifest.categories.map((c) => c.id));
+const catCount = new Map(manifest.categories.map((c) => [c.id, c.count]));
+for (const packRef of manifest.packs || []) {
+  let pack;
+  try {
+    pack = JSON.parse(readFileSync(join(dir, packRef.file), "utf8"));
+  } catch (e) {
+    errors.push(`${packRef.file}: cannot read/parse (${e.message})`);
+    continue;
+  }
+  if (pack.id !== packRef.id)
+    errors.push(`${packRef.file}: pack id "${pack.id}" != manifest id "${packRef.id}"`);
+  const packCats = pack.categories || [];
+  const packCatSet = new Set(packCats);
+  packCats.forEach((c) => {
+    if (!catIds.has(c)) errors.push(`${packRef.file}: unknown category "${c}"`);
+  });
+  let picks = 0;
+  (pack.questionIds || []).forEach((id) => {
+    const file = seenIds.get(id);
+    if (!file) { errors.push(`${packRef.file}: unknown question id "${id}"`); return; }
+    const catOfId = manifest.categories.find((c) => c.file === file);
+    if (catOfId && packCatSet.has(catOfId.id))
+      errors.push(`${packRef.file}: id "${id}" is redundant — its category "${catOfId.id}" is already included`);
+    else picks++;
+  });
+  packRef.label = pack.label || packRef.id;
+  packRef.count = packCats.reduce((n, c) => n + (catCount.get(c) || 0), 0) + picks;
+  packRef.hash = createHash("sha1").update(JSON.stringify(pack)).digest("hex").slice(0, 12);
+  combined.update(packRef.file + ":" + JSON.stringify(pack));
+}
+
 if (errors.length) {
   console.error("✗ manifest NOT written — fix these first:\n  - " + errors.join("\n  - "));
   process.exit(1);
