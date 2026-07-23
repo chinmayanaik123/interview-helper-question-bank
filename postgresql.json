@@ -219,5 +219,115 @@
     "tip": "Arrays are convenient but normalize to junction tables if you need FK constraints on elements.",
     "code": "SELECT * FROM posts WHERE 'angular' = ANY(tags);\nSELECT * FROM posts WHERE tags @> ARRAY['angular', 'typescript'];",
     "lang": "sql"
+  },
+  {
+    "id": "pg-schemas-search-path",
+    "category": "postgresql",
+    "difficulty": "beginner",
+    "tags": ["schemas", "search-path", "namespaces"],
+    "question": "Schemas and the search_path.",
+    "answer": "<p>A <strong>schema</strong> is a namespace for tables, views, and functions inside a single database (the default is <code class=\"inline\">public</code>). The <strong>search_path</strong> is the ordered list of schemas Postgres checks when you use an unqualified name.</p><p>Schemas are how you do multi-tenancy (one schema per tenant) or separate app modules within one database.</p>",
+    "tip": "A per-tenant schema lets identical table names coexist — just set search_path per connection to route to the right tenant.",
+    "code": "CREATE SCHEMA tenant_acme;\nSET search_path TO tenant_acme, public;\nSELECT * FROM orders;   -- resolves to tenant_acme.orders",
+    "lang": "sql"
+  },
+  {
+    "id": "pg-uuid-vs-serial",
+    "category": "postgresql",
+    "difficulty": "beginner",
+    "tags": ["primary-key", "uuid", "identity"],
+    "question": "SERIAL vs IDENTITY vs UUID for primary keys.",
+    "answer": "<ul><li><strong>SERIAL</strong> — legacy auto-increment (a sequence behind the scenes).</li><li><strong>GENERATED ALWAYS AS IDENTITY</strong> — the SQL-standard, preferred replacement: same auto-increment, cleaner ownership/permissions.</li><li><strong>UUID</strong> — globally unique, generatable on the client with no coordination, but larger (16 bytes) and, if random (v4), causes index fragmentation.</li></ul>",
+    "tip": "Prefer IDENTITY over SERIAL in modern Postgres; if you need UUIDs, use time-ordered ones (v7) to keep the B-tree happy.",
+    "code": "CREATE TABLE users (\n  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,\n  ext_id UUID DEFAULT gen_random_uuid()\n);",
+    "lang": "sql"
+  },
+  {
+    "id": "pg-generated-columns",
+    "category": "postgresql",
+    "difficulty": "intermediate",
+    "tags": ["generated-columns", "computed"],
+    "question": "Generated (computed) columns.",
+    "answer": "<p>A <code class=\"inline\">GENERATED ALWAYS AS (expr) STORED</code> column is computed from other columns in the same row and kept in sync automatically on every write — you can't insert into it directly.</p><p>Great for derived values you want to filter, sort, or index on (e.g. a lowercased search column, a total).</p>",
+    "tip": "Postgres only supports STORED generated columns (persisted) — there are no VIRTUAL ones like MySQL, so they cost storage but read for free.",
+    "code": "CREATE TABLE items (\n  price NUMERIC, qty INT,\n  total NUMERIC GENERATED ALWAYS AS (price * qty) STORED\n);",
+    "lang": "sql"
+  },
+  {
+    "id": "pg-materialized-views",
+    "category": "postgresql",
+    "difficulty": "intermediate",
+    "tags": ["materialized-views", "performance", "caching"],
+    "question": "Materialized views in PostgreSQL.",
+    "answer": "<p>Unlike a regular view (recomputed on every query), a <strong>materialized view</strong> stores the result <em>physically</em> — expensive aggregations read instantly. The price is staleness: the data is a snapshot until you <code class=\"inline\">REFRESH</code> it.</p><p><code class=\"inline\">REFRESH ... CONCURRENTLY</code> avoids locking out readers during the rebuild, but requires a unique index on the view.</p>",
+    "tip": "Schedule the REFRESH (cron/pg_cron/trigger) to match how fresh the data must be — that cadence is the whole design decision.",
+    "code": "CREATE MATERIALIZED VIEW daily_sales AS\nSELECT date_trunc('day', created_at) d, sum(total) rev\nFROM orders GROUP BY 1;\nREFRESH MATERIALIZED VIEW CONCURRENTLY daily_sales;",
+    "lang": "sql"
+  },
+  {
+    "id": "pg-extensions",
+    "category": "postgresql",
+    "difficulty": "intermediate",
+    "tags": ["extensions", "ecosystem"],
+    "question": "Useful PostgreSQL extensions.",
+    "answer": "<p><code class=\"inline\">CREATE EXTENSION</code> bolts on powerful features:</p><ul><li><strong>pg_stat_statements</strong> — aggregated query performance stats (find slow queries).</li><li><strong>pgcrypto</strong> — hashing/encryption; <strong>uuid-ossp</strong> / built-in <code class=\"inline\">gen_random_uuid()</code> for UUIDs.</li><li><strong>pg_trgm</strong> — trigram fuzzy/similarity search (great with GIN).</li><li><strong>PostGIS</strong> — full geospatial types and queries.</li></ul>",
+    "tip": "pg_stat_statements is the single most useful one to name — it's how you find the query eating your database.",
+    "code": "CREATE EXTENSION IF NOT EXISTS pg_stat_statements;\nSELECT query, calls, mean_exec_time\nFROM pg_stat_statements ORDER BY mean_exec_time DESC LIMIT 5;",
+    "lang": "sql"
+  },
+  {
+    "id": "pg-triggers-plpgsql",
+    "category": "postgresql",
+    "difficulty": "intermediate",
+    "tags": ["triggers", "plpgsql", "procedural"],
+    "question": "Triggers and PL/pgSQL.",
+    "answer": "<p><strong>PL/pgSQL</strong> is Postgres's procedural language for functions and triggers. A <strong>trigger</strong> binds a trigger function to fire <code class=\"inline\">BEFORE</code>/<code class=\"inline\">AFTER</code> an INSERT/UPDATE/DELETE; the special records <code class=\"inline\">NEW</code> and <code class=\"inline\">OLD</code> hold the row values.</p><p>Common uses: audit logging, maintaining <code class=\"inline\">updated_at</code>, and enforcing rules a CHECK can't express.</p>",
+    "tip": "Business logic buried in triggers is hard to debug — reserve them for cross-cutting concerns like audit trails and timestamps.",
+    "code": "CREATE FUNCTION touch() RETURNS trigger AS $$\nBEGIN NEW.updated_at = now(); RETURN NEW; END;\n$$ LANGUAGE plpgsql;\nCREATE TRIGGER t BEFORE UPDATE ON orders\nFOR EACH ROW EXECUTE FUNCTION touch();",
+    "lang": "sql"
+  },
+  {
+    "id": "pg-copy-bulk",
+    "category": "postgresql",
+    "difficulty": "intermediate",
+    "tags": ["copy", "bulk-load", "performance"],
+    "question": "Bulk loading data with COPY.",
+    "answer": "<p><code class=\"inline\">COPY</code> streams whole files of rows in or out far faster than row-by-row <code class=\"inline\">INSERT</code> — one command, minimal parsing and per-statement overhead. <code class=\"inline\">\\copy</code> is the psql client-side variant that reads a local file.</p><p>For very large loads, drop/disable indexes and triggers first, load, then rebuild — maintaining indexes per row is the bottleneck.</p>",
+    "tip": "COPY is the answer to 'how do you load millions of rows fast' — thousands of single INSERTs is the wrong answer.",
+    "code": "COPY orders (id, total) FROM '/data/orders.csv' WITH (FORMAT csv, HEADER);\n-- client side:\n\\copy orders FROM 'orders.csv' CSV HEADER",
+    "lang": "sql"
+  },
+  {
+    "id": "pg-index-types",
+    "category": "postgresql",
+    "difficulty": "intermediate",
+    "tags": ["indexes", "gin", "gist", "brin"],
+    "question": "Index types: B-tree, GIN, GiST, BRIN, Hash.",
+    "answer": "<ul><li><strong>B-tree</strong> — default; equality, ranges, sorting.</li><li><strong>GIN</strong> — multi-valued data: <code class=\"inline\">jsonb</code>, arrays, full-text search.</li><li><strong>GiST</strong> — geometric/spatial, ranges, nearest-neighbor.</li><li><strong>BRIN</strong> — tiny index for huge, naturally-ordered tables (e.g. append-only by time).</li><li><strong>Hash</strong> — equality only; rarely worth it over B-tree.</li></ul>",
+    "tip": "jsonb containment (@>), array membership, and full-text all need GIN — a plain B-tree won't help those queries.",
+    "code": "CREATE INDEX idx_doc ON docs USING GIN (data jsonb_path_ops);\nCREATE INDEX idx_ts ON events USING BRIN (created_at);",
+    "lang": "sql"
+  },
+  {
+    "id": "pg-lateral-join",
+    "category": "postgresql",
+    "difficulty": "advanced",
+    "tags": ["lateral", "joins", "advanced"],
+    "question": "What is a LATERAL join?",
+    "answer": "<p><code class=\"inline\">LATERAL</code> lets a subquery (or set-returning function) in the <code class=\"inline\">FROM</code> clause <strong>reference columns from the preceding FROM items</strong> — it's evaluated once per outer row, like a correlated subquery you can join to.</p><p>The classic use is <strong>top-N per group</strong>: for each parent, run a small ordered/limited query.</p>",
+    "tip": "LATERAL + LIMIT is the cleanest 'latest 3 orders per customer' — no window-function filtering needed.",
+    "code": "SELECT c.name, o.*\nFROM customers c\nCROSS JOIN LATERAL (\n  SELECT * FROM orders o\n  WHERE o.customer_id = c.id\n  ORDER BY o.created_at DESC LIMIT 3\n) o;",
+    "lang": "sql"
+  },
+  {
+    "id": "pg-listen-notify",
+    "category": "postgresql",
+    "difficulty": "advanced",
+    "tags": ["listen-notify", "pubsub", "realtime"],
+    "question": "LISTEN / NOTIFY — what and when?",
+    "answer": "<p>Postgres's built-in lightweight <strong>pub/sub</strong>: <code class=\"inline\">NOTIFY channel, 'payload'</code> broadcasts a message (often from a trigger); connected clients that ran <code class=\"inline\">LISTEN channel</code> receive it in near real time.</p><p>Great for cache invalidation or nudging workers. But it's <em>not a durable queue</em> — a client that's disconnected misses the message.</p>",
+    "tip": "Use it for 'something changed, go check' signals; if you need guaranteed delivery, back it with a real queue or an outbox table.",
+    "code": "-- worker:\nLISTEN order_created;\n-- producer (or trigger):\nNOTIFY order_created, '{\"id\": 42}';",
+    "lang": "sql"
   }
 ]

@@ -371,5 +371,299 @@
     "tip": "One-liner: function = expression you can put in a SELECT; procedure = an operation you CALL.",
     "code": "-- function: usable in a query\nCREATE FUNCTION full_name(f TEXT, l TEXT) RETURNS TEXT\n  LANGUAGE sql AS $$ SELECT f || ' ' || l $$;\nSELECT full_name(first_name, last_name) FROM employees;\n\n-- procedure: standalone action, owns its transaction\nCREATE PROCEDURE archive_old_orders() LANGUAGE plpgsql AS $$\nBEGIN\n  INSERT INTO orders_archive SELECT * FROM orders WHERE created < now() - interval '2 years';\n  DELETE FROM orders WHERE created < now() - interval '2 years';\n  COMMIT;\nEND $$;\nCALL archive_old_orders();",
     "lang": "sql"
+  },
+  {
+    "id": "sql-coalesce-nullif",
+    "category": "sql",
+    "difficulty": "beginner",
+    "tags": [
+      "null",
+      "functions"
+    ],
+    "question": "COALESCE and NULLIF — what do they do?",
+    "answer": "<p><strong>COALESCE(a, b, c)</strong> — returns the first non-NULL argument; the standard way to supply a default for a possibly-NULL column.</p><p><strong>NULLIF(a, b)</strong> — returns NULL when <code class=\"inline\">a = b</code>, otherwise <code class=\"inline\">a</code>. Its killer use is guarding division: <code class=\"inline\">NULLIF(denominator, 0)</code> turns a divide-by-zero error into a NULL result.</p>",
+    "tip": "amount / NULLIF(qty, 0) is the idiomatic 'safe divide' — no CASE needed.",
+    "code": "SELECT COALESCE(nickname, name, 'Anonymous') AS display,\n       revenue / NULLIF(orders, 0) AS avg_order_value\nFROM customers;",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-like-wildcards",
+    "category": "sql",
+    "difficulty": "beginner",
+    "tags": [
+      "like",
+      "pattern-matching"
+    ],
+    "question": "LIKE and its wildcards.",
+    "answer": "<p><code class=\"inline\">%</code> matches any sequence of characters (including none); <code class=\"inline\">_</code> matches exactly one. <code class=\"inline\">ILIKE</code> (PostgreSQL) is the case-insensitive variant. Escape a literal <code class=\"inline\">%</code> with <code class=\"inline\">ESCAPE</code>.</p><p>Performance gotcha: a <em>leading</em> wildcard (<code class=\"inline\">LIKE '%term'</code>) can't use a normal B-tree index, forcing a full scan — reach for full-text search or a trigram index instead.</p>",
+    "tip": "LIKE 'abc%' is index-friendly; LIKE '%abc' is not — the leading % kills the index.",
+    "code": "SELECT * FROM users WHERE email LIKE '%@gmail.com';\nSELECT * FROM products WHERE code LIKE 'A_9%';",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-between-in",
+    "category": "sql",
+    "difficulty": "beginner",
+    "tags": [
+      "operators",
+      "filtering"
+    ],
+    "question": "BETWEEN vs IN.",
+    "answer": "<p><strong>BETWEEN a AND b</strong> — a range test, <em>inclusive</em> of both bounds. <strong>IN (...)</strong> — membership in an explicit list or subquery result.</p><p>Date gotcha: <code class=\"inline\">BETWEEN '2024-01-01' AND '2024-01-31'</code> excludes almost all of Jan 31 if the column is a timestamp (the bound is midnight). Prefer <code class=\"inline\">&gt;= start AND &lt; next_day</code> for timestamp ranges.</p>",
+    "tip": "For timestamps, use half-open ranges (>= lower AND < upper) instead of BETWEEN to avoid the last-day boundary bug.",
+    "code": "SELECT * FROM orders WHERE total BETWEEN 100 AND 500;\nSELECT * FROM orders WHERE status IN ('paid', 'shipped');",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-command-categories",
+    "category": "sql",
+    "difficulty": "beginner",
+    "tags": [
+      "ddl",
+      "dml",
+      "rapid-fire"
+    ],
+    "question": "DDL, DML, DCL, TCL — the SQL command categories.",
+    "answer": "<ul><li><strong>DDL</strong> (Data Definition) — <code class=\"inline\">CREATE</code>, <code class=\"inline\">ALTER</code>, <code class=\"inline\">DROP</code>, <code class=\"inline\">TRUNCATE</code>. Often auto-commits.</li><li><strong>DML</strong> (Data Manipulation) — <code class=\"inline\">SELECT</code>, <code class=\"inline\">INSERT</code>, <code class=\"inline\">UPDATE</code>, <code class=\"inline\">DELETE</code>.</li><li><strong>DCL</strong> (Data Control) — <code class=\"inline\">GRANT</code>, <code class=\"inline\">REVOKE</code>.</li><li><strong>TCL</strong> (Transaction Control) — <code class=\"inline\">COMMIT</code>, <code class=\"inline\">ROLLBACK</code>, <code class=\"inline\">SAVEPOINT</code>.</li></ul>",
+    "tip": "Key exam point: DDL statements usually auto-commit, so you can't ROLLBACK a DROP in most engines.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "sql-datetime-functions",
+    "category": "sql",
+    "difficulty": "beginner",
+    "tags": [
+      "date-time",
+      "functions"
+    ],
+    "question": "Working with dates and times in SQL.",
+    "answer": "<p>Common tools: <code class=\"inline\">CURRENT_DATE</code> / <code class=\"inline\">NOW()</code> for the clock, interval arithmetic for offsets, <code class=\"inline\">EXTRACT(part FROM ts)</code> to pull a year/month, and <code class=\"inline\">DATE_TRUNC('month', ts)</code> to bucket rows for reporting.</p><p>Best practice: store timestamps in <strong>UTC</strong> (<code class=\"inline\">timestamptz</code>) and convert to the user's zone at display time — never store local time.</p>",
+    "tip": "Grouping by month? DATE_TRUNC('month', created_at) beats EXTRACT because it keeps rows from different years distinct.",
+    "code": "SELECT DATE_TRUNC('month', created_at) AS mth, COUNT(*)\nFROM orders\nWHERE created_at >= CURRENT_DATE - INTERVAL '90 days'\nGROUP BY 1 ORDER BY 1;",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-cte-recursive",
+    "category": "sql",
+    "difficulty": "intermediate",
+    "tags": [
+      "cte",
+      "recursion",
+      "hierarchy",
+      "V.Imp"
+    ],
+    "question": "How does a recursive CTE work?",
+    "answer": "<p><code class=\"inline\">WITH RECURSIVE</code> has two parts joined by <code class=\"inline\">UNION ALL</code>: an <strong>anchor</strong> (the starting rows) and a <strong>recursive member</strong> that references the CTE itself. The engine repeats the recursive part, feeding each pass's output back in, until it produces no new rows.</p><p>Use it for tree/graph traversal (org charts, categories, bill-of-materials) and for generating sequences of numbers or dates.</p>",
+    "tip": "Always ensure the recursion terminates — a missing join condition gives an infinite loop; many engines let you cap it (e.g. a depth column with a WHERE guard).",
+    "code": "WITH RECURSIVE chain AS (\n  SELECT id, name, manager_id, 1 AS lvl\n  FROM employees WHERE id = 1          -- anchor: the CEO\n  UNION ALL\n  SELECT e.id, e.name, e.manager_id, c.lvl + 1\n  FROM employees e\n  JOIN chain c ON e.manager_id = c.id  -- recurse down the tree\n)\nSELECT * FROM chain ORDER BY lvl;",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-string-agg",
+    "category": "sql",
+    "difficulty": "intermediate",
+    "tags": [
+      "aggregate",
+      "string"
+    ],
+    "question": "Concatenate grouped rows into one string (STRING_AGG / GROUP_CONCAT).",
+    "answer": "<p>An aggregate that collapses many row values into a single delimited string per group — the inverse of splitting.</p><ul><li><strong>PostgreSQL / SQL Server</strong>: <code class=\"inline\">STRING_AGG(expr, ',')</code></li><li><strong>MySQL</strong>: <code class=\"inline\">GROUP_CONCAT(expr SEPARATOR ',')</code></li><li><strong>Oracle</strong>: <code class=\"inline\">LISTAGG(expr, ',')</code></li></ul><p>You can order the elements with <code class=\"inline\">... ORDER BY ...</code> inside the call.</p>",
+    "tip": "MySQL's GROUP_CONCAT silently truncates at group_concat_max_len (default 1024 bytes) — raise it for long lists.",
+    "code": "SELECT customer_id,\n       STRING_AGG(product, ', ' ORDER BY product) AS items\nFROM order_lines\nGROUP BY customer_id;",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-running-total",
+    "category": "sql",
+    "difficulty": "intermediate",
+    "tags": [
+      "window-functions",
+      "analytics",
+      "V.Imp"
+    ],
+    "question": "Compute a running (cumulative) total.",
+    "answer": "<p>Use an aggregate as a window function with an <code class=\"inline\">ORDER BY</code> in the OVER clause — that turns <code class=\"inline\">SUM()</code> into a cumulative sum up to the current row. The <strong>frame clause</strong> (<code class=\"inline\">ROWS BETWEEN ...</code>) sets exactly which rows are included, letting you also build moving averages.</p>",
+    "tip": "Default frame with ORDER BY is RANGE ... UNBOUNDED PRECEDING — fine for running totals, but for a moving window state the ROWS frame explicitly (e.g. last 7 rows).",
+    "code": "SELECT day, amount,\n  SUM(amount) OVER (ORDER BY day\n    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_total,\n  AVG(amount) OVER (ORDER BY day\n    ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS moving_avg_7d\nFROM daily_sales;",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-lag-lead",
+    "category": "sql",
+    "difficulty": "intermediate",
+    "tags": [
+      "window-functions",
+      "analytics"
+    ],
+    "question": "LAG and LEAD — what are they for?",
+    "answer": "<p>Window functions that read a value from a row <em>offset</em> from the current one — <strong>LAG</strong> looks backward, <strong>LEAD</strong> forward — without a self-join. Perfect for period-over-period deltas, detecting gaps, or comparing each row to its neighbour.</p><p>Signature: <code class=\"inline\">LAG(col, offset, default) OVER (PARTITION BY ... ORDER BY ...)</code>. The default fills the first/last row where no neighbour exists.</p>",
+    "tip": "Always PARTITION BY the entity (e.g. user) so LAG doesn't bleed the previous user's last value into the next user's first row.",
+    "code": "SELECT day, revenue,\n  revenue - LAG(revenue, 1, 0) OVER (ORDER BY day) AS day_over_day\nFROM daily_revenue;",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-pivot",
+    "category": "sql",
+    "difficulty": "intermediate",
+    "tags": [
+      "pivot",
+      "conditional-aggregation"
+    ],
+    "question": "Pivot rows into columns (conditional aggregation).",
+    "answer": "<p>The portable technique is <strong>conditional aggregation</strong>: wrap a <code class=\"inline\">CASE</code> inside an aggregate, one per target column, so each category becomes its own column.</p><p>Some engines add a dedicated operator — <code class=\"inline\">PIVOT</code> (SQL Server, Oracle) or the <code class=\"inline\">crosstab</code> function (PostgreSQL's tablefunc) — but they need the column list known up front, so the CASE form is the interview-safe answer.</p>",
+    "tip": "Say 'the columns must be known at query time' — true dynamic pivots require building SQL as a string, which interviewers like to hear you flag.",
+    "code": "SELECT product,\n  SUM(CASE WHEN region = 'US' THEN qty END) AS us,\n  SUM(CASE WHEN region = 'EU' THEN qty END) AS eu,\n  SUM(CASE WHEN region = 'IN' THEN qty END) AS in_\nFROM sales\nGROUP BY product;",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-correlated-subquery",
+    "category": "sql",
+    "difficulty": "intermediate",
+    "tags": [
+      "subquery",
+      "performance"
+    ],
+    "question": "Correlated vs non-correlated subquery.",
+    "answer": "<p>A <strong>non-correlated</strong> subquery is self-contained — it runs once and its result is reused (e.g. <code class=\"inline\">WHERE id IN (SELECT ...)</code>).</p><p>A <strong>correlated</strong> subquery references a column from the outer query, so conceptually it re-evaluates <em>for each outer row</em> (e.g. <code class=\"inline\">EXISTS (SELECT 1 ... WHERE o.user_id = u.id)</code>). That can be slow, though modern optimizers often rewrite them into joins.</p>",
+    "tip": "If a correlated subquery is a bottleneck, try rewriting it as a JOIN or a window function — usually the planner's happier.",
+    "code": "-- correlated: 'users who have at least one order'\nSELECT u.name FROM users u\nWHERE EXISTS (\n  SELECT 1 FROM orders o WHERE o.user_id = u.id\n);",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-upsert",
+    "category": "sql",
+    "difficulty": "intermediate",
+    "tags": [
+      "upsert",
+      "insert",
+      "V.Imp"
+    ],
+    "question": "UPSERT — insert or update in one statement.",
+    "answer": "<p>Insert a row, but if it would violate a unique/primary key, update the existing row instead — atomic, no read-then-write race.</p><ul><li><strong>PostgreSQL / SQLite</strong>: <code class=\"inline\">INSERT ... ON CONFLICT (key) DO UPDATE</code></li><li><strong>MySQL</strong>: <code class=\"inline\">INSERT ... ON DUPLICATE KEY UPDATE</code></li><li><strong>SQL Server / Oracle</strong>: <code class=\"inline\">MERGE</code></li></ul><p>It needs a <strong>unique constraint</strong> on the conflict target to know what 'already exists' means.</p>",
+    "tip": "In PostgreSQL, EXCLUDED.col refers to the value you tried to insert — that's how you write DO UPDATE SET count = table.count + EXCLUDED.count.",
+    "code": "INSERT INTO inventory (sku, qty) VALUES ('A1', 5)\nON CONFLICT (sku)\nDO UPDATE SET qty = inventory.qty + EXCLUDED.qty;",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-employees-more-than-manager",
+    "category": "sql",
+    "difficulty": "intermediate",
+    "tags": [
+      "coding",
+      "self-join",
+      "classic"
+    ],
+    "question": "Find employees who earn more than their manager.",
+    "answer": "<p>A self-join classic: join the employee row to its manager row via <code class=\"inline\">manager_id = manager.id</code>, then keep pairs where the employee's salary exceeds the manager's. An INNER JOIN naturally drops employees with no manager (the CEO), which is usually what's wanted.</p>",
+    "tip": "Interviewers often follow up with 'now include the CEO' — switch to a LEFT JOIN and decide how to treat the NULL manager salary.",
+    "code": "SELECT e.name AS employee, e.salary, m.name AS manager\nFROM employees e\nJOIN employees m ON e.manager_id = m.id\nWHERE e.salary > m.salary;",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-consecutive-days",
+    "category": "sql",
+    "difficulty": "intermediate",
+    "tags": [
+      "coding",
+      "gaps-and-islands",
+      "window-functions"
+    ],
+    "question": "Find users active for N consecutive days (gaps-and-islands).",
+    "answer": "<p>The <strong>gaps-and-islands</strong> trick: for each user's ordered dates, subtract a <code class=\"inline\">ROW_NUMBER()</code> (as days) from the date. Consecutive days advance in lockstep with the row number, so the difference is <em>constant</em> within a streak — group by that constant to collapse each run, then filter runs of the required length.</p>",
+    "tip": "The one-line intuition to say: 'date minus its row-number is constant only while the dates are consecutive' — that anchor value identifies each island.",
+    "code": "WITH marked AS (\n  SELECT user_id, day,\n    day - (ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY day))::int AS grp\n  FROM active_days\n)\nSELECT user_id, MIN(day) AS streak_start, COUNT(*) AS len\nFROM marked\nGROUP BY user_id, grp\nHAVING COUNT(*) >= 3;",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-triggers",
+    "category": "sql",
+    "difficulty": "intermediate",
+    "tags": [
+      "triggers",
+      "procedural"
+    ],
+    "question": "What is a trigger, and when should you avoid one?",
+    "answer": "<p>Procedural code that fires <em>automatically</em> on <code class=\"inline\">INSERT</code>/<code class=\"inline\">UPDATE</code>/<code class=\"inline\">DELETE</code>, timed <strong>BEFORE</strong> or <strong>AFTER</strong> the event, at row or statement level. Common uses: audit logging, maintaining derived/denormalized columns, and enforcing rules a CHECK can't express.</p><p><strong>Downside</strong>: logic is hidden from anyone reading the app code, they run inside the writing transaction (adding latency), and they make bugs hard to trace — many teams prefer explicit application logic.</p>",
+    "tip": "Red flag to name: business logic buried in triggers is a debugging nightmare — reserve them for cross-cutting concerns like audit trails.",
+    "code": "CREATE TRIGGER set_updated\nBEFORE UPDATE ON orders\nFOR EACH ROW\nEXECUTE FUNCTION touch_updated_at();  -- sets NEW.updated_at = now()",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-isolation-levels",
+    "category": "sql",
+    "difficulty": "advanced",
+    "tags": [
+      "transaction",
+      "isolation",
+      "concurrency",
+      "V.Imp"
+    ],
+    "question": "Transaction isolation levels and the anomalies they prevent.",
+    "answer": "<p>Four SQL levels, each ruling out one more anomaly at the cost of concurrency:</p><ul><li><strong>Read Uncommitted</strong> — allows <em>dirty reads</em> (seeing another txn's uncommitted data).</li><li><strong>Read Committed</strong> — no dirty reads; still allows <em>non-repeatable reads</em>. (Default in PostgreSQL/Oracle.)</li><li><strong>Repeatable Read</strong> — same rows re-read unchanged; classically still allows <em>phantoms</em> (new rows matching your filter).</li><li><strong>Serializable</strong> — behaves as if transactions ran one at a time; no phantoms.</li></ul>",
+    "tip": "Know your engine: MySQL/InnoDB defaults to Repeatable Read (and blocks phantoms via gap locks), PostgreSQL defaults to Read Committed — the same code behaves differently across them.",
+    "code": "SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;\nBEGIN;\n  -- ... reads/writes see a consistent snapshot ...\nCOMMIT;",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-deadlocks",
+    "category": "sql",
+    "difficulty": "advanced",
+    "tags": [
+      "concurrency",
+      "locking",
+      "deadlock"
+    ],
+    "question": "What causes a deadlock and how do you avoid it?",
+    "answer": "<p>A <strong>deadlock</strong> is a circular wait: txn A holds a lock B wants while B holds a lock A wants, so neither can proceed. The database's deadlock detector spots the cycle and kills one transaction (the <em>victim</em>), which must retry.</p><p><strong>Avoid</strong> them by: acquiring locks in a <em>consistent order</em> everywhere, keeping transactions short, touching fewer rows (good indexes narrow lock scope), and using a lower isolation level or optimistic concurrency where safe.</p>",
+    "tip": "The single most effective fix is a consistent lock ordering — e.g. always update accounts in ascending id order — which makes a cycle impossible.",
+    "code": "-- both sessions lock ids in the SAME order → no cycle\nBEGIN;\n  UPDATE accounts SET bal = bal - 100 WHERE id = 1;\n  UPDATE accounts SET bal = bal + 100 WHERE id = 2;\nCOMMIT;",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-explain-plan",
+    "category": "sql",
+    "difficulty": "advanced",
+    "tags": [
+      "performance",
+      "explain",
+      "query-plan",
+      "V.Imp"
+    ],
+    "question": "How do you read a query plan (EXPLAIN)?",
+    "answer": "<p><code class=\"inline\">EXPLAIN</code> shows the planner's chosen strategy; <code class=\"inline\">EXPLAIN ANALYZE</code> actually runs it and reports real times and row counts. Key things to read:</p><ul><li><strong>Scan type</strong> — a <em>Seq Scan</em> over a large, selectively-filtered table usually means a missing index; an <em>Index Scan</em> is what you want.</li><li><strong>Join method</strong> — Nested Loop (small inputs), Hash Join (large unsorted), Merge Join (pre-sorted).</li><li><strong>Estimated vs actual rows</strong> — a big mismatch signals stale statistics; run <code class=\"inline\">ANALYZE</code>.</li></ul>",
+    "tip": "Chase the node with the largest actual time, not the top of the tree — plans read bottom-up/inside-out, and cost is relative, not milliseconds.",
+    "code": "EXPLAIN ANALYZE\nSELECT * FROM orders\nWHERE customer_id = 42 AND status = 'paid';",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-partitioning-sharding",
+    "category": "sql",
+    "difficulty": "advanced",
+    "tags": [
+      "scaling",
+      "partitioning",
+      "sharding"
+    ],
+    "question": "Partitioning vs sharding.",
+    "answer": "<p><strong>Partitioning</strong> splits one logical table into physical pieces <em>within a single database</em> — by range (dates), list, or hash. The planner <em>prunes</em> irrelevant partitions, and you can drop old ones instantly. It's a maintenance and query-pruning win, not horizontal scale.</p><p><strong>Sharding</strong> spreads data across <em>multiple database servers</em> keyed by a shard key — true horizontal scale for writes/storage. The cost: cross-shard joins and transactions become hard, and a bad shard key creates hotspots.</p>",
+    "tip": "One sentence: partitioning is one server, many pieces; sharding is many servers — choose the shard key by your dominant access pattern to avoid cross-shard fan-out.",
+    "code": "-- range partitioning (PostgreSQL declarative)\nCREATE TABLE events (id bigint, ts timestamptz) PARTITION BY RANGE (ts);\nCREATE TABLE events_2024 PARTITION OF events\n  FOR VALUES FROM ('2024-01-01') TO ('2025-01-01');",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-materialized-views",
+    "category": "sql",
+    "difficulty": "advanced",
+    "tags": [
+      "views",
+      "performance",
+      "caching"
+    ],
+    "question": "Materialized views — when and how?",
+    "answer": "<p>Unlike a regular view (a saved query recomputed on every access), a <strong>materialized view</strong> stores the result <em>physically</em>, so expensive aggregations/joins read instantly. The trade-off is staleness — the data is a snapshot until you <code class=\"inline\">REFRESH</code> it.</p><p>Use them for dashboards and reports where slightly-old data is acceptable and the underlying query is costly. In PostgreSQL, <code class=\"inline\">REFRESH ... CONCURRENTLY</code> avoids locking readers (but needs a unique index).</p>",
+    "tip": "Say the trade-off out loud: materialized view = read speed bought with staleness; schedule the REFRESH (cron/trigger) to match how fresh the data must be.",
+    "code": "CREATE MATERIALIZED VIEW daily_revenue AS\nSELECT DATE_TRUNC('day', created_at) AS day, SUM(total) AS revenue\nFROM orders GROUP BY 1;\n\nREFRESH MATERIALIZED VIEW CONCURRENTLY daily_revenue;",
+    "lang": "sql"
   }
 ]

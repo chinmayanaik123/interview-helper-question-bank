@@ -306,5 +306,93 @@
     "tip": "Mention depth + complexity limits together — depth alone doesn't catch wide queries (a user with 10,000 friends each resolving 10,000 posts).",
     "code": "// Apollo Server\nconst server = new ApolloServer({\n  schema,\n  validationRules: [\n    depthLimit(10),\n    createComplexityLimitRule(1000)\n  ]\n});",
     "lang": "javascript"
+  },
+  {
+    "id": "gql-custom-scalars",
+    "category": "graphql",
+    "difficulty": "beginner",
+    "tags": ["scalars", "types", "schema"],
+    "question": "What are custom scalar types?",
+    "answer": "<p>Beyond the five built-in scalars (<code class=\"inline\">Int</code>, <code class=\"inline\">Float</code>, <code class=\"inline\">String</code>, <code class=\"inline\">Boolean</code>, <code class=\"inline\">ID</code>), you can define custom scalars like <code class=\"inline\">DateTime</code>, <code class=\"inline\">JSON</code>, or <code class=\"inline\">Email</code>.</p><p>You implement three functions: <strong>serialize</strong> (value → JSON for the response), <strong>parseValue</strong> (variable input → value), and <strong>parseLiteral</strong> (inline literal → value) — giving you validation and consistent (de)serialization.</p>",
+    "tip": "Don't hand-roll a Date scalar — use graphql-scalars, a maintained library of correct DateTime/Email/URL scalars.",
+    "code": "scalar DateTime\n\ntype Post {\n  title: String!\n  publishedAt: DateTime!\n}",
+    "lang": "graphql"
+  },
+  {
+    "id": "gql-input-types",
+    "category": "graphql",
+    "difficulty": "beginner",
+    "tags": ["input-types", "mutations", "schema"],
+    "question": "What are input types?",
+    "answer": "<p><code class=\"inline\">input</code> types are objects used specifically as <strong>arguments</strong>, most often for mutations. Unlike output <code class=\"inline\">type</code>s they have no resolvers and can't implement interfaces — they only carry input fields.</p><p>They keep mutation signatures clean and easy to evolve: add an optional field to the input instead of adding another positional argument.</p>",
+    "tip": "Wrap mutation args in a single input type from day one — it's far easier to extend than a long argument list.",
+    "code": "input CreateUserInput {\n  name: String!\n  email: String!\n  age: Int\n}\ntype Mutation {\n  createUser(input: CreateUserInput!): User!\n}",
+    "lang": "graphql"
+  },
+  {
+    "id": "gql-dataloader",
+    "category": "graphql",
+    "difficulty": "intermediate",
+    "tags": ["dataloader", "n-plus-one", "performance", "V.Imp"],
+    "question": "How does DataLoader solve the N+1 problem?",
+    "answer": "<p>Resolving a list where each item fetches a related record naively causes <strong>N+1 queries</strong> (1 for the list + 1 per item). <strong>DataLoader</strong> fixes this by <em>batching and caching</em> within a request:</p><ul><li>Individual <code class=\"inline\">load(key)</code> calls made during one tick are collected.</li><li>At the end of the tick, one <strong>batch function</strong> fetches them all in a single query (<code class=\"inline\">WHERE id IN (...)</code>).</li><li>A per-request cache dedupes repeated keys.</li></ul>",
+    "tip": "Create one DataLoader instance PER request, not a global one — a shared loader would leak cached (and cross-user) data.",
+    "code": "const userLoader = new DataLoader(async (ids) => {\n  const rows = await db.users.whereIn('id', ids);\n  return ids.map(id => rows.find(r => r.id === id));\n});\n// resolver:\npost.author = (p) => userLoader.load(p.authorId);",
+    "lang": "javascript"
+  },
+  {
+    "id": "gql-directives",
+    "category": "graphql",
+    "difficulty": "intermediate",
+    "tags": ["directives", "schema"],
+    "question": "What are directives in GraphQL?",
+    "answer": "<p>Directives are annotations (prefixed <code class=\"inline\">@</code>) that change execution or schema behavior.</p><ul><li><strong>Query-side</strong>: <code class=\"inline\">@include(if:)</code> and <code class=\"inline\">@skip(if:)</code> conditionally include fields.</li><li><strong>Schema-side</strong>: <code class=\"inline\">@deprecated(reason:)</code> marks fields as deprecated for tooling.</li><li><strong>Custom</strong>: e.g. <code class=\"inline\">@auth(role:)</code> or <code class=\"inline\">@upper</code>, implemented via schema transforms/field middleware.</li></ul>",
+    "tip": "@deprecated is how GraphQL evolves without versioning — deprecate a field, watch usage drop, then remove it.",
+    "code": "query getUser($withPosts: Boolean!) {\n  user(id: \"1\") {\n    name\n    posts @include(if: $withPosts) { title }\n    legacyId @deprecated(reason: \"use id\")\n  }\n}",
+    "lang": "graphql"
+  },
+  {
+    "id": "gql-interfaces-unions",
+    "category": "graphql",
+    "difficulty": "intermediate",
+    "tags": ["interfaces", "unions", "polymorphism"],
+    "question": "Interfaces vs unions.",
+    "answer": "<p>Both model polymorphic results, but differ in shared structure:</p><ul><li><strong>Interface</strong> — a set of <em>shared fields</em> that multiple types implement. Query the common fields directly, use inline fragments for type-specific ones.</li><li><strong>Union</strong> — 'one of these types' with <em>no shared fields</em> (e.g. <code class=\"inline\">SearchResult = User | Post | Comment</code>). Everything is accessed via inline fragments.</li></ul><p>The server resolves the concrete type via <code class=\"inline\">__typename</code> / a <code class=\"inline\">resolveType</code> function.</p>",
+    "tip": "Rule of thumb: shared fields → interface; a grab-bag with nothing in common (like search results) → union.",
+    "code": "union SearchResult = User | Post\n\nquery {\n  search(q: \"swift\") {\n    __typename\n    ... on User { name }\n    ... on Post { title }\n  }\n}",
+    "lang": "graphql"
+  },
+  {
+    "id": "gql-nullability",
+    "category": "graphql",
+    "difficulty": "intermediate",
+    "tags": ["nullability", "error-handling", "schema-design"],
+    "question": "How does nullability and error propagation work?",
+    "answer": "<p>Fields are <strong>nullable by default</strong>; a trailing <code class=\"inline\">!</code> marks them non-null. This isn't just documentation — it affects error handling.</p><p>If a <strong>non-null</strong> field errors or resolves to null, GraphQL can't return null there, so the error <em>propagates up</em> to the nearest <em>nullable</em> parent, nulling that whole branch of the response.</p>",
+    "tip": "Over-using ! is risky: one failing non-null deep field can wipe out a large chunk of the response — make genuinely-fallible fields nullable.",
+    "code": "type User {\n  id: ID!            # always present\n  name: String!      # always present\n  avatarUrl: String  # nullable — may fail without nuking the user\n}",
+    "lang": "graphql"
+  },
+  {
+    "id": "gql-code-first-vs-schema-first",
+    "category": "graphql",
+    "difficulty": "intermediate",
+    "tags": ["schema-design", "tooling", "architecture"],
+    "question": "Code-first vs schema-first schema design.",
+    "answer": "<p>Two ways to define a GraphQL schema:</p><ul><li><strong>Schema-first</strong> — write the SDL by hand as the source of truth, then attach resolvers. Language-agnostic, great tooling, but resolvers can drift from the SDL.</li><li><strong>Code-first</strong> — define types in your programming language (classes/decorators, e.g. Nest.js, TypeGraphQL, graphql-java), and the SDL is <em>generated</em>. Full type safety, no drift, at the cost of readability of the raw schema.</li></ul>",
+    "tip": "Code-first wins in strongly-typed stacks (TS/Java) because the compiler keeps resolvers and schema in lockstep — no manual sync.",
+    "code": "// code-first (TypeGraphQL)\n@ObjectType()\nclass User {\n  @Field(() => ID) id: string;\n  @Field() name: string;\n}",
+    "lang": "javascript"
+  },
+  {
+    "id": "gql-persisted-queries",
+    "category": "graphql",
+    "difficulty": "advanced",
+    "tags": ["persisted-queries", "performance", "security"],
+    "question": "What are persisted queries (and APQ)?",
+    "answer": "<p>Instead of sending the full query string, the client sends a <strong>hash</strong> that maps to a pre-registered query on the server. Benefits:</p><ul><li><strong>Smaller payloads</strong> — a hash instead of kilobytes of query.</li><li><strong>CDN/GET caching</strong> — hashed queries can go over GET and be edge-cached.</li><li><strong>Security allowlist</strong> — only registered queries run, blocking arbitrary/malicious ones.</li></ul><p>Apollo's <strong>APQ</strong> negotiates this automatically: on a cache miss the client sends the full query once to register it.</p>",
+    "tip": "Persisted queries double as a security control — an allowlist of known queries neutralizes arbitrary-query and introspection abuse in production.",
+    "code": "// APQ: client first tries just the hash\n{ \"extensions\": { \"persistedQuery\": {\n  \"version\": 1, \"sha256Hash\": \"a1b2c3...\" } } }",
+    "lang": "javascript"
   }
 ]

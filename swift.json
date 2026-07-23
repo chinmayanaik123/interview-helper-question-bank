@@ -73,5 +73,300 @@
     "tip": "Apple recommends using structs by default unless you specifically need reference semantics or inheritance.",
     "code": "struct User {\n    var name: String\n}\n\nclass Person {\n    var name = \"John\"\n}",
     "lang": "swift"
+  },
+  {
+    "id": "swift-guard-if-let",
+    "category": "swift",
+    "difficulty": "beginner",
+    "tags": [
+      "optionals",
+      "guard",
+      "control-flow"
+    ],
+    "question": "guard let vs if let for unwrapping optionals?",
+    "answer": "<p><strong>if let</strong> binds the unwrapped value only <em>inside</em> the if block. <strong>guard let</strong> binds it for the <em>rest of the enclosing scope</em> and requires an <code class=\"inline\">else</code> that exits (return/break/throw).</p><p>guard enables an early-exit style that avoids the nested 'pyramid of doom' and keeps the happy path un-indented.</p>",
+    "tip": "Use guard for preconditions at the top of a function; if let when the value is only needed locally.",
+    "code": "func greet(_ name: String?) {\n    guard let name = name else { return }\n    print(\"Hello, \\(name)\")  // name is non-optional here\n}",
+    "lang": "swift"
+  },
+  {
+    "id": "swift-closures",
+    "category": "swift",
+    "difficulty": "beginner",
+    "tags": [
+      "closures",
+      "functions"
+    ],
+    "question": "What are closures in Swift?",
+    "answer": "<p>Self-contained blocks of code that can be passed around and <strong>capture</strong> references to variables from their surrounding context. They power callbacks, completion handlers, and higher-order functions.</p><p>Swift adds sugar: shorthand argument names (<code class=\"inline\">$0</code>), implicit return, and <em>trailing closure</em> syntax.</p>",
+    "tip": "Closures capture by reference — capturing self strongly is a classic retain-cycle source; use [weak self].",
+    "code": "let add = { (a: Int, b: Int) in a + b }\nlet sorted = [3, 1, 2].sorted { $0 < $1 }",
+    "lang": "swift"
+  },
+  {
+    "id": "swift-enums",
+    "category": "swift",
+    "difficulty": "beginner",
+    "tags": [
+      "enum",
+      "associated-values"
+    ],
+    "question": "Enums and associated values.",
+    "answer": "<p>An <strong>enum</strong> models a type with a fixed set of cases. Swift enums are powerful: each case can carry <strong>associated values</strong>, can have <strong>raw values</strong>, and the enum can define computed properties and methods.</p><p>Ideal for representing state and outcomes exhaustively — the compiler forces you to handle every case in a switch.</p>",
+    "tip": "Associated values are what make Swift enums a full sum type — perfect for modeling loading/success/error states.",
+    "code": "enum Loadable {\n    case idle\n    case loading\n    case success(String)\n    case failure(Error)\n}",
+    "lang": "swift"
+  },
+  {
+    "id": "swift-protocols",
+    "category": "swift",
+    "difficulty": "beginner",
+    "tags": [
+      "protocol",
+      "abstraction"
+    ],
+    "question": "What is a protocol in Swift?",
+    "answer": "<p>A <strong>protocol</strong> is a blueprint of methods and properties a conforming type must provide — Swift's version of an interface. Structs, classes, and enums can all conform, enabling polymorphism without class inheritance.</p><p><strong>Protocol extensions</strong> can supply default implementations, so conformers get behavior for free.</p>",
+    "tip": "Protocols + protocol extensions are the foundation of protocol-oriented programming — Apple's preferred design style.",
+    "code": "protocol Drivable {\n    func drive()\n}\nextension Drivable {\n    func drive() { print(\"Vroom\") }  // default\n}",
+    "lang": "swift"
+  },
+  {
+    "id": "swift-collections",
+    "category": "swift",
+    "difficulty": "beginner",
+    "tags": [
+      "collections",
+      "array",
+      "dictionary"
+    ],
+    "question": "Array vs Set vs Dictionary.",
+    "answer": "<ul><li><strong>Array</strong> — ordered, index-accessed, allows duplicates.</li><li><strong>Set</strong> — unordered, unique elements, O(1) membership tests and set algebra (union/intersection).</li><li><strong>Dictionary</strong> — unordered key → value pairs, O(1) lookup by key.</li></ul><p>All three are <strong>value types</strong> (copy semantics) with copy-on-write storage.</p>",
+    "tip": "Reach for a Set when you need fast 'contains' checks or must dedupe — not a filtered Array.",
+    "code": "var nums = [1, 2, 2, 3]\nlet unique = Set(nums)          // {1, 2, 3}\nvar ages = [\"Ann\": 30, \"Bo\": 25]",
+    "lang": "swift"
+  },
+  {
+    "id": "swift-higher-order",
+    "category": "swift",
+    "difficulty": "beginner",
+    "tags": [
+      "map",
+      "filter",
+      "reduce",
+      "functional"
+    ],
+    "question": "map, filter, reduce, and compactMap.",
+    "answer": "<ul><li><strong>map</strong> — transforms every element.</li><li><strong>filter</strong> — keeps elements matching a condition.</li><li><strong>reduce</strong> — combines all elements into a single value.</li><li><strong>compactMap</strong> — maps, then drops the <code class=\"inline\">nil</code> results (unwrapping optionals).</li><li><strong>flatMap</strong> — maps and flattens nested sequences.</li></ul>",
+    "tip": "compactMap is the idiomatic way to transform-and-drop-nils in one pass — don't map then filter { $0 != nil }.",
+    "code": "let nums = [1, 2, 3, 4]\nlet doubled = nums.map { $0 * 2 }         // [2,4,6,8]\nlet evens = nums.filter { $0 % 2 == 0 }   // [2,4]\nlet sum = nums.reduce(0, +)               // 10",
+    "lang": "swift"
+  },
+  {
+    "id": "swift-error-handling",
+    "category": "swift",
+    "difficulty": "intermediate",
+    "tags": [
+      "error-handling",
+      "throws",
+      "try"
+    ],
+    "question": "Error handling with do / try / catch.",
+    "answer": "<p>A function that can fail is marked <code class=\"inline\">throws</code>; callers use <code class=\"inline\">try</code> inside a <code class=\"inline\">do/catch</code>. Variants: <code class=\"inline\">try?</code> converts the throw to an optional (nil on error), <code class=\"inline\">try!</code> force-unwraps and crashes on error.</p><p>Errors are just values conforming to the <code class=\"inline\">Error</code> protocol — typically enums.</p>",
+    "tip": "try? is great for 'I don't care why it failed, just give me nil'; reserve try! for genuinely impossible failures.",
+    "code": "enum NetError: Error { case offline }\nfunc load() throws -> Data { throw NetError.offline }\n\ndo {\n    let data = try load()\n} catch NetError.offline {\n    print(\"No connection\")\n}",
+    "lang": "swift"
+  },
+  {
+    "id": "swift-weak-unowned",
+    "category": "swift",
+    "difficulty": "intermediate",
+    "tags": [
+      "arc",
+      "memory",
+      "retain-cycle",
+      "V.Imp"
+    ],
+    "question": "weak vs unowned references.",
+    "answer": "<p>Both break <strong>retain cycles</strong> by not incrementing the reference count.</p><ul><li><strong>weak</strong> — always optional, automatically becomes <code class=\"inline\">nil</code> when the referent is deallocated. Use when the reference <em>can</em> outlive the object (e.g. a delegate).</li><li><strong>unowned</strong> — non-optional, assumes the referent always outlives it; accessing it after deallocation <strong>crashes</strong>. Use only when the lifetimes are guaranteed.</li></ul>",
+    "tip": "In escaping closures capturing self, the safe default is [weak self] then guard let self = self else { return }.",
+    "code": "class ViewModel {\n    var onDone: (() -> Void)?\n    func setup() {\n        onDone = { [weak self] in self?.finish() }\n    }\n    func finish() {}\n}",
+    "lang": "swift"
+  },
+  {
+    "id": "swift-generics",
+    "category": "swift",
+    "difficulty": "intermediate",
+    "tags": [
+      "generics",
+      "type-safety"
+    ],
+    "question": "Generics in Swift.",
+    "answer": "<p>Generics let you write reusable, type-safe code parameterized over types (<code class=\"inline\">&lt;T&gt;</code>) instead of duplicating logic or falling back to <code class=\"inline\">Any</code>. <strong>Type constraints</strong> (<code class=\"inline\">T: Comparable</code>) restrict what the type must support.</p><p>The standard library is built on them — <code class=\"inline\">Array&lt;Element&gt;</code>, <code class=\"inline\">Optional&lt;Wrapped&gt;</code>, <code class=\"inline\">Dictionary&lt;Key, Value&gt;</code>.</p>",
+    "tip": "Protocols use associatedtype for the same idea; constraints (where clauses) are how you keep generics both flexible and safe.",
+    "code": "func maxOf<T: Comparable>(_ a: T, _ b: T) -> T {\n    a > b ? a : b\n}",
+    "lang": "swift"
+  },
+  {
+    "id": "swift-extensions",
+    "category": "swift",
+    "difficulty": "intermediate",
+    "tags": [
+      "extensions",
+      "design"
+    ],
+    "question": "What are extensions?",
+    "answer": "<p>Extensions add functionality — methods, computed properties, initializers, nested types, and protocol conformances — to an <strong>existing type without subclassing</strong>, even to types you don't own (like <code class=\"inline\">String</code> or <code class=\"inline\">Int</code>).</p><p>Limitation: they <em>cannot</em> add stored properties (no new storage), only computed ones.</p>",
+    "tip": "Common pattern: conform a type to a protocol in a dedicated extension to keep concerns cleanly separated.",
+    "code": "extension String {\n    var isBlank: Bool {\n        trimmingCharacters(in: .whitespaces).isEmpty\n    }\n}",
+    "lang": "swift"
+  },
+  {
+    "id": "swift-protocol-oriented",
+    "category": "swift",
+    "difficulty": "intermediate",
+    "tags": [
+      "protocol-oriented",
+      "design",
+      "V.Imp"
+    ],
+    "question": "What is protocol-oriented programming (POP)?",
+    "answer": "<p>Apple's recommended paradigm: prefer <strong>protocols + protocol extensions</strong> over class inheritance. Define behavior in protocols, provide defaults in extensions, and let value types (structs) conform.</p><p>It favors <em>composition over inheritance</em>, works with value semantics, and sidesteps the fragile-base-class and single-inheritance limits of OOP.</p>",
+    "tip": "Say the WWDC line: 'start with a protocol, not a superclass' — then add capabilities by conforming to more protocols.",
+    "code": "protocol Identifiable { var id: String { get } }\nprotocol Timestamped { var created: Date { get } }\nstruct Post: Identifiable, Timestamped {\n    let id: String\n    let created: Date\n}",
+    "lang": "swift"
+  },
+  {
+    "id": "swift-copy-on-write",
+    "category": "swift",
+    "difficulty": "intermediate",
+    "tags": [
+      "value-types",
+      "performance",
+      "memory"
+    ],
+    "question": "What is copy-on-write (COW)?",
+    "answer": "<p>Swift's standard collections (<code class=\"inline\">Array</code>, <code class=\"inline\">Dictionary</code>, <code class=\"inline\">Set</code>, <code class=\"inline\">String</code>) <strong>share underlying storage</strong> when copied and only make a real copy the moment one copy is <em>mutated</em>. So passing arrays around is cheap — you pay for the copy only on write.</p>",
+    "tip": "You get COW for free on stdlib types; for a custom value type wrapping a class, implement it with isKnownUniquelyReferenced(&ref).",
+    "code": "var a = [1, 2, 3]\nvar b = a        // no copy yet — shared buffer\nb.append(4)      // NOW b copies; a stays [1,2,3]",
+    "lang": "swift"
+  },
+  {
+    "id": "swift-codable",
+    "category": "swift",
+    "difficulty": "intermediate",
+    "tags": [
+      "codable",
+      "json",
+      "serialization"
+    ],
+    "question": "Codable — JSON encoding and decoding.",
+    "answer": "<p><code class=\"inline\">Codable</code> = <code class=\"inline\">Encodable & Decodable</code>. Conform a type and Swift <strong>synthesizes</strong> the (de)serialization; <code class=\"inline\">JSONEncoder</code>/<code class=\"inline\">JSONDecoder</code> do the work. Use a <code class=\"inline\">CodingKeys</code> enum to map JSON field names to Swift property names.</p>",
+    "tip": "Snake_case JSON? Set decoder.keyDecodingStrategy = .convertFromSnakeCase instead of writing CodingKeys by hand.",
+    "code": "struct User: Codable {\n    let id: Int\n    let fullName: String\n    enum CodingKeys: String, CodingKey {\n        case id, fullName = \"full_name\"\n    }\n}\nlet u = try JSONDecoder().decode(User.self, from: data)",
+    "lang": "swift"
+  },
+  {
+    "id": "swift-defer",
+    "category": "swift",
+    "difficulty": "intermediate",
+    "tags": [
+      "defer",
+      "control-flow",
+      "cleanup"
+    ],
+    "question": "What does defer do?",
+    "answer": "<p>A <code class=\"inline\">defer</code> block schedules code to run when the current scope exits — <em>however</em> it exits (normal fall-through, <code class=\"inline\">return</code>, or a thrown error). Perfect for guaranteed cleanup: closing files, releasing locks, ending a context.</p><p>Multiple defers execute in <strong>reverse (LIFO)</strong> order.</p>",
+    "tip": "defer keeps cleanup next to the acquisition, so no matter which return path fires, you can't forget to release.",
+    "code": "func process(_ file: File) throws {\n    file.open()\n    defer { file.close() }   // runs on every exit path\n    try file.read()\n}",
+    "lang": "swift"
+  },
+  {
+    "id": "swift-computed-lazy",
+    "category": "swift",
+    "difficulty": "intermediate",
+    "tags": [
+      "properties",
+      "lazy",
+      "observers"
+    ],
+    "question": "Stored vs computed properties, lazy, and observers.",
+    "answer": "<ul><li><strong>Stored</strong> — holds a value in memory.</li><li><strong>Computed</strong> — no storage; a <code class=\"inline\">get</code> (and optional <code class=\"inline\">set</code>) calculates on each access.</li><li><strong>lazy</strong> — a stored property initialized only on first access (defer expensive setup).</li><li><strong>Observers</strong> — <code class=\"inline\">willSet</code>/<code class=\"inline\">didSet</code> run around a stored property's changes.</li></ul>",
+    "tip": "lazy properties are computed once and cached; computed properties recompute every time — pick based on cost vs freshness.",
+    "code": "class Report {\n    lazy var data = expensiveLoad()   // runs once, on demand\n    var title = \"\" { didSet { print(\"changed\") } }\n    var isEmpty: Bool { title.isEmpty } // computed\n}",
+    "lang": "swift"
+  },
+  {
+    "id": "swift-access-control",
+    "category": "swift",
+    "difficulty": "intermediate",
+    "tags": [
+      "access-control",
+      "encapsulation"
+    ],
+    "question": "Access control levels in Swift.",
+    "answer": "<p>From most to least open:</p><ul><li><strong>open</strong> — usable <em>and subclassable/overridable</em> across modules.</li><li><strong>public</strong> — usable across modules, but not subclassable outside.</li><li><strong>internal</strong> — default; visible within the same module.</li><li><strong>fileprivate</strong> — within the same file.</li><li><strong>private</strong> — within the enclosing declaration (and its extensions in the same file).</li></ul>",
+    "tip": "The open-vs-public distinction only matters for framework authors: open lets consumers subclass/override, public doesn't.",
+    "code": "public struct API {\n    private var token: String\n    public init(token: String) { self.token = token }\n}",
+    "lang": "swift"
+  },
+  {
+    "id": "swift-concurrency",
+    "category": "swift",
+    "difficulty": "advanced",
+    "tags": [
+      "concurrency",
+      "async-await",
+      "V.Imp"
+    ],
+    "question": "How does async/await work in Swift?",
+    "answer": "<p>Swift's <strong>structured concurrency</strong>: mark a function <code class=\"inline\">async</code>, call it with <code class=\"inline\">await</code> at a <em>suspension point</em>. A <code class=\"inline\">Task</code> starts async work from a sync context, and <code class=\"inline\">async let</code> runs children in parallel.</p><p>It replaces nested completion handlers with linear, readable code — and the compiler enforces safety around it.</p>",
+    "tip": "await is a suspension point, not a blocking call — the thread is freed to do other work while awaiting.",
+    "code": "func loadProfile() async throws -> Profile {\n    async let user = fetchUser()      // parallel\n    async let posts = fetchPosts()\n    return Profile(user: try await user, posts: try await posts)\n}",
+    "lang": "swift"
+  },
+  {
+    "id": "swift-actors",
+    "category": "swift",
+    "difficulty": "advanced",
+    "tags": [
+      "concurrency",
+      "actors",
+      "thread-safety"
+    ],
+    "question": "What are actors in Swift?",
+    "answer": "<p><strong>Actors</strong> are reference types that protect their mutable state from <em>data races</em> by <strong>serializing</strong> access — only one task touches an actor's state at a time. Reaching in from outside requires <code class=\"inline\">await</code> (an actor 'hop').</p><p><code class=\"inline\">@MainActor</code> is a special actor pinning work to the main thread — essential for UI updates.</p>",
+    "tip": "Actors give you thread-safe mutable state without manual locks — but watch for reentrancy across await points.",
+    "code": "actor Counter {\n    private var value = 0\n    func increment() { value += 1 }\n    func current() -> Int { value }\n}\nlet c = Counter()\nawait c.increment()",
+    "lang": "swift"
+  },
+  {
+    "id": "swift-result-type",
+    "category": "swift",
+    "difficulty": "advanced",
+    "tags": [
+      "result",
+      "error-handling"
+    ],
+    "question": "The Result type — what and when?",
+    "answer": "<p><code class=\"inline\">Result&lt;Success, Failure: Error&gt;</code> is an enum with <code class=\"inline\">.success(value)</code> and <code class=\"inline\">.failure(error)</code> — it models an outcome as a <em>value</em> you can store and pass around. Common in completion-handler APIs (pre-async), and for capturing an error to handle later.</p><p><code class=\"inline\">.get()</code> throws, and <code class=\"inline\">map</code>/<code class=\"inline\">flatMap</code> transform the success case.</p>",
+    "tip": "async/await largely replaced Result in new code, but it's still ideal when an outcome must be stored or deferred.",
+    "code": "func fetch(completion: (Result<Data, Error>) -> Void) { }\nfetch { result in\n    switch result {\n    case .success(let data): print(data)\n    case .failure(let err): print(err)\n    }\n}",
+    "lang": "swift"
+  },
+  {
+    "id": "swift-opaque-some-any",
+    "category": "swift",
+    "difficulty": "advanced",
+    "tags": [
+      "opaque-types",
+      "generics",
+      "some-any"
+    ],
+    "question": "some vs any (opaque vs existential types).",
+    "answer": "<p><strong><code class=\"inline\">some P</code></strong> — an <em>opaque</em> type: the compiler knows the single concrete type, it's just hidden from the caller. No runtime boxing, better performance (SwiftUI's <code class=\"inline\">some View</code>).</p><p><strong><code class=\"inline\">any P</code></strong> — an <em>existential</em>: holds any conforming type, boxed at runtime. More flexible (heterogeneous values) but with indirection/overhead.</p>",
+    "tip": "Prefer some when a function returns one underlying type per call; use any only when you genuinely need a mixed collection of conformers.",
+    "code": "func makeShape() -> some Shape { Circle() }   // opaque, one type\nlet shapes: [any Shape] = [Circle(), Square()] // existential, mixed",
+    "lang": "swift"
   }
 ]

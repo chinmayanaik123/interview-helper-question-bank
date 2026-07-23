@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
-  "version": 44,
-  "updatedAt": "2026-07-23T15:44:45.660Z",
-  "totalQuestions": 1622,
-  "contentHash": "2ea5c8ba635ae45d150df2421d4091efd9a443c5",
+  "version": 46,
+  "updatedAt": "2026-07-23T18:19:57.466Z",
+  "totalQuestions": 1697,
+  "contentHash": "9e47ecf9780f9477141cc5c1ec244fcb67b7ecb0",
   "groups": [
     {
       "id": "frontend",
@@ -51,21 +51,21 @@
       "id": "java-angular",
       "file": "packs/java-angular.json",
       "label": "Java + Angular",
-      "count": 933,
+      "count": 988,
       "hash": "ae5da0dfd601"
     },
     {
       "id": "angular-developer",
       "file": "packs/angular-developer.json",
       "label": "Angular Developer",
-      "count": 535,
+      "count": 552,
       "hash": "0c5721f80805"
     },
     {
       "id": "java-backend",
       "file": "packs/java-backend.json",
       "label": "Java Backend Developer",
-      "count": 525,
+      "count": 580,
       "hash": "ef4083c12fbd"
     }
   ],
@@ -283,8 +283,8 @@
       "label": "GraphQL",
       "group": "backend",
       "color": "#E10098",
-      "count": 20,
-      "hash": "8087ec52f8d2"
+      "count": 28,
+      "hash": "3da8ab8cdf00"
     },
     {
       "id": "sql",
@@ -292,8 +292,8 @@
       "label": "SQL",
       "group": "backend",
       "color": "#0E7C93",
-      "count": 26,
-      "hash": "2525d1490a98"
+      "count": 46,
+      "hash": "897a0ad4fa68"
     },
     {
       "id": "postgresql",
@@ -301,8 +301,8 @@
       "label": "PostgreSQL",
       "group": "backend",
       "color": "#336791",
-      "count": 20,
-      "hash": "d816cdf0b773"
+      "count": 30,
+      "hash": "1369ed689ebb"
     },
     {
       "id": "git",
@@ -310,8 +310,8 @@
       "label": "Git",
       "group": "devops",
       "color": "#D9491F",
-      "count": 11,
-      "hash": "7f5fb3f9093e"
+      "count": 28,
+      "hash": "87f5bdaa1674"
     },
     {
       "id": "docker-kubernetes",
@@ -364,8 +364,8 @@
       "label": "Swift",
       "group": "mobile",
       "color": "#FA7349",
-      "count": 5,
-      "hash": "d36017bc1528"
+      "count": 25,
+      "hash": "28e3c93c6406"
     },
     {
       "id": "testing-fundamentals",
