@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
-  "version": 39,
-  "updatedAt": "2026-07-23T15:15:51.052Z",
-  "totalQuestions": 1558,
-  "contentHash": "88bc258279ebd80db81fbe4bf53baf8d5fc9de43",
+  "version": 40,
+  "updatedAt": "2026-07-23T15:17:35.852Z",
+  "totalQuestions": 1564,
+  "contentHash": "0adcbb20492936c026660cf7e6fa964371a300b0",
   "groups": [
     {
       "id": "frontend",
@@ -51,7 +51,7 @@
       "id": "java-angular",
       "file": "packs/java-angular.json",
       "label": "Java + Angular",
-      "count": 869,
+      "count": 875,
       "hash": "023e90a1045a"
     }
   ],
@@ -278,8 +278,8 @@
       "label": "SQL",
       "group": "backend",
       "color": "#0E7C93",
-      "count": 20,
-      "hash": "8f07963b370c"
+      "count": 26,
+      "hash": "2525d1490a98"
     },
     {
       "id": "postgresql",

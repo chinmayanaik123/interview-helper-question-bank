@@ -4,7 +4,8 @@
     "category": "sql",
     "difficulty": "intermediate",
     "tags": [
-      "joins"
+      "joins",
+      "V.Imp"
     ],
     "question": "Explain INNER, LEFT, RIGHT, and FULL JOIN.",
     "answer": "<ul><li><strong>INNER JOIN</strong> — only rows matching in both tables.</li><li><strong>LEFT JOIN</strong> — all left rows + matches (NULLs where none).</li><li><strong>RIGHT JOIN</strong> — all right rows + matches.</li><li><strong>FULL JOIN</strong> — all rows from both, matched where possible.</li></ul>",
@@ -19,7 +20,8 @@
     "tags": [
       "group-by",
       "having",
-      "where"
+      "where",
+      "V.Imp"
     ],
     "question": "WHERE vs HAVING.",
     "answer": "<p><strong>WHERE</strong> filters rows <em>before</em> grouping/aggregation. <strong>HAVING</strong> filters <em>after</em> <code class=\"inline\">GROUP BY</code>, so it can use aggregate functions like <code class=\"inline\">COUNT()</code>.</p>",
@@ -89,7 +91,8 @@
     "difficulty": "advanced",
     "tags": [
       "transaction",
-      "acid"
+      "acid",
+      "V.Imp"
     ],
     "question": "What does ACID mean?",
     "answer": "<ul><li><strong>Atomicity</strong> — all or nothing.</li><li><strong>Consistency</strong> — valid state to valid state.</li><li><strong>Isolation</strong> — concurrent transactions don't corrupt each other.</li><li><strong>Durability</strong> — committed data survives crashes.</li></ul>",
@@ -131,7 +134,8 @@
     "difficulty": "advanced",
     "tags": [
       "window-functions",
-      "analytics"
+      "analytics",
+      "V.Imp"
     ],
     "question": "What are window functions?",
     "answer": "<p>They compute across a set of rows related to the current row <em>without</em> collapsing them (unlike GROUP BY). Examples: <code class=\"inline\">ROW_NUMBER()</code>, <code class=\"inline\">RANK()</code>, running totals with <code class=\"inline\">SUM() OVER (...)</code>.</p>",
@@ -171,7 +175,10 @@
     "id": "sql-exists-in",
     "category": "sql",
     "difficulty": "intermediate",
-    "tags": ["exists", "subquery"],
+    "tags": [
+      "exists",
+      "subquery"
+    ],
     "question": "EXISTS vs IN — when to use each?",
     "answer": "<p><strong>IN</strong> — checks if a value matches any value in a list or subquery result. Simple and readable for small sets.</p><p><strong>EXISTS</strong> — returns true if the subquery returns at least one row. Short-circuits on first match — often faster for correlated subqueries and large datasets.</p><p>For NULL safety, EXISTS handles NULLs more predictably than NOT IN.</p>",
     "tip": "NOT IN with NULLs in the subquery returns no rows — use NOT EXISTS instead.",
@@ -182,7 +189,10 @@
     "id": "sql-case-when",
     "category": "sql",
     "difficulty": "beginner",
-    "tags": ["case", "conditional"],
+    "tags": [
+      "case",
+      "conditional"
+    ],
     "question": "How does CASE WHEN work?",
     "answer": "<p>Conditional logic in SQL — like if/else in programming:</p><p><strong>Simple CASE</strong> — compare one expression to multiple values.<br><strong>Searched CASE</strong> — evaluate multiple conditions independently.</p><p>Use in SELECT, WHERE, ORDER BY, and aggregations.</p>",
     "tip": "CASE in SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) is the classic conditional aggregation pattern.",
@@ -193,7 +203,10 @@
     "id": "sql-union",
     "category": "sql",
     "difficulty": "intermediate",
-    "tags": ["union", "combine"],
+    "tags": [
+      "union",
+      "combine"
+    ],
     "question": "UNION vs UNION ALL.",
     "answer": "<p><strong>UNION</strong> — combines result sets and <strong>removes duplicates</strong> (requires sort/distinct — slower).</p><p><strong>UNION ALL</strong> — combines without deduplication — faster when you know sets are disjoint or duplicates are acceptable.</p><p>Both require matching column count and compatible types.</p>",
     "tip": "Default to UNION ALL unless you explicitly need duplicate removal.",
@@ -204,7 +217,10 @@
     "id": "sql-self-join",
     "category": "sql",
     "difficulty": "intermediate",
-    "tags": ["self-join", "hierarchy"],
+    "tags": [
+      "self-join",
+      "hierarchy"
+    ],
     "question": "What is a self join?",
     "answer": "<p>A table joined to <strong>itself</strong> — typically with table aliases. Used for hierarchical data (employee → manager), comparing rows within the same table, or finding duplicates.</p>",
     "tip": "Recursive CTEs (PostgreSQL) often replace deep self-join chains for tree traversal.",
@@ -215,7 +231,10 @@
     "id": "sql-views",
     "category": "sql",
     "difficulty": "intermediate",
-    "tags": ["views", "abstraction"],
+    "tags": [
+      "views",
+      "abstraction"
+    ],
     "question": "What is a database view?",
     "answer": "<p>A <strong>saved query</strong> that acts like a virtual table. Simplifies complex joins for consumers, enforces access control, and provides a stable interface even if underlying schema changes.</p><p><strong>Materialized views</strong> store the result physically — faster reads but need refresh. Standard views compute on every query.</p>",
     "tip": "Views don't improve performance by themselves — materialized views do, at the cost of staleness.",
@@ -226,7 +245,10 @@
     "id": "sql-constraints",
     "category": "sql",
     "difficulty": "beginner",
-    "tags": ["constraints", "integrity"],
+    "tags": [
+      "constraints",
+      "integrity"
+    ],
     "question": "Common SQL constraints.",
     "answer": "<ul><li><strong>NOT NULL</strong> — column must have a value.</li><li><strong>UNIQUE</strong> — no duplicate values.</li><li><strong>PRIMARY KEY</strong> — unique + not null.</li><li><strong>FOREIGN KEY</strong> — referential integrity.</li><li><strong>CHECK</strong> — custom validation (e.g. <code class=\"inline\">age &gt;= 18</code>).</li><li><strong>DEFAULT</strong> — value when none provided.</li></ul>",
     "tip": "Enforce business rules at the DB level — don't rely only on application validation.",
@@ -237,7 +259,10 @@
     "id": "sql-execution-order",
     "category": "sql",
     "difficulty": "intermediate",
-    "tags": ["query", "execution"],
+    "tags": [
+      "query",
+      "execution"
+    ],
     "question": "SQL query execution order.",
     "answer": "<p>Logical order (not written order):</p><ol><li>FROM / JOIN</li><li>WHERE</li><li>GROUP BY</li><li>HAVING</li><li>SELECT</li><li>DISTINCT</li><li>ORDER BY</li><li>LIMIT / OFFSET</li></ol><p>That's why you can't use a SELECT alias in WHERE — it hasn't been computed yet. Use a CTE or subquery instead.</p>",
     "tip": "Interview classic: 'why can't I filter on an alias in WHERE?' — execution order.",
@@ -248,11 +273,103 @@
     "id": "sql-pagination",
     "category": "sql",
     "difficulty": "intermediate",
-    "tags": ["pagination", "limit"],
+    "tags": [
+      "pagination",
+      "limit"
+    ],
     "question": "OFFSET vs cursor-based pagination.",
     "answer": "<p><strong>OFFSET/LIMIT</strong> — <code class=\"inline\">LIMIT 20 OFFSET 100</code>. Simple but slow on large offsets (DB still scans skipped rows).</p><p><strong>Cursor (keyset)</strong> — <code class=\"inline\">WHERE id &gt; last_seen_id ORDER BY id LIMIT 20</code>. Consistent performance regardless of page depth; no skipped/duplicate rows when data changes during paging.</p>",
     "tip": "Use cursor pagination for infinite scroll and large datasets; OFFSET is fine for admin UIs with shallow pages.",
     "code": "-- cursor pagination\nSELECT * FROM orders\nWHERE id > 1024\nORDER BY id\nLIMIT 20;",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-nth-highest-salary",
+    "category": "sql",
+    "difficulty": "intermediate",
+    "tags": [
+      "coding",
+      "window-functions",
+      "classic",
+      "V.Imp"
+    ],
+    "question": "Find the 2nd (or Nth) highest salary — show multiple ways.",
+    "answer": "<p>The single most-asked SQL coding question. Know three approaches and their trade-offs:</p><ul><li><strong>DENSE_RANK (best)</strong> — handles ties correctly, generalizes to any N, and extends to per-department with <code class=\"inline\">PARTITION BY</code>.</li><li><strong>Subquery with MAX</strong> — classic for exactly 2nd: max of everything below the max.</li><li><strong>LIMIT/OFFSET with DISTINCT</strong> — short but returns nothing (instead of NULL) when N exceeds distinct values, and ties must be deduplicated.</li></ul>",
+    "tip": "Say the tie word first: 'with DENSE_RANK, two people on the top salary still make the next one rank 2 — ROW_NUMBER would skip a person'. That sentence is what they're listening for.",
+    "code": "-- 1) DENSE_RANK: any N, tie-safe\nSELECT salary FROM (\n  SELECT salary, DENSE_RANK() OVER (ORDER BY salary DESC) rnk\n  FROM employees\n) t WHERE rnk = 2;\n\n-- 2) Subquery MAX: 2nd only\nSELECT MAX(salary) FROM employees\nWHERE salary < (SELECT MAX(salary) FROM employees);\n\n-- 3) LIMIT/OFFSET\nSELECT DISTINCT salary FROM employees\nORDER BY salary DESC LIMIT 1 OFFSET 1;\n\n-- Follow-up: highest paid PER department\nSELECT * FROM (\n  SELECT e.*, DENSE_RANK() OVER (PARTITION BY dept_id ORDER BY salary DESC) rnk\n  FROM employees e\n) t WHERE rnk = 1;",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-rank-dense-rank",
+    "category": "sql",
+    "difficulty": "intermediate",
+    "tags": [
+      "window-functions",
+      "ranking",
+      "V.Imp"
+    ],
+    "question": "RANK vs DENSE_RANK vs ROW_NUMBER?",
+    "answer": "<p>All three number rows within an <code class=\"inline\">OVER (ORDER BY ...)</code> window — they differ only on <strong>ties</strong>:</p><ul><li><strong>ROW_NUMBER</strong> — always unique: 1,2,3,4 — ties broken arbitrarily (add tiebreaker columns to make it deterministic).</li><li><strong>RANK</strong> — ties share a rank, then <strong>gaps</strong>: 1,2,2,<strong>4</strong> — Olympic medals.</li><li><strong>DENSE_RANK</strong> — ties share a rank, <strong>no gaps</strong>: 1,2,2,<strong>3</strong> — \"Nth highest value\" questions.</li></ul>",
+    "tip": "Choose by question: 'top 3 rows' → ROW_NUMBER; 'standings/position' → RANK; 'Nth distinct value' → DENSE_RANK. Deduplication uses ROW_NUMBER (keep rn = 1).",
+    "code": "SELECT name, salary,\n  ROW_NUMBER() OVER (ORDER BY salary DESC) AS row_num,   -- 1,2,3,4\n  RANK()       OVER (ORDER BY salary DESC) AS rnk,       -- 1,2,2,4\n  DENSE_RANK() OVER (ORDER BY salary DESC) AS dense_rnk  -- 1,2,2,3\nFROM employees;",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-find-delete-duplicates",
+    "category": "sql",
+    "difficulty": "intermediate",
+    "tags": [
+      "coding",
+      "classic",
+      "V.Imp"
+    ],
+    "question": "Find duplicate rows, and delete duplicates keeping one.",
+    "answer": "<p><strong>Find</strong>: group by the columns defining \"duplicate\" and keep groups with <code class=\"inline\">COUNT(*) &gt; 1</code>.</p><p><strong>Delete keeping one</strong>, two standard patterns:</p><ul><li><strong>Keep the smallest id</strong> — delete rows whose id isn't the MIN of their group (portable, easy to say).</li><li><strong>ROW_NUMBER</strong> — number rows per group, delete everything with <code class=\"inline\">rn &gt; 1</code>; lets you choose <em>which</em> to keep via ORDER BY (e.g. latest updated).</li></ul>",
+    "tip": "Always add: 'and then I'd put a UNIQUE constraint on (email) so duplicates can't return'. Prevention after cure is the senior touch.",
+    "code": "-- find\nSELECT email, COUNT(*) FROM users\nGROUP BY email HAVING COUNT(*) > 1;\n\n-- delete, keep lowest id (MySQL-style self join)\nDELETE u FROM users u\nJOIN users keep ON keep.email = u.email AND keep.id < u.id;\n\n-- delete via ROW_NUMBER (PostgreSQL / SQL Server), keep newest\nDELETE FROM users WHERE id IN (\n  SELECT id FROM (\n    SELECT id, ROW_NUMBER() OVER (\n      PARTITION BY email ORDER BY updated_at DESC) rn\n    FROM users\n  ) t WHERE rn > 1\n);",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-clustered-index",
+    "category": "sql",
+    "difficulty": "advanced",
+    "tags": [
+      "indexes",
+      "internals",
+      "performance"
+    ],
+    "question": "Clustered vs non-clustered index? When do indexes hurt?",
+    "answer": "<p><strong>Clustered</strong> — the index <em>is</em> the table: rows are physically stored in index order. One per table (usually the primary key — MySQL/InnoDB always does this; SQL Server by default). Range scans on it are fast because neighbors are adjacent on disk.</p><p><strong>Non-clustered (secondary)</strong> — a separate structure of key → row pointer; lookups find the key, then hop to the row (in InnoDB, via the clustered key — why fat primary keys hurt every index).</p><p><strong>When indexes hurt</strong>: every INSERT/UPDATE/DELETE must maintain <em>all</em> of them (write amplification); low-selectivity columns (status with 3 values) rarely help; unused indexes cost storage and slow writes for nothing.</p>",
+    "tip": "PostgreSQL nuance worth knowing: it has no true clustered index — all indexes are secondary over a heap (CLUSTER reorders once but doesn't stay sorted).",
+    "code": "-- covering index: query answered entirely from the index, no row hop\nCREATE INDEX idx_orders_cust ON orders (customer_id) INCLUDE (status, total);\nSELECT status, total FROM orders WHERE customer_id = 42;  -- index-only scan",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-char-varchar",
+    "category": "sql",
+    "difficulty": "beginner",
+    "tags": [
+      "data-types",
+      "rapid-fire"
+    ],
+    "question": "CHAR vs VARCHAR?",
+    "answer": "<p><strong>CHAR(n)</strong> — fixed length: always stores n characters, padding with spaces. <strong>VARCHAR(n)</strong> — variable length: stores actual content + a small length prefix, up to n.</p><p>Use CHAR only for genuinely fixed-width codes (country <code class=\"inline\">'IN'</code>, currency <code class=\"inline\">'INR'</code>); VARCHAR for everything else. Gotcha: CHAR's trailing-space padding can make comparisons and app-level equality behave surprisingly across databases.</p>",
+    "tip": "PostgreSQL reality check: char(n) has no performance benefit there — the docs themselves recommend text/varchar. The CHAR-is-faster lore is MySQL-era.",
+    "code": "country CHAR(2)        -- fixed codes: fine\nemail   VARCHAR(255)   -- variable data: always varchar\n-- 'abc' stored in CHAR(10) is 'abc       ' — padding is real",
+    "lang": "sql"
+  },
+  {
+    "id": "sql-proc-vs-function",
+    "category": "sql",
+    "difficulty": "intermediate",
+    "tags": [
+      "procedures",
+      "functions"
+    ],
+    "question": "Stored procedure vs function?",
+    "answer": "<ul><li><strong>Function</strong> — must return a value, callable <em>inside</em> queries (<code class=\"inline\">SELECT fn(col) FROM ...</code>), intended to be side-effect-light; can't manage transactions.</li><li><strong>Stored procedure</strong> — invoked standalone (<code class=\"inline\">CALL</code>), may return nothing/result sets/out params, can perform DML batches and (in most engines) <strong>control transactions</strong> (COMMIT/ROLLBACK inside).</li></ul><p>Modern practice keeps business logic in the application (testability, versioning, portability) and reserves procs for data-local batch work where round-trips dominate — worth saying out loud in an interview.</p>",
+    "tip": "One-liner: function = expression you can put in a SELECT; procedure = an operation you CALL.",
+    "code": "-- function: usable in a query\nCREATE FUNCTION full_name(f TEXT, l TEXT) RETURNS TEXT\n  LANGUAGE sql AS $$ SELECT f || ' ' || l $$;\nSELECT full_name(first_name, last_name) FROM employees;\n\n-- procedure: standalone action, owns its transaction\nCREATE PROCEDURE archive_old_orders() LANGUAGE plpgsql AS $$\nBEGIN\n  INSERT INTO orders_archive SELECT * FROM orders WHERE created < now() - interval '2 years';\n  DELETE FROM orders WHERE created < now() - interval '2 years';\n  COMMIT;\nEND $$;\nCALL archive_old_orders();",
     "lang": "sql"
   }
 ]
