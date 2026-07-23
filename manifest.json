@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
-  "version": 38,
-  "updatedAt": "2026-07-23T15:13:34.703Z",
-  "totalQuestions": 1548,
-  "contentHash": "eb90ba7ea99edda248e11e42f5b995254b6d19dc",
+  "version": 39,
+  "updatedAt": "2026-07-23T15:15:51.052Z",
+  "totalQuestions": 1558,
+  "contentHash": "88bc258279ebd80db81fbe4bf53baf8d5fc9de43",
   "groups": [
     {
       "id": "frontend",
@@ -51,7 +51,7 @@
       "id": "java-angular",
       "file": "packs/java-angular.json",
       "label": "Java + Angular",
-      "count": 859,
+      "count": 869,
       "hash": "023e90a1045a"
     }
   ],
@@ -89,8 +89,8 @@
       "label": "JavaScript",
       "group": "frontend",
       "color": "#B4820A",
-      "count": 57,
-      "hash": "e0d1b9b2a519"
+      "count": 64,
+      "hash": "5320443beba3"
     },
     {
       "id": "typescript",
@@ -98,8 +98,8 @@
       "label": "TypeScript",
       "group": "frontend",
       "color": "#2F6FB0",
-      "count": 24,
-      "hash": "834739ef800f"
+      "count": 27,
+      "hash": "dc6600dbff88"
     },
     {
       "id": "html",

@@ -903,5 +903,109 @@
     "lang": "js",
     "youtube": "https://youtu.be/GihQAC1I39Q",
     "deep": "<h4>What are Browser Storage APIs?</h4><p>Modern browsers provide multiple ways to store data on the client side. The three most commonly used are <strong>localStorage</strong>, <strong>sessionStorage</strong>, and <strong>Cookies</strong>.</p><p>Although all three store data inside the browser, they differ in lifetime, storage size, and whether the data is automatically sent to the server.</p><h4>1. localStorage</h4><p><strong>localStorage</strong> stores data with no expiration date. The data remains available even after closing and reopening the browser until it is manually removed.</p><pre><code>localStorage.setItem('theme', 'dark');\n\nconst theme = localStorage.getItem('theme');\nconsole.log(theme);\n\nlocalStorage.removeItem('theme');\n\nlocalStorage.clear();</code></pre><p>Common uses:</p><ul><li>Dark/Light theme</li><li>Language preference</li><li>Remember user settings</li><li>Recently viewed items</li></ul><h4>2. sessionStorage</h4><p><strong>sessionStorage</strong> stores data only for the current browser tab.</p><p>Once the tab or browser window is closed, the data is automatically deleted.</p><pre><code>sessionStorage.setItem('username', 'John');\n\nconsole.log(sessionStorage.getItem('username'));</code></pre><p>Common uses:</p><ul><li>Multi-step forms</li><li>Temporary filters</li><li>Wizard progress</li><li>Current session data</li></ul><h4>3. Cookies</h4><p><strong>Cookies</strong> are small pieces of data stored by the browser that can automatically be sent to the server with every HTTP request.</p><pre><code>document.cookie = 'username=John';\n\ndocument.cookie = 'theme=dark; max-age=3600';</code></pre><p>Cookies are commonly used for:</p><ul><li>Authentication</li><li>Session management</li><li>User tracking</li><li>Remember Me functionality</li></ul><h4>Comparison Table</h4><table><thead><tr><th>Feature</th><th>localStorage</th><th>sessionStorage</th><th>Cookies</th></tr></thead><tbody><tr><td>Storage Size</td><td>~5-10 MB</td><td>~5 MB</td><td>~4 KB</td></tr><tr><td>Expiration</td><td>Until manually removed</td><td>Until tab closes</td><td>Configurable</td></tr><tr><td>Accessible from JavaScript</td><td>Yes</td><td>Yes</td><td>Yes (unless HttpOnly)</td></tr><tr><td>Automatically sent to server</td><td>No</td><td>No</td><td>Yes</td></tr><tr><td>Best for</td><td>User preferences</td><td>Temporary session data</td><td>Authentication & sessions</td></tr></tbody></table><h4>Storage APIs</h4><h5>localStorage</h5><pre><code>localStorage.setItem('name', 'John');\n\nconst value = localStorage.getItem('name');\n\nlocalStorage.removeItem('name');\n\nlocalStorage.clear();</code></pre><h5>sessionStorage</h5><pre><code>sessionStorage.setItem('step', '2');\n\nconst step = sessionStorage.getItem('step');\n\nsessionStorage.removeItem('step');</code></pre><h4>Storing Objects</h4><p>Storage APIs only store strings. Objects must be converted using <code class=\"inline\">JSON.stringify()</code>.</p><pre><code>const user = {\n  id: 1,\n  name: 'John'\n};\n\nlocalStorage.setItem('user', JSON.stringify(user));\n\nconst storedUser = JSON.parse(localStorage.getItem('user'));\n\nconsole.log(storedUser.name);</code></pre><h4>Which One Should You Use?</h4><table><thead><tr><th>Requirement</th><th>Recommended Storage</th></tr></thead><tbody><tr><td>Save theme preference</td><td>localStorage</td></tr><tr><td>Remember language</td><td>localStorage</td></tr><tr><td>Shopping cart during session</td><td>sessionStorage</td></tr><tr><td>Multi-page form</td><td>sessionStorage</td></tr><tr><td>User authentication</td><td>Cookies (HttpOnly)</td></tr><tr><td>Remember login</td><td>Cookies</td></tr></tbody></table><h4>Security Considerations</h4><p>Never store sensitive information such as passwords in browser storage.</p><ul><li><strong>localStorage</strong> is vulnerable to XSS attacks because JavaScript can access it.</li><li><strong>sessionStorage</strong> has the same limitation.</li><li><strong>Cookies</strong> can be made safer using the <strong>HttpOnly</strong> and <strong>Secure</strong> flags.</li></ul><pre><code>Set-Cookie: token=abc123;\nHttpOnly;\nSecure;\nSameSite=Strict;</code></pre><p>With <strong>HttpOnly</strong>, JavaScript cannot access the cookie.</p><h4>JWT Token Storage</h4><p>One of the most common interview questions is where to store JWT tokens.</p><table><thead><tr><th>Storage</th><th>Recommendation</th></tr></thead><tbody><tr><td>localStorage</td><td>Easy but vulnerable to XSS.</td></tr><tr><td>sessionStorage</td><td>Safer than localStorage for temporary sessions.</td></tr><tr><td>HttpOnly Cookie</td><td>Recommended for authentication because JavaScript cannot access it.</td></tr></tbody></table><h4>Real-world Examples</h4><pre><code>// Save theme\nlocalStorage.setItem('theme', 'dark');\n\n// Save selected language\nlocalStorage.setItem('language', 'en');\n\n// Save current form step\nsessionStorage.setItem('currentStep', '3');</code></pre><h4>Common Interview Questions</h4><ul><li><strong>What is the difference between localStorage and sessionStorage?</strong> localStorage persists until removed, while sessionStorage is cleared when the browser tab closes.</li><li><strong>Which storage is automatically sent to the server?</strong> Cookies.</li><li><strong>Can localStorage store objects?</strong> No. Objects must be converted using <code class=\"inline\">JSON.stringify()</code>.</li><li><strong>Where should JWT tokens be stored?</strong> Prefer HttpOnly Cookies for better security.</li><li><strong>Which storage has the largest capacity?</strong> localStorage.</li></ul><h4>How to say it in an interview</h4><p><strong>\"localStorage, sessionStorage, and Cookies are browser storage mechanisms. localStorage stores data permanently until it is removed manually, sessionStorage stores data only for the current browser tab, and Cookies can be automatically sent to the server with every HTTP request. For user preferences, I use localStorage. For temporary session data, I use sessionStorage. For authentication, HttpOnly Cookies are generally the safest choice.\"</strong></p>"
+  },
+  {
+    "id": "js-proto-vs-prototype",
+    "category": "javascript",
+    "difficulty": "advanced",
+    "tags": [
+      "prototype",
+      "inheritance"
+    ],
+    "question": "__proto__ vs prototype — what's the difference?",
+    "answer": "<p><strong><code class=\"inline\">prototype</code></strong> — a property that exists <em>only on functions</em>: the object that will become the prototype of instances created with <code class=\"inline\">new</code>. Methods you want shared go here.</p><p><strong><code class=\"inline\">__proto__</code></strong> — the actual internal link (<code class=\"inline\">[[Prototype]]</code>) that <em>every object</em> has, pointing at the object it inherits from. Lookup walks this chain.</p><p>They meet at construction: <code class=\"inline\">new Foo()</code> sets the instance's <code class=\"inline\">__proto__</code> to <code class=\"inline\">Foo.prototype</code>.</p>",
+    "tip": "Use Object.getPrototypeOf(obj) instead of __proto__ (which is a legacy accessor). And class syntax is sugar over exactly this machinery.",
+    "code": "function Dog(name) { this.name = name; }\nDog.prototype.bark = function () { return this.name + ' woofs'; };\n\nconst d = new Dog('Rex');\nObject.getPrototypeOf(d) === Dog.prototype;  // true — the link\nd.bark();  // found via the chain: d -> Dog.prototype -> Object.prototype",
+    "lang": "javascript"
+  },
+  {
+    "id": "js-flat-flatmap",
+    "category": "javascript",
+    "difficulty": "beginner",
+    "tags": [
+      "arrays",
+      "es2019"
+    ],
+    "question": "What do Array flat() and flatMap() do?",
+    "answer": "<p><code class=\"inline\">flat(depth = 1)</code> — flattens nested arrays by the given depth (<code class=\"inline\">Infinity</code> for fully flat). <code class=\"inline\">flatMap(fn)</code> — <code class=\"inline\">map</code> then <code class=\"inline\">flat(1)</code> in one pass: each element maps to an array, results are concatenated.</p><p>flatMap doubles as a <strong>map-and-filter</strong> in one step: return <code class=\"inline\">[]</code> to drop an element, <code class=\"inline\">[x]</code> to keep one, <code class=\"inline\">[x, y]</code> to expand.</p>",
+    "tip": "flatMap only flattens ONE level — it's map + flat(1), never deeper. Direct analogue of Java's Stream.flatMap and RxJS mergeMap conceptually.",
+    "code": "[1, [2, [3, [4]]]].flat(Infinity);          // [1, 2, 3, 4]\n\norders.flatMap(o => o.items);                // List<List<T>> -> List<T>\nnums.flatMap(n => n % 2 ? [n * 10] : []);    // filter + map in one pass",
+    "lang": "javascript"
+  },
+  {
+    "id": "js-reflow-repaint",
+    "category": "javascript",
+    "difficulty": "intermediate",
+    "tags": [
+      "dom",
+      "performance",
+      "browser"
+    ],
+    "question": "What are reflow and repaint?",
+    "answer": "<p><strong>Reflow (layout)</strong> — the browser recomputes <em>geometry</em>: positions and sizes of elements. Triggered by DOM structure changes, size/position CSS, font changes, window resize. Expensive — it can cascade through descendants and ancestors.</p><p><strong>Repaint</strong> — redrawing <em>pixels</em> without geometry change (color, background, visibility). Cheaper than reflow; every reflow implies a repaint, not vice versa.</p><p><strong>Layout thrashing</strong> — the killer pattern: interleaving writes with reads of layout properties (<code class=\"inline\">offsetHeight</code>, <code class=\"inline\">getBoundingClientRect</code>) forces a synchronous reflow per iteration.</p>",
+    "tip": "Cheapest properties to animate: transform and opacity — compositor-only, neither reflow nor repaint. That's the whole basis of performant CSS animation.",
+    "code": "// thrashing: read-write-read-write forces layout each loop\nitems.forEach(el => { el.style.width = el.offsetWidth + 10 + 'px'; });\n\n// batched: read all, then write all\nconst widths = items.map(el => el.offsetWidth);\nitems.forEach((el, i) => { el.style.width = widths[i] + 10 + 'px'; });",
+    "lang": "javascript"
+  },
+  {
+    "id": "js-esm-commonjs",
+    "category": "javascript",
+    "difficulty": "intermediate",
+    "tags": [
+      "modules",
+      "esm",
+      "nodejs"
+    ],
+    "question": "ESM import/export vs CommonJS require — what's the difference?",
+    "answer": "<ul><li><strong>CommonJS</strong> (<code class=\"inline\">require</code>/<code class=\"inline\">module.exports</code>) — Node's original system. <strong>Synchronous, dynamic</strong> (require anywhere, even conditionally), exports are a copied value at call time.</li><li><strong>ESM</strong> (<code class=\"inline\">import</code>/<code class=\"inline\">export</code>) — the language standard. <strong>Static</strong>: imports/exports are declared at top level and analyzable <em>without running the code</em> — which is what enables <strong>tree-shaking</strong>, live read-only bindings, and async loading (<code class=\"inline\">import()</code> for code splitting).</li></ul><p>Browsers and modern bundlers are ESM-native; Node supports both (<code class=\"inline\">\"type\": \"module\"</code> or .mjs). Angular/TS code is written as ESM and compiled.</p>",
+    "tip": "The interview line: static structure is the point — because the bundler can prove what's unused, ESM makes dead-code elimination possible; require's dynamism makes it impossible in general.",
+    "code": "// CommonJS — dynamic, sync\nconst { readFile } = require('fs');\nif (dev) { const mock = require('./mock'); }   // legal\n\n// ESM — static graph + async dynamic import for splitting\nimport { map } from 'rxjs';\nconst { Chart } = await import('chart.js');    // lazy chunk",
+    "lang": "javascript"
+  },
+  {
+    "id": "js-polyfill-transpile",
+    "category": "javascript",
+    "difficulty": "beginner",
+    "tags": [
+      "tooling",
+      "compatibility",
+      "babel"
+    ],
+    "question": "Polyfill vs transpilation (Babel)?",
+    "answer": "<p>Two different compatibility problems:</p><ul><li><strong>Transpilation</strong> — rewriting new <em>syntax</em> into old syntax at build time (Babel/TypeScript/esbuild): arrow functions → functions, optional chaining → ternary chains. Syntax can always be rewritten.</li><li><strong>Polyfill</strong> — runtime code that <em>implements missing APIs</em> (<code class=\"inline\">Array.prototype.flat</code>, <code class=\"inline\">fetch</code>, <code class=\"inline\">Promise</code>) by patching globals (core-js). APIs can't be transpiled away — the function either exists in the browser or must be provided.</li></ul><p>A build targets browsers via <strong>browserslist</strong>; the toolchain decides which syntax to lower and which polyfills to include.</p>",
+    "tip": "Quick test: 'can old syntax express it?' ?. — yes → transpile. structuredClone — no, it's a runtime function → polyfill.",
+    "code": "// you write:\nconst name = user?.profile?.name ?? 'guest';\n// transpiled for old targets:\nvar name = (user && user.profile && user.profile.name) != null ? ... : 'guest';\n\n// polyfill (conceptually):\nif (!Array.prototype.flat) { Array.prototype.flat = function (d) { ... }; }",
+    "lang": "javascript"
+  },
+  {
+    "id": "js-memoize",
+    "category": "javascript",
+    "difficulty": "intermediate",
+    "tags": [
+      "functions",
+      "performance",
+      "coding",
+      "V.Imp"
+    ],
+    "question": "Implement a memoize function.",
+    "answer": "<p>Memoization caches a pure function's results by argument, so repeat calls return instantly. The classic implementation is a closure over a <code class=\"inline\">Map</code> keyed by the serialized arguments.</p><p>Points to mention while writing it: only valid for <strong>pure functions</strong>; the key strategy (JSON.stringify breaks on object key order and non-serializable args — a nested Map or WeakMap per object arg is the robust version); unbounded cache growth (real libraries add LRU eviction).</p>",
+    "tip": "Angular connection to volunteer: pure pipes and NgRx createSelector are memoization — same idea, framework-applied.",
+    "code": "function memoize(fn) {\n  const cache = new Map();\n  return function (...args) {\n    const key = JSON.stringify(args);\n    if (cache.has(key)) return cache.get(key);\n    const result = fn.apply(this, args);\n    cache.set(key, result);\n    return result;\n  };\n}\n\nconst slowSquare = n => { for (let i = 0; i < 1e7; i++); return n * n; };\nconst fast = memoize(slowSquare);\nfast(9); // computed\nfast(9); // cached — instant",
+    "lang": "javascript"
+  },
+  {
+    "id": "js-es6-features",
+    "category": "javascript",
+    "difficulty": "beginner",
+    "tags": [
+      "es6",
+      "features",
+      "rapid-fire"
+    ],
+    "question": "ES6+ features rundown — which do you actually use?",
+    "answer": "<p>The working set worth naming with a use for each:</p><ul><li><strong>let/const</strong> — block scope; <strong>arrow functions</strong> — lexical this;</li><li><strong>Template literals</strong>, <strong>destructuring</strong>, <strong>spread/rest</strong>, <strong>default params</strong> — everyday ergonomics;</li><li><strong>Promises → async/await</strong> (ES2017) — async flow;</li><li><strong>Modules</strong> (import/export), <strong>classes</strong>;</li><li><strong>Map/Set</strong>, <strong>Symbol</strong>, <strong>generators</strong>;</li><li>Later highlights: optional chaining <code class=\"inline\">?.</code> + nullish <code class=\"inline\">??</code> (ES2020), <code class=\"inline\">Promise.allSettled</code>, <code class=\"inline\">flat/flatMap</code> (ES2019), <code class=\"inline\">Array.at(-1)</code>, top-level await, <code class=\"inline\">structuredClone</code>, <code class=\"inline\">#private</code> fields (ES2022).</li></ul>",
+    "tip": "Don't recite the spec — pick 5-6 and attach a one-line real use to each. \"Optional chaining removed our nested null guards\" beats naming ten features.",
+    "code": "const { name = 'guest', ...rest } = user ?? {};\nconst tags = [...new Set(items.flatMap(i => i.tags))];\nconst last = tags.at(-1);\nawait Promise.allSettled(jobs.map(j => run(j)));",
+    "lang": "javascript"
   }
 ]

@@ -397,5 +397,49 @@
     "code": "function getProp<T, K extends keyof T>(obj: T, key: K): T[K] {\n  return obj[key];\n}\n\nconst user = {\n  id: 1,\n  name: 'John'\n};\n\nconsole.log(getProp(user, 'name')); // John\n// getProp(user, 'age'); // ❌ Error",
     "lang": "ts",
     "deep": "<h4>What are Generic Constraints?</h4><p>Generic constraints allow you to restrict which types can be used with a generic. Instead of accepting every possible type, you can require the generic type to satisfy certain conditions.</p><p>The two most common ways are:</p><ul><li><strong>extends</strong> - Require a type to have a particular shape.</li><li><strong>keyof</strong> - Restrict values to the keys of an object.</li></ul><h4>Using <code class=\"inline\">extends</code></h4><p>The <code class=\"inline\">extends</code> keyword ensures the generic type contains specific properties.</p><pre><code>interface HasLength {\n  length: number;\n}\n\nfunction printLength<T extends HasLength>(value: T) {\n  console.log(value.length);\n}</code></pre><p>Valid examples:</p><pre><code>printLength('Hello');\nprintLength([1, 2, 3]);\nprintLength({ length: 10 });</code></pre><p>Invalid example:</p><pre><code>printLength(100);\n// ❌ Error\n// number does not have a length property</code></pre><h4>Using <code class=\"inline\">keyof</code></h4><p>The <code class=\"inline\">keyof</code> operator creates a union of all property names of an object.</p><pre><code>interface User {\n  id: number;\n  name: string;\n}\n\ntype Keys = keyof User;\n// 'id' | 'name'</code></pre><h4>Combining <code class=\"inline\">extends</code> and <code class=\"inline\">keyof</code></h4><p>This is one of the most popular TypeScript interview questions.</p><pre><code>function getProp<T, K extends keyof T>(obj: T, key: K): T[K] {\n  return obj[key];\n}</code></pre><p>Example:</p><pre><code>const user = {\n  id: 1,\n  name: 'John'\n};\n\ngetProp(user, 'name');\n// 'John'\n\ngetProp(user, 'id');\n// 1\n\n// getProp(user, 'age');\n// ❌ Error</code></pre><p>The compiler prevents invalid property names.</p><h4>Understanding <code class=\"inline\">T[K]</code></h4><p><code class=\"inline\">T[K]</code> means 'the type of the selected property'.</p><pre><code>const user = {\n  id: 1,\n  name: 'John'\n};</code></pre><table><thead><tr><th>Expression</th><th>Result</th></tr></thead><tbody><tr><td><code class=\"inline\">T['id']</code></td><td>number</td></tr><tr><td><code class=\"inline\">T['name']</code></td><td>string</td></tr></tbody></table><h4>Real-world Angular Example</h4><pre><code>interface User {\n  id: number;\n  name: string;\n  email: string;\n}\n\nfunction getField<T, K extends keyof T>(item: T, field: K): T[K] {\n  return item[field];\n}\n\nconst user: User = {\n  id: 1,\n  name: 'John',\n  email: 'john@example.com'\n};\n\nconst email = getField(user, 'email');</code></pre><p>This pattern is commonly used in reusable Angular utility functions and libraries.</p><h4>Why use Generic Constraints?</h4><ul><li>Prevents invalid types.</li><li>Provides better IntelliSense.</li><li>Catches errors during compilation.</li><li>Improves code reuse.</li><li>Makes utility functions type-safe.</li></ul><h4>Difference between <code class=\"inline\">extends</code> and <code class=\"inline\">keyof</code></h4><table><thead><tr><th>extends</th><th>keyof</th></tr></thead><tbody><tr><td>Restricts the generic type.</td><td>Returns the property names of a type.</td></tr><tr><td>Requires a specific structure.</td><td>Restricts values to valid object keys.</td></tr><tr><td>Used for type constraints.</td><td>Used for property access.</td></tr></tbody></table><h4>Common Interview Questions</h4><ul><li><strong>What does <code class=\"inline\">extends</code> do in generics?</strong> It restricts the generic to types that satisfy a required shape.</li><li><strong>What does <code class=\"inline\">keyof</code> return?</strong> A union of all property names of a type.</li><li><strong>Why use <code class=\"inline\">K extends keyof T</code>?</strong> It ensures only valid property names can be passed.</li><li><strong>What does <code class=\"inline\">T[K]</code> mean?</strong> The type of the selected property.</li><li><strong>Where are generic constraints commonly used?</strong> Utility functions, reusable libraries, Angular helper methods, and API wrappers.</li></ul><h4>How to say it in an interview</h4><p><strong>\"Generic constraints make generics safer by limiting the types they accept. The <code class=\"inline\">extends</code> keyword requires a type to have a particular structure, while <code class=\"inline\">keyof</code> restricts values to the valid property names of an object. A common interview pattern is <code class=\"inline\">K extends keyof T</code>, which allows type-safe property access while preserving the correct return type using <code class=\"inline\">T[K]</code>.\"</strong></p>"
+  },
+  {
+    "id": "ts-why-typescript",
+    "category": "typescript",
+    "difficulty": "beginner",
+    "tags": [
+      "fundamentals",
+      "tsconfig",
+      "V.Imp"
+    ],
+    "question": "Why TypeScript over JavaScript? And what does tsconfig strict mode buy you?",
+    "answer": "<p>TypeScript is JavaScript + a <strong>static type system</strong> that runs at compile time and is erased at runtime. The wins:</p><ul><li><strong>Errors at compile time, not in production</strong> — typos, wrong argument shapes, null access surface in the editor.</li><li><strong>Refactoring at scale</strong> — rename a field and every stale usage lights up; the compiler is your regression net.</li><li><strong>Self-documenting APIs + tooling</strong> — autocomplete, jump-to-def, IntelliSense all flow from types.</li></ul><p><code class=\"inline\">\"strict\": true</code> turns on the family that makes types honest: <code class=\"inline\">strictNullChecks</code> (null/undefined must be handled), <code class=\"inline\">noImplicitAny</code> (no silent any), <code class=\"inline\">strictFunctionTypes</code>, <code class=\"inline\">strictPropertyInitialization</code>, and more. Without strict, TypeScript is mostly decoration.</p>",
+    "tip": "The honest caveat that scores points: types are erased at runtime — TS validates nothing about API responses; that's what zod/runtime validation is for.",
+    "code": "// tsconfig.json — the non-negotiable core\n{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noUncheckedIndexedAccess\": true,   // arr[i] is T | undefined — honest!\n    \"noImplicitOverride\": true\n  }\n}",
+    "lang": "json"
+  },
+  {
+    "id": "ts-type-assertion",
+    "category": "typescript",
+    "difficulty": "intermediate",
+    "tags": [
+      "types",
+      "assertion",
+      "gotcha"
+    ],
+    "question": "Type assertion (as) vs casting — what are the risks?",
+    "answer": "<p><code class=\"inline\">value as T</code> is <strong>not a cast</strong> — nothing is converted or checked at runtime. It's you overruling the compiler: \"trust me, this is a T\". If you're wrong, the error surfaces later as an undefined property somewhere far from the lie.</p><p>Risks: asserting API responses (<code class=\"inline\">res as User</code> validates nothing), and double assertion (<code class=\"inline\">x as unknown as T</code>) which can connect <em>any</em> two types.</p><p>Prefer, in order: proper typing/generics → <strong>type guards / narrowing</strong> (runtime-checked) → <code class=\"inline\">satisfies</code> (checks without widening) → assertion as the last resort at genuine trust boundaries (DOM lookups, JSON you control).</p>",
+    "tip": "TS does block absurd assertions (string as number) — but the unknown bridge defeats that, which is exactly why 'as unknown as' in a PR is a review flag.",
+    "code": "// legit: you know more than the compiler\nconst input = document.getElementById('email') as HTMLInputElement;\n\n// dangerous lie: no runtime check whatsoever\nconst user = (await res.json()) as User;   // prefer: parse with zod\n\n// checked alternative — narrowing:\nif (isUser(data)) { data.name }            // custom guard actually verified it",
+    "lang": "typescript"
+  },
+  {
+    "id": "ts-private-vs-hash",
+    "category": "typescript",
+    "difficulty": "intermediate",
+    "tags": [
+      "classes",
+      "access-modifiers"
+    ],
+    "question": "TypeScript private vs JavaScript # private fields?",
+    "answer": "<p><strong>TS <code class=\"inline\">private</code></strong> — a compile-time promise only; erased in the emitted JS, so at runtime the field is a normal property (<code class=\"inline\">obj['secret']</code> works, JSON.stringify includes it).</p><p><strong>JS <code class=\"inline\">#field</code></strong> — real language-level privacy (ES2022): inaccessible outside the class at <em>runtime</em>, invisible to bracket access, Object.keys and JSON.</p><p>Other differences: <code class=\"inline\">#</code> is \"hard private\" even from subclasses; TS also offers <code class=\"inline\">protected</code> (no JS equivalent) and parameter properties (<code class=\"inline\">constructor(private http: HttpClient)</code> — the Angular idiom).</p>",
+    "tip": "One-liner: private is enforced by the compiler, # is enforced by the engine. Angular codebases mostly use TS private because DI parameter properties require it.",
+    "code": "class A {\n  private tsSecret = 1;   // erased -> reachable at runtime\n  #jsSecret = 2;          // truly private\n}\nconst a = new A();\n(a as any).tsSecret;      // 1 — the 'privacy' was a type error only\n// (a as any).#jsSecret   // SyntaxError — # isn't even valid syntax outside",
+    "lang": "typescript"
   }
 ]
