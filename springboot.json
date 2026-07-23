@@ -6,7 +6,8 @@
     "tags": [
       "basics",
       "auto-configuration",
-      "starters"
+      "starters",
+      "V.Imp"
     ],
     "question": "What is Spring Boot and how does it differ from the Spring Framework?",
     "answer": "<p>Spring Boot is an <strong>opinionated layer on top of Spring</strong>. Spring gives you the IoC container, DI, and MVC but leaves assembly to you (XML, servlet config, dependency versions, a servlet container to deploy into). Spring Boot removes that assembly work with four things:</p><ul><li><strong>Auto-configuration</strong> — it inspects the classpath and configures sensible beans automatically (see a DataSource driver, get a DataSource).</li><li><strong>Starters</strong> — one dependency (<code class=\"inline\">spring-boot-starter-web</code>) pulls a curated, version-aligned set.</li><li><strong>Embedded server</strong> — Tomcat/Jetty/Undertow ship inside the jar, so it's <code class=\"inline\">java -jar</code>, not a WAR deployed to an external container.</li><li><strong>Production-ready features</strong> — Actuator health, metrics, and externalized config out of the box.</li></ul><p>Spring Boot does not replace Spring — every bean, proxy, and annotation is still core Spring underneath.</p>",
@@ -38,7 +39,8 @@
     "tags": [
       "annotations",
       "auto-configuration",
-      "component-scan"
+      "component-scan",
+      "V.Imp"
     ],
     "question": "What does @SpringBootApplication do?",
     "answer": "<p>It's a convenience meta-annotation combining three:</p><ul><li><code class=\"inline\">@SpringBootConfiguration</code> — a <code class=\"inline\">@Configuration</code> class; the primary source of bean definitions.</li><li><code class=\"inline\">@EnableAutoConfiguration</code> — turns on the classpath-driven auto-configuration machinery.</li><li><code class=\"inline\">@ComponentScan</code> — scans the annotated class's <strong>package and all sub-packages</strong> for components.</li></ul><p>That last point has a practical consequence: the main class's package placement defines your scanning root.</p>",
@@ -69,7 +71,8 @@
     "difficulty": "beginner",
     "tags": [
       "auto-configuration",
-      "conditional"
+      "conditional",
+      "V.Imp"
     ],
     "question": "What is auto-configuration and how does Spring Boot decide what to configure?",
     "answer": "<p>Auto-configuration means Boot registers beans for you based on <strong>what it finds on the classpath and in your config</strong>, rather than you declaring them. Add H2 and it configures an in-memory <code class=\"inline\">DataSource</code>; add <code class=\"inline\">spring-boot-starter-web</code> and it configures a <code class=\"inline\">DispatcherServlet</code> and embedded Tomcat.</p><p>The decisions are made by <code class=\"inline\">@Conditional</code> annotations on auto-configuration classes:</p><ul><li><code class=\"inline\">@ConditionalOnClass</code> — is this type on the classpath?</li><li><code class=\"inline\">@ConditionalOnMissingBean</code> — has the user not defined their own?</li><li><code class=\"inline\">@ConditionalOnProperty</code> — is this property set?</li></ul>",
@@ -134,7 +137,8 @@
     "tags": [
       "beans",
       "scopes",
-      "singleton"
+      "singleton",
+      "V.Imp"
     ],
     "question": "What are bean scopes, and why is the singleton default dangerous?",
     "answer": "<p>The scope controls how many instances the container creates:</p><ul><li><strong>singleton</strong> (default) — one instance per container, shared by every injection point.</li><li><strong>prototype</strong> — a new instance on every injection/lookup.</li><li><strong>request</strong>, <strong>session</strong>, <strong>application</strong>, <strong>websocket</strong> — web-aware scopes.</li></ul><p>The danger: a singleton is shared across <strong>all concurrent request threads</strong>. Any mutable instance field on a <code class=\"inline\">@Service</code> is shared state and a race condition. Spring beans must be stateless — that's the rule the scope default silently depends on.</p>",
@@ -150,7 +154,8 @@
     "tags": [
       "beans",
       "lifecycle",
-      "callbacks"
+      "callbacks",
+      "V.Imp"
     ],
     "question": "Walk through the Spring bean lifecycle.",
     "answer": "<p>For each bean the container: <strong>instantiates</strong> it (constructor, with constructor-injected deps), <strong>populates</strong> the remaining dependencies (fields/setters), runs <strong>*Aware</strong> callbacks, runs <code class=\"inline\">BeanPostProcessor.postProcessBeforeInitialization</code>, calls <strong>initialisation</strong> callbacks (<code class=\"inline\">@PostConstruct</code> → <code class=\"inline\">InitializingBean.afterPropertiesSet</code> → custom <code class=\"inline\">initMethod</code>), then runs <code class=\"inline\">postProcessAfterInitialization</code> — <strong>this is where AOP proxies are created</strong>. The bean is then in use, and on shutdown <code class=\"inline\">@PreDestroy</code> → <code class=\"inline\">DisposableBean.destroy</code> → custom <code class=\"inline\">destroyMethod</code> run (singletons only).</p>",
@@ -166,7 +171,8 @@
     "tags": [
       "dependency-injection",
       "ioc",
-      "autowired"
+      "autowired",
+      "V.Imp"
     ],
     "question": "How does dependency injection work in Spring, and why is constructor injection preferred?",
     "answer": "<p>The <strong>IoC container</strong> owns object creation: it reads bean definitions, resolves the dependency graph, instantiates beans, and injects collaborators — you never <code class=\"inline\">new</code> a service. Injection comes in three forms: constructor, setter, and field.</p><p><strong>Constructor injection is the recommendation</strong>, because it makes dependencies explicit in the signature, allows <code class=\"inline\">final</code> fields (immutable, thread-safe), fails fast at startup on a missing bean, exposes design smells (a 10-arg constructor screams that the class does too much), and lets you instantiate the class in a plain unit test with <code class=\"inline\">new</code> — no Spring, no reflection.</p><p>Since Spring 4.3, a single constructor needs no <code class=\"inline\">@Autowired</code> at all.</p>",
@@ -199,7 +205,8 @@
     "tags": [
       "rest",
       "mapping",
-      "controllers"
+      "controllers",
+      "V.Imp"
     ],
     "question": "How do you build a REST endpoint, and how do you bind inputs?",
     "answer": "<p>Annotate the class <code class=\"inline\">@RestController</code>, map methods with <code class=\"inline\">@GetMapping</code>/<code class=\"inline\">@PostMapping</code>/<code class=\"inline\">@PutMapping</code>/<code class=\"inline\">@PatchMapping</code>/<code class=\"inline\">@DeleteMapping</code> (all shorthands for <code class=\"inline\">@RequestMapping(method=...)</code>), and put the shared prefix on the class.</p><p>Input binding:</p><ul><li><code class=\"inline\">@PathVariable</code> — part of the path (<code class=\"inline\">/users/42</code>): identifies a resource.</li><li><code class=\"inline\">@RequestParam</code> — query string (<code class=\"inline\">?page=2</code>): filters, paging, optional bits.</li><li><code class=\"inline\">@RequestBody</code> — the JSON body, deserialised by Jackson.</li><li><code class=\"inline\">@RequestHeader</code>, <code class=\"inline\">@CookieValue</code> — headers and cookies.</li></ul><p>Return a DTO (auto-serialised to JSON) or <code class=\"inline\">ResponseEntity</code> when you need to control status and headers.</p>",
@@ -231,7 +238,8 @@
     "tags": [
       "exceptions",
       "error-handling",
-      "rest"
+      "rest",
+      "V.Imp"
     ],
     "question": "How do you handle exceptions globally in a REST API?",
     "answer": "<p><code class=\"inline\">@RestControllerAdvice</code> — a class of <code class=\"inline\">@ExceptionHandler</code> methods applied across all controllers, translating exceptions into consistent JSON and correct status codes. It keeps controllers free of try/catch and guarantees one error contract.</p><p>Since Boot 3, prefer <strong><code class=\"inline\">ProblemDetail</code></strong> (RFC 7807) as the response body — a standard error shape (<code class=\"inline\">type</code>, <code class=\"inline\">title</code>, <code class=\"inline\">status</code>, <code class=\"inline\">detail</code>, <code class=\"inline\">instance</code>) instead of a bespoke one. Extend <code class=\"inline\">ResponseEntityExceptionHandler</code> to also cover Spring's built-in MVC exceptions.</p>",
@@ -263,7 +271,8 @@
     "tags": [
       "actuator",
       "monitoring",
-      "operations"
+      "operations",
+      "V.Imp"
     ],
     "question": "What does Spring Boot Actuator provide?",
     "answer": "<p>Production-ready HTTP (and JMX) endpoints for operating the app:</p><ul><li><code class=\"inline\">/actuator/health</code> — aggregated health, with liveness/readiness probes for Kubernetes.</li><li><code class=\"inline\">/actuator/metrics</code> and <code class=\"inline\">/actuator/prometheus</code> — Micrometer metrics for scraping.</li><li><code class=\"inline\">/actuator/info</code>, <code class=\"inline\">/env</code>, <code class=\"inline\">/configprops</code>, <code class=\"inline\">/beans</code>, <code class=\"inline\">/mappings</code>, <code class=\"inline\">/loggers</code> (change log levels at runtime, no restart), <code class=\"inline\">/threaddump</code>, <code class=\"inline\">/heapdump</code>.</li></ul><p>Only <code class=\"inline\">health</code> is exposed over HTTP by default — you opt the rest in explicitly.</p>",
@@ -295,7 +304,8 @@
     "tags": [
       "transactions",
       "jpa",
-      "proxy"
+      "proxy",
+      "V.Imp"
     ],
     "question": "What does @Transactional do, and what's the self-invocation pitfall?",
     "answer": "<p>It declares a transaction boundary: Spring opens a transaction before the method and commits on normal return, or rolls back on a <strong>runtime</strong> exception. It works via an <strong>AOP proxy</strong> — the caller talks to a proxy that starts/commits around the real method.</p><p>Two consequences everyone must know:</p><ul><li><strong>Default rollback is unchecked exceptions only.</strong> A checked exception commits! Use <code class=\"inline\">rollbackFor = Exception.class</code> if you need otherwise.</li><li><strong>Self-invocation doesn't work.</strong> Calling <code class=\"inline\">this.otherMethod()</code> bypasses the proxy, so its <code class=\"inline\">@Transactional</code> is ignored — silently.</li></ul><p><code class=\"inline\">@Transactional</code> on a <code class=\"inline\">private</code> or <code class=\"inline\">final</code> method is also silently ignored — the proxy can't override it.</p>",
@@ -311,7 +321,8 @@
     "tags": [
       "transactions",
       "propagation",
-      "jpa"
+      "jpa",
+      "V.Imp"
     ],
     "question": "Explain transaction propagation. When would you use REQUIRES_NEW?",
     "answer": "<p>Propagation decides what happens when a transactional method is called while a transaction is <strong>already active</strong>:</p><ul><li><strong>REQUIRED</strong> (default) — join the existing one, or start one if none. Everything commits or rolls back together.</li><li><strong>REQUIRES_NEW</strong> — suspend the caller's transaction and run in a genuinely independent one. It commits even if the outer rolls back.</li><li><strong>NESTED</strong> — a savepoint inside the current transaction; can roll back to the savepoint without killing the outer.</li><li><strong>SUPPORTS</strong> / <strong>NOT_SUPPORTED</strong> / <strong>MANDATORY</strong> / <strong>NEVER</strong> — join if present / suspend / require / forbid.</li></ul><p><code class=\"inline\">REQUIRES_NEW</code>'s canonical use: <strong>audit or failure logging that must survive the rollback</strong> of the business transaction.</p>",
@@ -328,7 +339,8 @@
       "jpa",
       "performance",
       "hibernate",
-      "n+1"
+      "n+1",
+      "V.Imp"
     ],
     "question": "What is the N+1 select problem and how do you fix it?",
     "answer": "<p>You load N parents with one query, then touch a lazy association on each — firing <strong>one extra query per parent</strong>. 100 orders with <code class=\"inline\">order.getItems()</code> in a loop = 1 + 100 queries. It passes every test on 5 rows of dev data and destroys production.</p><p>Fixes, roughly in order of preference:</p><ul><li><strong><code class=\"inline\">join fetch</code></strong> in a <code class=\"inline\">@Query</code> — load the association in the same query.</li><li><strong><code class=\"inline\">@EntityGraph</code></strong> — declarative fetch plan on a repository method; composes with derived queries and paging.</li><li><strong><code class=\"inline\">@BatchSize</code></strong> — collapses N queries into N/batch <code class=\"inline\">IN</code> queries; the best option when you also need pagination.</li><li>Project straight into a <strong>DTO</strong> so the association is never traversed.</li></ul>",
@@ -345,7 +357,8 @@
       "jpa",
       "hibernate",
       "fetching",
-      "lazy"
+      "lazy",
+      "V.Imp"
     ],
     "question": "Lazy vs eager loading — and what causes LazyInitializationException?",
     "answer": "<p><strong>Lazy</strong> loads an association only when first accessed (via a Hibernate proxy); <strong>eager</strong> loads it immediately with the parent. Defaults: <code class=\"inline\">@OneToMany</code> and <code class=\"inline\">@ManyToMany</code> are LAZY; <code class=\"inline\">@ManyToOne</code> and <code class=\"inline\">@OneToOne</code> are <strong>EAGER</strong> — which surprises people and quietly causes join explosions.</p><p><code class=\"inline\">LazyInitializationException</code> happens when you touch a lazy association <strong>after the persistence context closed</strong> — typically in the controller or during JSON serialisation, once the <code class=\"inline\">@Transactional</code> service method has returned.</p>",
@@ -479,7 +492,8 @@
     "tags": [
       "security",
       "filters",
-      "authentication"
+      "authentication",
+      "V.Imp"
     ],
     "question": "How does Spring Security work? Explain the filter chain.",
     "answer": "<p>Spring Security is a <strong>chain of servlet filters</strong> that runs <em>before</em> the <code class=\"inline\">DispatcherServlet</code>. A single <code class=\"inline\">DelegatingFilterProxy</code> hands off to the <code class=\"inline\">FilterChainProxy</code>, which picks a matching <code class=\"inline\">SecurityFilterChain</code> and runs its ordered filters.</p><p>The key ones: <code class=\"inline\">SecurityContextPersistenceFilter</code> (restore the context), <code class=\"inline\">UsernamePasswordAuthenticationFilter</code> (form login), <code class=\"inline\">BearerTokenAuthenticationFilter</code> (JWT), <code class=\"inline\">ExceptionTranslationFilter</code> (turn auth failures into 401/403), and <code class=\"inline\">AuthorizationFilter</code> (enforce access rules) last.</p><p>Authentication succeeds → an <code class=\"inline\">Authentication</code> lands in the <code class=\"inline\">SecurityContextHolder</code> (a ThreadLocal) → authorization checks read it.</p>",
@@ -496,7 +510,8 @@
       "security",
       "jwt",
       "auth",
-      "stateless"
+      "stateless",
+      "V.Imp"
     ],
     "question": "How does JWT authentication work, and what are its trade-offs?",
     "answer": "<p>On login the server verifies credentials and returns a <strong>signed JWT</strong> (header.payload.signature). The client sends it as <code class=\"inline\">Authorization: Bearer &lt;token&gt;</code>; a filter validates the signature and expiry and populates the SecurityContext. Because the token is self-contained and signed, <strong>the server stores no session</strong> — any instance can validate it, which is why it suits horizontally-scaled and multi-service systems.</p><p>The trade-off that defines JWT: <strong>you cannot revoke one</strong>. It's valid until it expires. Logout, a ban, or a permission change won't stop a token already in the wild. The standard mitigation is short-lived access tokens (5–15 min) plus a long-lived, revocable <strong>refresh token</strong> stored server-side.</p>",
@@ -545,7 +560,8 @@
     "tags": [
       "cors",
       "security",
-      "web"
+      "web",
+      "V.Imp"
     ],
     "question": "How do you enable CORS, and what problem does it actually solve?",
     "answer": "<p>CORS is a <strong>browser</strong> mechanism that relaxes the same-origin policy. Your Angular app on <code class=\"inline\">localhost:4200</code> calling an API on <code class=\"inline\">localhost:8080</code> is a cross-origin request; the browser blocks reading the response unless the server returns <code class=\"inline\">Access-Control-Allow-Origin</code> naming that origin.</p><p>Configure globally via <code class=\"inline\">WebMvcConfigurer</code> (or <code class=\"inline\">CorsConfigurationSource</code> when Spring Security is present — security must know about it too), or per-controller with <code class=\"inline\">@CrossOrigin</code>.</p><p>Crucially: CORS is <strong>not</strong> a server-side security control. It protects <em>users' browsers</em> from other sites reading your responses with their cookies. It stops nothing from curl or a server.</p>",
@@ -561,7 +577,8 @@
     "tags": [
       "security",
       "csrf",
-      "cookies"
+      "cookies",
+      "V.Imp"
     ],
     "question": "What is CSRF, and when is it safe to disable CSRF protection?",
     "answer": "<p>CSRF tricks an authenticated user's browser into making a state-changing request to your site. Because browsers <strong>attach cookies automatically</strong> to any request to your domain, a hidden form on <code class=\"inline\">evil.com</code> can POST to your bank and the request arrives fully authenticated.</p><p>Spring's defence is a <strong>synchroniser token</strong>: the server issues an unpredictable token, forms echo it, and the server rejects requests without it. The attacker can send cookies but can't read your token (that's the same-origin policy).</p><p>Disabling it is safe <strong>only when authentication isn't ambient</strong> — i.e. a stateless API using an <code class=\"inline\">Authorization: Bearer</code> header, since a browser never attaches that automatically. If you authenticate with cookies or a session, CSRF protection is required, API or not.</p>",
@@ -694,7 +711,8 @@
       "resilience",
       "circuit-breaker",
       "retry",
-      "microservices"
+      "microservices",
+      "V.Imp"
     ],
     "question": "What is a circuit breaker and how do you use Resilience4j?",
     "answer": "<p>A circuit breaker stops you from hammering a dependency that's already failing. It tracks the failure rate and moves between three states:</p><ul><li><strong>CLOSED</strong> — calls pass through; failures counted.</li><li><strong>OPEN</strong> — the failure threshold was crossed; calls <strong>fail immediately</strong> without touching the dependency (fail fast) and the fallback runs.</li><li><strong>HALF_OPEN</strong> — after a wait, a few probe calls are allowed. Succeed → CLOSED; fail → OPEN again.</li></ul><p>The point is twofold: <strong>protect yourself</strong> (a dead dependency shouldn't consume your threads waiting on timeouts) and <strong>protect the dependency</strong> (stop piling load on a struggling service so it can recover).</p><p>Resilience4j is the standard choice — Hystrix is end-of-life.</p>",
@@ -827,7 +845,8 @@
       "filters",
       "interceptors",
       "aop",
-      "web"
+      "web",
+      "V.Imp"
     ],
     "question": "Filter vs Interceptor vs AOP — which do you use when?",
     "answer": "<p>Three layers, each seeing progressively more context:</p><ul><li><strong>Filter</strong> (Servlet API) — outermost. Sees every request including static resources and errors, before Spring MVC exists. It can wrap/replace the request and response. Use for: security, CORS, request logging, compression, correlation ids.</li><li><strong>Interceptor</strong> (Spring MVC) — inside the DispatcherServlet, so it knows the <strong>handler method</strong> that will run. Use for: auth checks needing the target method, adding model attributes, timing controllers.</li><li><strong>AOP aspect</strong> — around any Spring bean method, with typed arguments and the return value. Use for: transactions, caching, business-level logging, retries.</li></ul><p>Rule of thumb: the further out, the broader the reach but the less context. Pick the innermost layer that has what you need.</p>",
@@ -927,7 +946,8 @@
     "tags": [
       "dependency-injection",
       "beans",
-      "design"
+      "design",
+      "V.Imp"
     ],
     "question": "What causes a circular dependency and how do you fix it?",
     "answer": "<p>Bean A needs B and B needs A. With <strong>constructor injection</strong> it's genuinely impossible — neither can be built first — so Spring fails at startup with a clear cycle report. Since Boot 2.6 this is the default behaviour: circular references are <strong>prohibited</strong> unless you explicitly re-enable them.</p><p>The right fix is almost never a Spring trick — it's a <strong>design signal</strong>. A cycle means the responsibilities are wrong. Options, best first:</p><ul><li><strong>Extract</strong> the shared logic into a third bean both depend on.</li><li><strong>Invert</strong> one direction with an <strong>event</strong> — A publishes, B listens; the compile-time edge disappears.</li><li><code class=\"inline\">@Lazy</code> on one injection point — a proxy defers the real resolution.</li><li><code class=\"inline\">spring.main.allow-circular-references=true</code> — a temporary escape hatch, not a fix.</li></ul>",
@@ -1201,5 +1221,422 @@
     "code": "// 1. plain object -> 200\n@GetMapping(\"/{id}\")\nUserDto get(@PathVariable Long id) { return service.find(id); }\n\n// 2. fixed status\n@PostMapping\n@ResponseStatus(HttpStatus.CREATED)\nUserDto create(@RequestBody @Valid CreateUserRequest r) { return service.create(r); }\n\n// 3. full control — status varies + Location header\n@PostMapping\nResponseEntity<UserDto> create(@RequestBody @Valid CreateUserRequest r) {\n  UserDto saved = service.create(r);\n  return ResponseEntity\n      .created(URI.create(\"/api/users/\" + saved.id()))   // 201 + Location\n      .body(saved);\n}\n\n// exceptions carry status too\n@ResponseStatus(HttpStatus.NOT_FOUND)\npublic class NotFoundException extends RuntimeException { }",
     "lang": "java",
     "deep": "<h4>The codes that matter</h4><pre><code>200 OK           GET, or PUT that returns the updated body\n201 Created      POST — MUST include a Location header pointing at the new resource\n202 Accepted     async — \"I took it, it's not done yet\" (return a status URL)\n204 No Content   DELETE, or PUT with nothing to return\n400 Bad Request  malformed / validation failed\n401 Unauthorized WRONGLY NAMED — it means UNAUTHENTICATED (who are you?)\n403 Forbidden    authenticated, but not allowed\n404 Not Found    absent — or deliberately hiding a 403 from an unauthorised user\n409 Conflict     duplicate, or optimistic lock failure\n422 Unprocessable syntactically fine, semantically invalid\n429 Too Many Requests   + Retry-After\n500 Internal     you broke\n503 Unavailable  overloaded/down — + Retry-After</code></pre><h4>401 vs 403</h4><p>The names are historically backwards. <strong>401 = I don't know who you are</strong> (no or invalid credentials — the client should authenticate or refresh). <strong>403 = I know who you are and you still can't</strong> (re-authenticating won't help). Returning 403 for an expired token is a real bug: the client sees \"forbidden\", doesn't refresh, and the user is stuck.</p><h4>404 as a security choice</h4><p>Returning 403 for someone else's document confirms that it exists — an enumeration oracle. Returning 404 leaks nothing. GitHub does this for private repos: they're indistinguishable from nonexistent ones. A deliberate, defensible trade of clarity for privacy.</p><h4>Don't tunnel errors through 200</h4><pre><code>HTTP/1.1 200 OK\n{\"success\": false, \"error\": \"user not found\"}</code></pre><p>Consequences: every client must parse the body to know if it worked; monitoring reports 100% success while users see failures; proxies cache the \"error\"; retry logic can't work; and your error-rate dashboards are fiction. The status line exists precisely so intermediaries don't need to understand your payload.</p><h4>Location on 201</h4><pre><code>HTTP/1.1 201 Created\nLocation: /api/users/1042</code></pre><p>Part of the REST contract — the client learns the new resource's URI without guessing. Widely skipped, and easy credit.</p><h4>202 for long work</h4><p>If the work takes 30s, don't hold the connection: return <code class=\"inline\">202 Accepted</code> with a <code class=\"inline\">Location</code> pointing at a status resource the client polls. Holding a thread (and risking a proxy timeout) for 30s is how you turn a slow feature into an outage.</p><h4>How to say it in an interview</h4><p>“Return the object for a plain 200, <code class=\"inline\">@ResponseStatus</code> for a fixed one, and <code class=\"inline\">ResponseEntity</code> when the status varies or I need headers — a POST returning 201 with a Location header, for instance. I care about getting these right because monitoring, caches, and client retry logic all key off the status: returning 200 with <code class=\"inline\">success: false</code> means your dashboards show 100% success while users are failing. And 401 is unauthenticated, 403 is authenticated-but-not-allowed — sending 403 for an expired token stops clients refreshing.”</p>"
+  },
+  {
+    "id": "sb-prototype-in-singleton",
+    "category": "springboot",
+    "difficulty": "advanced",
+    "tags": [
+      "scopes",
+      "di",
+      "gotcha"
+    ],
+    "question": "What happens when a prototype bean is injected into a singleton?",
+    "answer": "<p><strong>You get one frozen prototype instance</strong> — injection happens once, at singleton creation, so the \"prototype\" behaves like a singleton for the rest of the app's life. The container never re-injects.</p><p>Fixes:</p><ul><li><code class=\"inline\">ObjectProvider&lt;Proto&gt;</code> / <code class=\"inline\">Provider&lt;Proto&gt;</code> — inject a factory and call <code class=\"inline\">getObject()</code> per use.</li><li><code class=\"inline\">@Scope(value = \"prototype\", proxyMode = TARGET_CLASS)</code> — inject a scoped proxy that resolves a fresh instance per method call.</li><li><code class=\"inline\">@Lookup</code> on an abstract method — Spring overrides it to fetch a new bean.</li></ul>",
+    "tip": "This is the standard scope-mismatch trap. Same disease as injecting a request-scoped bean into a singleton — same scoped-proxy cure.",
+    "code": "@Component\npublic class ReportService {\n  private final ObjectProvider<ReportBuilder> builders;\n\n  ReportService(ObjectProvider<ReportBuilder> builders) { this.builders = builders; }\n\n  public Report build() {\n    return builders.getObject().generate(); // fresh prototype per call\n  }\n}",
+    "lang": "java",
+    "deep": "<h4>Why it happens</h4><p>Scopes control <em>creation</em>, not <em>injection</em>. The singleton is wired once at startup; whatever instance the container handed it at that moment is stored in a plain field forever. The prototype scope only promises \"a new instance per <code class=\"inline\">getBean()</code>\" — and there was exactly one <code class=\"inline\">getBean()</code>.</p><h4>The three fixes compared</h4><ul><li><strong>ObjectProvider</strong> — explicit and honest: the dependency is a factory. Best default; also gives <code class=\"inline\">getIfAvailable()</code>, <code class=\"inline\">stream()</code>.</li><li><strong>Scoped proxy</strong> — transparent but magical: the injected object is a CGLIB proxy; every method call does a container lookup. Can surprise teammates and defeats <code class=\"inline\">==</code> identity checks.</li><li><strong>@Lookup</strong> — works on abstract methods, requires the class to be subclass-able (not final); rarely seen in modern code.</li></ul><h4>Interview framing</h4><p>Lead with the symptom: \"stateful prototype beans silently shared across requests — a concurrency bug in waiting.\" Then name ObjectProvider as your preferred fix and scoped proxies as the transparent alternative.</p>"
+  },
+  {
+    "id": "sb-bean-vs-component",
+    "category": "springboot",
+    "difficulty": "intermediate",
+    "tags": [
+      "di",
+      "configuration",
+      "annotations"
+    ],
+    "question": "@Bean vs @Component? And what does proxyBeanMethods do in @Configuration?",
+    "answer": "<p><strong>@Component</strong> — class-level; the component scan finds <em>your</em> class and instantiates it. <strong>@Bean</strong> — method-level inside a configuration class; <em>you</em> write the factory code, so it's the only way to register <strong>third-party classes</strong> you can't annotate (DataSource, ObjectMapper, RestClient) or beans needing build logic.</p><p><code class=\"inline\">@Configuration(proxyBeanMethods = true)</code> (default) CGLIB-proxies the config class so <code class=\"inline\">@Bean</code> methods calling each other still return the <strong>same singleton</strong>. Set it to <code class=\"inline\">false</code> for faster startup when your @Bean methods don't cross-call — all of Spring Boot's own auto-configurations do this.</p>",
+    "tip": "One-liner: @Component = 'scan my class', @Bean = 'run my factory method'. proxyBeanMethods exists purely to make direct @Bean-method calls singleton-safe.",
+    "code": "@Configuration(proxyBeanMethods = false)\npublic class HttpConfig {\n  @Bean RestClient restClient(RestClient.Builder b) {   // third-party type\n    return b.baseUrl(\"https://api.example.com\").build();\n  }\n}",
+    "lang": "java",
+    "deep": "<h4>What the CGLIB proxy actually does</h4><pre><code>@Configuration                    // proxyBeanMethods = true\nclass Cfg {\n  @Bean A a() { return new A(); }\n  @Bean B b() { return new B(a()); }   // a() intercepted -> returns the ONE container A\n}</code></pre><p>Without the proxy (<code class=\"inline\">proxyBeanMethods = false</code> or <code class=\"inline\">@Configuration</code>-less \"lite mode\"), <code class=\"inline\">a()</code> is a plain method call → a <strong>second A instance</strong> that the container doesn't know about. The safe pattern in lite mode is parameter injection: <code class=\"inline\">@Bean B b(A a)</code>.</p><h4>When each registration style wins</h4><ul><li><strong>@Component/@Service</strong> — your own classes; less ceremony, stereotype semantics (@Repository exception translation).</li><li><strong>@Bean</strong> — third-party types, conditional wiring logic, multiple variants of the same type with @Qualifier.</li></ul><h4>Why Spring Boot uses proxyBeanMethods = false everywhere</h4><p>Hundreds of auto-config classes × CGLIB subclass generation = measurable startup cost and metaspace. Since they all use parameter injection anyway, the proxy buys nothing. Same reasoning applies to your configs — it's a free micro-optimization if you follow the parameter-injection style.</p>"
+  },
+  {
+    "id": "sb-restcontroller-vs-controller",
+    "category": "springboot",
+    "difficulty": "beginner",
+    "tags": [
+      "rest",
+      "mvc",
+      "annotations"
+    ],
+    "question": "@RestController vs @Controller?",
+    "answer": "<p><code class=\"inline\">@RestController</code> = <code class=\"inline\">@Controller</code> + <code class=\"inline\">@ResponseBody</code> on every handler: return values are serialized straight into the response body (JSON via Jackson) — no view resolution.</p><p><code class=\"inline\">@Controller</code> alone is MVC-style: a returned String is a <strong>view name</strong> resolved to a template (Thymeleaf/JSP). To return data from it you'd annotate individual methods with <code class=\"inline\">@ResponseBody</code>.</p>",
+    "tip": "Symptom of mixing them up: a @Controller returning \"userList\" gives a 404/500 looking for a template called userList instead of returning JSON.",
+    "code": "@RestController                 // JSON API\n@RequestMapping(\"/api/users\")\nclass UserApi {\n  @GetMapping List<UserDto> all() { return service.all(); } // -> JSON array\n}\n\n@Controller                     // server-rendered pages\nclass UserPages {\n  @GetMapping(\"/users\") String page(Model m) { return \"users\"; } // -> users.html\n}",
+    "lang": "java",
+    "deep": "<h4>What @ResponseBody actually triggers</h4><p>Instead of the ViewResolver, Spring hands the return value to an <code class=\"inline\">HttpMessageConverter</code> chosen by content negotiation — <code class=\"inline\">MappingJackson2HttpMessageConverter</code> for JSON, others for XML/strings/bytes. <code class=\"inline\">ResponseEntity&lt;T&gt;</code> works in both controller types and adds status + headers control.</p><h4>Related pairs worth volunteering</h4><ul><li><code class=\"inline\">@RestControllerAdvice</code> = <code class=\"inline\">@ControllerAdvice</code> + <code class=\"inline\">@ResponseBody</code> — same sugar for global exception handlers.</li><li>In a pure API service there's rarely a reason to use plain @Controller at all; in a mixed app (pages + a few endpoints) you'll see both.</li></ul>"
+  },
+  {
+    "id": "sb-rest-constraints",
+    "category": "springboot",
+    "difficulty": "intermediate",
+    "tags": [
+      "rest",
+      "architecture",
+      "V.Imp"
+    ],
+    "question": "What is REST? What are its constraints?",
+    "answer": "<p>REST (Representational State Transfer) is an architectural style for APIs where <strong>resources</strong> (nouns, identified by URIs) are manipulated through <strong>uniform HTTP methods</strong>, exchanging representations (usually JSON).</p><p>The six constraints:</p><ul><li><strong>Client–server</strong> — separated concerns.</li><li><strong>Stateless</strong> — every request carries all context; no server session.</li><li><strong>Cacheable</strong> — responses declare cacheability.</li><li><strong>Uniform interface</strong> — resource URIs + standard methods + self-descriptive messages (+ HATEOAS in the full definition).</li><li><strong>Layered system</strong> — clients can't tell if they hit a proxy, gateway or origin.</li><li><strong>Code on demand</strong> (optional).</li></ul>",
+    "tip": "Statelessness is the constraint interviewers dig into: it's what makes horizontal scaling trivial — any instance can serve any request.",
+    "code": "GET    /orders          # list (collection resource)\nPOST   /orders          # create\nGET    /orders/42       # read one\nPUT    /orders/42       # replace\nDELETE /orders/42       # delete\n# verbs live in the METHOD, never the path (/getOrders is RPC, not REST)",
+    "lang": "bash",
+    "deep": "<h4>REST vs RPC-over-HTTP</h4><p>Most \"REST APIs\" are really JSON-over-HTTP with resource-ish URLs — and that's fine. Knowing the difference is the interview point: REST models <em>state transfer of resources</em>; RPC models <em>calling procedures</em> (<code class=\"inline\">/api/calculateTax</code>). Some operations are genuinely verbs — the pragmatic pattern is a sub-resource: <code class=\"inline\">POST /orders/42/cancellation</code>.</p><h4>How statelessness meets sessions</h4><p>\"Stateless\" forbids <em>server-side conversation state</em>, not authentication: the JWT/API key in each request carries identity. Shopping-cart-style state moves to the database or the client — that's why REST + horizontal scaling + load balancers need no sticky sessions.</p><h4>Richardson maturity model (nice to name-drop)</h4><ol><li>Level 0: one URL, POST everything (SOAP style).</li><li>Level 1: resource URIs.</li><li>Level 2: + HTTP verbs and status codes — <strong>where almost everyone stops</strong>.</li><li>Level 3: + HATEOAS links.</li></ol>"
+  },
+  {
+    "id": "sb-http-methods",
+    "category": "springboot",
+    "difficulty": "intermediate",
+    "tags": [
+      "rest",
+      "http",
+      "V.Imp"
+    ],
+    "question": "GET/POST/PUT/PATCH/DELETE — and PUT vs PATCH vs POST?",
+    "answer": "<ul><li><strong>GET</strong> — read; safe (no side effects) and idempotent.</li><li><strong>POST</strong> — create / non-idempotent action; two identical POSTs = two resources.</li><li><strong>PUT</strong> — <strong>full replace</strong> at a known URI; idempotent — repeating it yields the same final state.</li><li><strong>PATCH</strong> — <strong>partial update</strong> (only the fields sent); not guaranteed idempotent by spec, though field-set patches usually are.</li><li><strong>DELETE</strong> — remove; idempotent (second call: state unchanged, often 404).</li></ul><p><strong>PUT vs POST</strong>: PUT when the client knows the resource URI (<code class=\"inline\">PUT /users/42</code>); POST to a collection when the server assigns identity (<code class=\"inline\">POST /users</code> → 201 + Location).</p>",
+    "tip": "The trap: PUT with a missing field means 'replace with a version that lacks that field' — nulling it out. PATCH means 'leave unsent fields alone'.",
+    "code": "PUT /users/42\n{ \"name\": \"Chinmaya\", \"email\": \"c@x.com\" }   # full document\n\nPATCH /users/42\n{ \"email\": \"new@x.com\" }                      # only what changes",
+    "lang": "bash",
+    "deep": "<h4>Safe vs idempotent (two different guarantees)</h4><table-like><p><strong>Safe</strong> = no state change at all (GET, HEAD, OPTIONS). <strong>Idempotent</strong> = N identical calls end in the same state as 1 (GET, PUT, DELETE, HEAD). POST is neither; PATCH is officially neither, practically often idempotent.</p></table-like><h4>Why idempotency matters operationally</h4><p>Retries. Networks fail <em>after</em> the server processed the request; a client that got a timeout can safely retry PUT/DELETE but must not blindly retry POST — that's how double payments happen. The fix for POST retries is an <strong>Idempotency-Key</strong> header the server deduplicates on.</p><h4>Rapid-fire adjacent facts</h4><ul><li>GET with a body: allowed by HTTP grammar, but servers/proxies may ignore it — never design for it (use POST /search or query params).</li><li>PATCH formats: plain merge patch (RFC 7386) vs JSON Patch operations array (RFC 6902).</li><li>201 + Location header is the canonical POST-create response; PUT returns 200/204 (or 201 if it created).</li></ul>"
+  },
+  {
+    "id": "sb-status-codes",
+    "category": "springboot",
+    "difficulty": "intermediate",
+    "tags": [
+      "rest",
+      "http",
+      "V.Imp"
+    ],
+    "question": "Which HTTP status code do you return when? (incl. 401 vs 403, 502 vs 503)",
+    "answer": "<p><strong>2xx</strong>: 200 OK; 201 Created (+Location); 204 No Content (successful DELETE/PUT with no body).</p><p><strong>4xx (client's fault)</strong>: 400 malformed/invalid request; <strong>401 Unauthorized = not authenticated</strong> (missing/expired credentials); <strong>403 Forbidden = authenticated but not allowed</strong>; 404 not found; 405 method not allowed; 409 conflict (duplicate, version clash); 415 unsupported media type; 429 too many requests.</p><p><strong>5xx (server's fault)</strong>: 500 unhandled error; <strong>502 Bad Gateway = upstream returned garbage/refused</strong>; <strong>503 Service Unavailable = server itself overloaded/down for maintenance</strong>; 504 upstream timeout.</p>",
+    "tip": "401 vs 403 is the single most asked pair: 401 = \"who are you?\" (fix: log in), 403 = \"I know you, and no\" (fix: get permission). Pedantically 401 is misnamed — it's about authentication.",
+    "code": "// Spring: pick codes deliberately\n@PostMapping ResponseEntity<UserDto> create(@Valid @RequestBody UserReq r) {\n  UserDto u = service.create(r);                       // duplicate -> throw -> 409\n  return ResponseEntity.created(URI.create(\"/users/\" + u.id())).body(u);\n}",
+    "lang": "java",
+    "deep": "<h4>The decision path</h4><ol><li>Did the request even parse / validate? No → <strong>400</strong> (validation detail in a problem+json body).</li><li>Do we know who's calling? No → <strong>401</strong> + <code class=\"inline\">WWW-Authenticate</code>.</li><li>Are they allowed this resource? No → <strong>403</strong> (or 404 if revealing existence is itself a leak — GitHub does this for private repos).</li><li>Does the resource exist? No → <strong>404</strong>.</li><li>Does current state permit it? No → <strong>409</strong> (already paid, version conflict) or 422 (semantic validation).</li><li>Success → 200/201/204.</li></ol><h4>502 vs 503 vs 504 at the load balancer</h4><ul><li><strong>502</strong> — nginx reached your app but got a bad/refused response (app crashed mid-restart).</li><li><strong>503</strong> — the service says \"not now\": failing health checks, connection pool exhausted, maintenance. Often carries <code class=\"inline\">Retry-After</code>.</li><li><strong>504</strong> — upstream took too long; the gateway gave up.</li></ul><h4>Spring wiring</h4><p>Map exceptions centrally in <code class=\"inline\">@RestControllerAdvice</code>: <code class=\"inline\">MethodArgumentNotValidException → 400</code>, <code class=\"inline\">AccessDeniedException → 403</code>, <code class=\"inline\">EntityNotFoundException → 404</code>, <code class=\"inline\">OptimisticLockingFailureException → 409</code>, fallback → 500. Spring Boot 3's <code class=\"inline\">ProblemDetail</code> gives you RFC 7807 bodies for free.</p>"
+  },
+  {
+    "id": "sb-content-negotiation",
+    "category": "springboot",
+    "difficulty": "beginner",
+    "tags": [
+      "rest",
+      "http"
+    ],
+    "question": "What is content negotiation? What do produces and consumes do?",
+    "answer": "<p>Client and server agreeing on a <strong>representation format</strong>: the client states what it can send (<code class=\"inline\">Content-Type</code> header) and what it wants back (<code class=\"inline\">Accept</code> header); the server picks a matching <code class=\"inline\">HttpMessageConverter</code>.</p><ul><li><code class=\"inline\">consumes = \"application/json\"</code> — this handler only accepts that request Content-Type; mismatch → <strong>415</strong> Unsupported Media Type.</li><li><code class=\"inline\">produces = \"application/json\"</code> — only serves clients whose Accept matches; mismatch → <strong>406</strong> Not Acceptable.</li></ul>",
+    "tip": "415 = your request body's type is wrong; 406 = we can't produce what you asked for. Two different headers, two different codes.",
+    "code": "@PostMapping(value = \"/report\",\n    consumes = MediaType.APPLICATION_JSON_VALUE,\n    produces = MediaType.APPLICATION_PDF_VALUE)\npublic ResponseEntity<byte[]> report(@RequestBody ReportReq r) { ... }",
+    "lang": "java",
+    "deep": "<h4>How Spring resolves it</h4><p><code class=\"inline\">ContentNegotiationManager</code> checks, in order: path extension (disabled by default now), the <code class=\"inline\">format</code> query param (if enabled), then the <code class=\"inline\">Accept</code> header. The chosen media type selects among registered converters (Jackson JSON by default; add <code class=\"inline\">jackson-dataformat-xml</code> and XML negotiation lights up automatically).</p><h4>Where it shows up in interviews</h4><ul><li>produces/consumes can also <em>route</em>: two handlers on the same path split by media type — one returns JSON, one streams a PDF.</li><li>Media-type API versioning (<code class=\"inline\">Accept: application/vnd.company.v2+json</code>) is content negotiation repurposed.</li><li>Charset and quality factors: <code class=\"inline\">Accept: application/json;q=0.9, */*;q=0.1</code> — the server honors the highest q it can produce.</li></ul>"
+  },
+  {
+    "id": "sb-hateoas",
+    "category": "springboot",
+    "difficulty": "intermediate",
+    "tags": [
+      "rest",
+      "architecture"
+    ],
+    "question": "What is HATEOAS?",
+    "answer": "<p><strong>Hypermedia As The Engine Of Application State</strong> — responses embed <strong>links to the actions available next</strong>, so clients navigate the API like a website instead of hard-coding URL patterns and business rules.</p><p>An order response might carry <code class=\"inline\">self</code>, <code class=\"inline\">cancel</code>, and <code class=\"inline\">payment</code> links — and simply omit <code class=\"inline\">cancel</code> once shipped, so the client never re-implements \"when is cancelling allowed\".</p><p>It's the Richardson maturity level 3 that most real APIs skip; Spring supports it via <code class=\"inline\">spring-boot-starter-hateoas</code> (<code class=\"inline\">EntityModel</code>, <code class=\"inline\">linkTo(methodOn(...))</code>).</p>",
+    "tip": "Honest interview take: know what it is, say most production APIs stop at level 2 because generic hypermedia clients rarely exist — but the 'server owns the state machine' idea survives in things like payment-flow APIs.",
+    "code": "{\n  \"id\": 42, \"status\": \"PLACED\", \"total\": 1200,\n  \"_links\": {\n    \"self\":    { \"href\": \"/orders/42\" },\n    \"cancel\":  { \"href\": \"/orders/42/cancellation\" },\n    \"payment\": { \"href\": \"/orders/42/payment\" }\n  }\n}",
+    "lang": "json",
+    "deep": "<h4>The benefit, concretely</h4><p>Without HATEOAS the client hard-codes: URL templates, and rules like \"cancellable while status ∈ {PLACED, CONFIRMED}\". Both now live in two codebases and drift. With links, the server is the single source of truth for both — clients just check \"is there a cancel link?\".</p><h4>Spring HATEOAS in two lines</h4><pre><code>EntityModel.of(orderDto,\n  linkTo(methodOn(OrderController.class).get(id)).withSelfRel(),\n  linkTo(methodOn(OrderController.class).cancel(id)).withRel(\"cancel\"));</code></pre><h4>Why adoption is low</h4><ul><li>Payload bloat and client libraries that ignore links anyway.</li><li>OpenAPI/Swagger became the de-facto contract instead — docs at build time rather than links at runtime.</li><li>GraphQL took the \"flexible client navigation\" niche.</li></ul>"
+  },
+  {
+    "id": "sb-tx-isolation",
+    "category": "springboot",
+    "difficulty": "advanced",
+    "tags": [
+      "transactions",
+      "jpa",
+      "isolation"
+    ],
+    "question": "What are transaction isolation levels, and how do you set them in Spring?",
+    "answer": "<p>Isolation controls what concurrent transactions can see of each other, trading correctness against throughput:</p><ul><li><strong>READ_UNCOMMITTED</strong> — can read uncommitted changes (<em>dirty reads</em>).</li><li><strong>READ_COMMITTED</strong> — only committed data; but re-reading a row may give a new value (<em>non-repeatable read</em>). Default in PostgreSQL/Oracle.</li><li><strong>REPEATABLE_READ</strong> — re-reads are stable; new matching rows may still appear (<em>phantom reads</em>). Default in MySQL/InnoDB.</li><li><strong>SERIALIZABLE</strong> — as if transactions ran one at a time; slowest, may abort with serialization errors.</li></ul><p>Spring: <code class=\"inline\">@Transactional(isolation = Isolation.REPEATABLE_READ)</code> — the default <code class=\"inline\">Isolation.DEFAULT</code> just uses the database's setting.</p>",
+    "tip": "Memorize the anomaly ladder: dirty read → non-repeatable read → phantom. Each level up eliminates the next anomaly.",
+    "code": "@Transactional(isolation = Isolation.SERIALIZABLE)\npublic void transfer(long from, long to, BigDecimal amt) {\n  // balance check + debit + credit must see a frozen world\n}",
+    "lang": "java",
+    "deep": "<h4>The anomalies with concrete scenes</h4><ul><li><strong>Dirty read</strong>: T2 reads T1's uncommitted debit; T1 rolls back → T2 acted on money that never moved.</li><li><strong>Non-repeatable read</strong>: T1 reads balance=100, T2 commits an update to 50, T1 re-reads 50 inside the same transaction.</li><li><strong>Phantom</strong>: T1 runs <code class=\"inline\">COUNT(*) WHERE dept='X'</code> twice; T2 inserts a matching row in between — the second count differs.</li></ul><h4>What engines actually do</h4><p>PostgreSQL uses MVCC — readers never block writers; its READ_COMMITTED takes a fresh snapshot per <em>statement</em>, REPEATABLE_READ per <em>transaction</em> (which also kills phantoms there — stricter than the SQL standard requires). MySQL's REPEATABLE_READ uses next-key locks to block most phantoms too.</p><h4>Practical guidance for the interview</h4><ul><li>Most services live on READ_COMMITTED + <strong>optimistic locking (@Version)</strong> for lost-update protection — cheaper than raising isolation globally.</li><li>Raise isolation only for genuinely invariant-critical sections (money movement, inventory reservation), and be ready to retry serialization failures.</li><li>Isolation is per-connection/transaction — set it on the @Transactional boundary, not globally, when only one flow needs it.</li></ul>"
+  },
+  {
+    "id": "sb-authn-vs-authz",
+    "category": "springboot",
+    "difficulty": "beginner",
+    "tags": [
+      "security",
+      "V.Imp"
+    ],
+    "question": "Authentication vs authorization?",
+    "answer": "<p><strong>Authentication (authn)</strong> — proving <em>who you are</em>: credentials, JWT validation, OAuth login. Fails with <strong>401</strong>.</p><p><strong>Authorization (authz)</strong> — deciding <em>what you may do</em>, evaluated after identity is known: roles, permissions, resource ownership. Fails with <strong>403</strong>.</p><p>In Spring Security: authentication happens in the filter chain (e.g. a JWT filter builds the <code class=\"inline\">Authentication</code> in the <code class=\"inline\">SecurityContext</code>); authorization happens in <code class=\"inline\">authorizeHttpRequests</code> rules and <code class=\"inline\">@PreAuthorize</code> checks against it.</p>",
+    "tip": "Airport analogy that lands: passport check = authentication; boarding pass for THIS flight = authorization.",
+    "code": "http.authorizeHttpRequests(a -> a\n    .requestMatchers(\"/admin/**\").hasRole(\"ADMIN\")   // authorization rule\n    .anyRequest().authenticated())                     // authentication required\n  .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class); // authn",
+    "lang": "java",
+    "deep": "<h4>Where each lives in a JWT flow</h4><ol><li><strong>Login (authn)</strong>: POST /login verifies password (BCrypt) → issues JWT containing subject + roles.</li><li><strong>Per request (authn)</strong>: JWT filter validates signature/expiry → populates SecurityContext. Bad/missing token → 401.</li><li><strong>Per request (authz)</strong>: URL rules, then method security (<code class=\"inline\">@PreAuthorize(\"hasRole('ADMIN') or #id == principal.id\")</code>). Insufficient → 403 (AccessDeniedException).</li></ol><h4>Models of authorization worth naming</h4><ul><li><strong>RBAC</strong> — roles bundle permissions; simplest, coarse.</li><li><strong>Permission-based</strong> — fine-grained authorities (<code class=\"inline\">order:cancel</code>); roles become permission sets.</li><li><strong>ABAC / resource-based</strong> — decisions use attributes (is this MY order?) — the <code class=\"inline\">#id == principal.id</code> SpEL pattern.</li></ul><h4>Common interview follow-up</h4><p>\"Can you be authorized but not authenticated?\" — anonymous/public endpoints are the edge case: authorization rule <code class=\"inline\">permitAll</code> applies without identity. Otherwise authz presupposes authn.</p>"
+  },
+  {
+    "id": "sb-common-vulns",
+    "category": "springboot",
+    "difficulty": "intermediate",
+    "tags": [
+      "security",
+      "owasp",
+      "V.Imp"
+    ],
+    "question": "SQL injection, XSS, CSRF — what are they and how do you prevent each?",
+    "answer": "<ul><li><strong>SQL injection</strong> — user input concatenated into SQL becomes SQL. Prevent: <strong>parameterized queries always</strong> — JPA/JPQL named params, PreparedStatement; never string-build queries.</li><li><strong>XSS</strong> — attacker-supplied script executes in victims' browsers (stored/reflected/DOM). Prevent: output encoding by default (Angular interpolation auto-escapes), <code class=\"inline\">Content-Security-Policy</code>, sanitize rich HTML input, HttpOnly cookies so scripts can't read tokens.</li><li><strong>CSRF</strong> — victim's browser auto-sends cookies with a forged cross-site request. Prevent: CSRF tokens for cookie/session auth, <code class=\"inline\">SameSite</code> cookies; pure Bearer-token APIs are inherently exempt (the browser doesn't attach the token automatically).</li></ul>",
+    "tip": "The linking insight interviewers reward: XSS defeats CSRF protection AND steals localStorage tokens — which is why the XSS story decides where you store JWTs.",
+    "code": "// SQLi-proof by construction:\n@Query(\"select u from User u where u.email = :email\")\nOptional<User> byEmail(@Param(\"email\") String email);\n\n// vs the vulnerable anti-pattern:\n// \"select * from users where email = '\" + email + \"'\"   // NEVER",
+    "lang": "java",
+    "deep": "<h4>SQL injection beyond the basics</h4><ul><li>Parameterization works because the driver sends the query <em>plan</em> and the <em>values</em> separately — input can never re-enter the parser.</li><li>Danger zones that stay manual: dynamic ORDER BY / table names (whitelist them), native queries with concatenation, LIKE wildcards (escape % and _).</li></ul><h4>XSS in an Angular + Spring stack</h4><ul><li>Angular escapes <code class=\"inline\">{{value}}</code> and property bindings automatically; the holes are <code class=\"inline\">[innerHTML]</code> (sanitized, but bypassable via <code class=\"inline\">bypassSecurityTrustHtml</code>) and injecting into URLs/scripts.</li><li>Server side: encode on output, not input; set CSP headers; mark session cookies HttpOnly + Secure.</li></ul><h4>CSRF mechanics and the JWT exemption</h4><p>CSRF rides on the browser's <em>automatic</em> credential attachment (cookies). A forged form on evil.com can POST to your bank because the session cookie tags along. If auth is an <code class=\"inline\">Authorization: Bearer</code> header set by your JS, the attacker's page can't add it — hence <code class=\"inline\">csrf.disable()</code> is legitimate for stateless token APIs (and only for them). If you put the JWT in a cookie, you've re-entered CSRF territory: use SameSite=Lax/Strict plus a token.</p>"
+  },
+  {
+    "id": "sb-entity-requirements",
+    "category": "springboot",
+    "difficulty": "intermediate",
+    "tags": [
+      "jpa",
+      "hibernate",
+      "entity"
+    ],
+    "question": "What does @Entity require? Why does an entity need a no-arg constructor?",
+    "answer": "<p>An entity needs: <code class=\"inline\">@Entity</code>, an <code class=\"inline\">@Id</code>, a <strong>no-arg constructor</strong> (at least protected), and it must not be final (Hibernate subclasses it for lazy proxies).</p><p>The no-arg constructor exists because Hibernate materializes rows <strong>reflectively</strong>: it instantiates the empty object first, then populates fields — it can't guess how to call your custom constructor.</p><p>Also expected: <code class=\"inline\">equals/hashCode</code> based on a stable key (not auto-generated id before persist), and no required-args-only records (records can't be entities — no no-arg constructor, final fields).</p>",
+    "tip": "This is why Lombok entities carry @NoArgsConstructor(access = PROTECTED) — visible to Hibernate, hidden from your API.",
+    "code": "@Entity\npublic class Order {\n  @Id @GeneratedValue(strategy = GenerationType.IDENTITY)\n  private Long id;\n\n  protected Order() {}                 // for Hibernate only\n  public Order(Customer c) { ... }     // for your code\n}",
+    "lang": "java",
+    "deep": "<h4>Why not final / why protected is enough</h4><p>Lazy loading returns a <strong>proxy subclass</strong> of your entity; final classes/methods can't be proxied, so lazy relations would silently load eagerly. Protected no-arg constructor satisfies both Hibernate (reflection ignores access) and JPA spec (public or protected).</p><h4>equals/hashCode for entities — the subtle one</h4><ul><li>Auto-generated id is null until persist → id-based equality breaks in Sets used before saving.</li><li>Safe patterns: business key (natural unique field), or the \"id-if-set, else identity\" pattern with a constant hashCode — imperfect but standard.</li></ul><h4>Other entity gotchas worth volunteering</h4><ul><li>Field access vs property access is decided by where @Id sits — mixing them causes mapping confusion.</li><li>Entities shouldn't be records or have setters everywhere for the sake of it — mutability is what dirty checking uses, but keep invariants via methods, not raw setters.</li><li>Detached entities + lazy fields = LazyInitializationException — the constructor/proxy story is what makes that mechanic possible.</li></ul>"
+  },
+  {
+    "id": "sb-entity-lifecycle",
+    "category": "springboot",
+    "difficulty": "advanced",
+    "tags": [
+      "jpa",
+      "hibernate",
+      "persistence-context",
+      "V.Imp"
+    ],
+    "question": "Entity lifecycle states — transient, managed, detached, removed? And find() vs getReference()?",
+    "answer": "<ul><li><strong>Transient (new)</strong> — plain object, unknown to JPA, no row.</li><li><strong>Managed (persistent)</strong> — attached to the persistence context; <strong>dirty checking</strong> auto-flushes changes, no save() call needed.</li><li><strong>Detached</strong> — was managed, context closed/cleared; changes are ignored until re-attached with <code class=\"inline\">merge()</code>.</li><li><strong>Removed</strong> — marked for DELETE at flush.</li></ul><p><code class=\"inline\">find(id)</code> hits the DB (or L1 cache) immediately and returns null if absent. <code class=\"inline\">getReference(id)</code> returns a <strong>lazy proxy without any query</strong> — perfect for setting FK associations; throws <code class=\"inline\">EntityNotFoundException</code> on first real access if the row doesn't exist.</p>",
+    "tip": "getReference is the answer to \"how do I set order.setCustomer(...) without a pointless SELECT\" — a proxy with just the id is enough to write the FK.",
+    "code": "// no SELECT on customer — proxy carries only the id\nOrder o = new Order();\no.setCustomer(em.getReference(Customer.class, custId));\nem.persist(o);",
+    "lang": "java",
+    "deep": "<h4>Transitions cheat-sheet</h4><pre><code>new Entity()          -> TRANSIENT\nem.persist(e)         -> MANAGED   (INSERT at flush)\nem.find/query         -> MANAGED\ncontext closes        -> DETACHED\nem.merge(detached)    -> returns a MANAGED copy (the original stays detached!)\nem.remove(managed)    -> REMOVED   (DELETE at flush)</code></pre><h4>The merge() trap</h4><p><code class=\"inline\">merge()</code> doesn't attach your object — it copies its state onto a managed instance and <strong>returns that</strong>. Keep using the returned reference; mutating the original does nothing.</p><h4>Why \"managed\" explains half of JPA behavior</h4><ul><li>Updates without save(): dirty checking diffs managed entities at flush.</li><li>Repeated find() in one transaction = one SELECT: L1 cache returns the same managed instance.</li><li>LazyInitializationException = touching lazy fields after the entity went detached.</li></ul><h4>Spring Data naming</h4><p><code class=\"inline\">repo.findById</code> ≈ find; <code class=\"inline\">repo.getReferenceById</code> ≈ getReference. <code class=\"inline\">save()</code> = persist if new else merge — which is why save on an existing detached entity does a SELECT first.</p>"
+  },
+  {
+    "id": "sb-jpa-caching",
+    "category": "springboot",
+    "difficulty": "advanced",
+    "tags": [
+      "jpa",
+      "hibernate",
+      "caching"
+    ],
+    "question": "First-level vs second-level cache in Hibernate?",
+    "answer": "<p><strong>L1 (persistence context)</strong> — per EntityManager/transaction, always on, cannot be disabled. Repeated <code class=\"inline\">find()</code> for the same id in one transaction hits memory, and it guarantees identity: same id → same object instance.</p><p><strong>L2</strong> — shared across sessions at the SessionFactory level, <strong>off by default</strong>; opt-in per entity with <code class=\"inline\">@Cacheable/@Cache</code> plus a provider (Ehcache, Infinispan, Redis via Redisson). Survives transactions; needs an invalidation strategy and care in clusters.</p><p>There's also the <strong>query cache</strong> (caches query result ids, entities resolved via L2) — separate switch, frequently more trouble than value.</p>",
+    "tip": "Interview sound bite: L1 = free consistency inside a transaction; L2 = a deliberate performance decision for read-mostly reference data (countries, catalogs), not for hot mutable rows.",
+    "code": "@Entity\n@Cacheable\n@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)\npublic class Country { ... }   // read-mostly reference data: ideal L2 citizen",
+    "lang": "java",
+    "deep": "<h4>What L1 actually buys you</h4><ul><li><strong>Repeatable reads within a transaction</strong> even on READ_COMMITTED — the second find() returns the cached instance, not a re-query.</li><li><strong>Write batching</strong> — changes accumulate and flush once, letting Hibernate order and batch statements.</li><li>Bulk JPQL UPDATE/DELETE <em>bypasses</em> L1 → stale managed entities; call <code class=\"inline\">em.clear()</code> after bulk ops.</li></ul><h4>L2 concurrency strategies</h4><ul><li><code class=\"inline\">READ_ONLY</code> — immutable data, fastest.</li><li><code class=\"inline\">READ_WRITE</code> — soft locks on update; the usual choice.</li><li><code class=\"inline\">NONSTRICT_READ_WRITE</code> — tolerates brief staleness.</li><li><code class=\"inline\">TRANSACTIONAL</code> — JTA-grade.</li></ul><h4>When L2 goes wrong</h4><p>Any writer outside Hibernate (other service, DBA script, native SQL) silently invalidates nothing → stale reads. In microservices with a shared DB or heavy writes, most teams skip L2 and cache at the service layer (Spring Cache + Redis) where invalidation is explicit and visible.</p>"
+  },
+  {
+    "id": "sb-jpa-relationships",
+    "category": "springboot",
+    "difficulty": "intermediate",
+    "tags": [
+      "jpa",
+      "hibernate",
+      "mappings",
+      "V.Imp"
+    ],
+    "question": "@OneToMany, @ManyToOne, @ManyToMany — owning side and mappedBy?",
+    "answer": "<p>The <strong>owning side</strong> is the side whose table holds the foreign key — <strong>only its changes are written to the DB</strong>. In a bidirectional mapping the other side declares <code class=\"inline\">mappedBy = \"fieldOnOwner\"</code> and is a read-only mirror.</p><ul><li><code class=\"inline\">@ManyToOne</code> — always the owning side (its row has the FK). Default fetch EAGER (change it!).</li><li><code class=\"inline\">@OneToMany(mappedBy=...)</code> — inverse side; default LAZY. Without mappedBy you get a join table or FK-update-by-parent — avoid.</li><li><code class=\"inline\">@ManyToMany</code> — join table; one side picks <code class=\"inline\">@JoinTable</code>, the other mappedBy.</li><li><code class=\"inline\">@OneToOne</code> — FK side owns; lazy on the non-owning side often doesn't work without bytecode tricks.</li></ul>",
+    "tip": "The classic bug: adding to parent.getChildren() (inverse side) and wondering why no FK was written — you must set child.setParent(parent), the owning side. Sync-both-sides helper methods are the cure.",
+    "code": "@Entity class Order {\n  @ManyToOne(fetch = FetchType.LAZY)   // owning side: orders.customer_id\n  @JoinColumn(name = \"customer_id\")\n  private Customer customer;\n}\n@Entity class Customer {\n  @OneToMany(mappedBy = \"customer\")    // mirror; changes here are ignored\n  private List<Order> orders = new ArrayList<>();\n}",
+    "lang": "java",
+    "deep": "<h4>Why the owning-side rule exists</h4><p>One FK column, two Java fields that could disagree — JPA needs a single source of truth for what to write. It picked the FK holder. The mappedBy side exists purely for convenient navigation in memory.</p><h4>The helper-method idiom</h4><pre><code>class Customer {\n  void addOrder(Order o) {\n    orders.add(o);        // in-memory graph consistent\n    o.setCustomer(this);  // owning side -> actually persisted\n  }\n}</code></pre><h4>Practical mapping advice interviewers like</h4><ul><li>Make every @ManyToOne LAZY explicitly — the EAGER default is the root of N+1 plagues.</li><li>Prefer unidirectional @ManyToOne + a repository query (<code class=\"inline\">findByCustomerId</code>) over bidirectional collections you must keep in sync.</li><li>@ManyToMany with extra columns (e.g. enrollment date) must be remodeled as two @OneToMany to an explicit join entity.</li><li>Collections: Set avoids duplicate rows on merge; List + @OrderColumn if order matters.</li></ul>"
+  },
+  {
+    "id": "sb-cascade-orphan",
+    "category": "springboot",
+    "difficulty": "advanced",
+    "tags": [
+      "jpa",
+      "hibernate",
+      "cascade"
+    ],
+    "question": "Cascade types? And orphanRemoval vs CascadeType.REMOVE?",
+    "answer": "<p>Cascading propagates an EntityManager operation from parent to children: <code class=\"inline\">PERSIST, MERGE, REMOVE, REFRESH, DETACH, ALL</code>. Typical: <code class=\"inline\">cascade = {PERSIST, MERGE}</code> on a parent→child collection so saving an Order also saves its lines.</p><p><strong>CascadeType.REMOVE</strong>: deleting the <em>parent</em> deletes children too.</p><p><strong>orphanRemoval = true</strong>: additionally, <em>disconnecting</em> a child (removing it from the collection / nulling the reference) deletes it — the child has no life without its parent.</p>",
+    "tip": "Line items of an order: orphanRemoval=true (removing from the list should delete the row). A Course's Students: never — disconnecting a student must not delete the student.",
+    "code": "@OneToMany(mappedBy = \"order\",\n           cascade = CascadeType.ALL,\n           orphanRemoval = true)      // composition: lines die with/without the order\nprivate List<OrderLine> lines = new ArrayList<>();",
+    "lang": "java",
+    "deep": "<h4>The mental model: association vs composition</h4><ul><li><strong>Composition</strong> (child meaningless alone — OrderLine, Address embedded in profile): cascade ALL + orphanRemoval.</li><li><strong>Association</strong> (both independent — Customer↔Order, Course↔Student): no REMOVE cascade, usually no cascade at all beyond maybe PERSIST.</li></ul><h4>orphanRemoval mechanics</h4><pre><code>order.getLines().remove(0);   // no explicit em.remove()\n// flush -> DELETE from order_line where id = ...</code></pre><p>Without orphanRemoval that line would just get its FK nulled (or fail on NOT NULL) — the row lingers.</p><h4>Cascade traps</h4><ul><li>CascadeType.REMOVE on large collections issues <strong>one DELETE per child</strong> after loading them all — for bulk cleanup prefer <code class=\"inline\">ON DELETE CASCADE</code> in the schema or a bulk JPQL delete.</li><li>Never cascade REMOVE from @ManyToOne child→parent — deleting one order would delete the customer.</li><li>Cascading MERGE over detached graphs can resurrect rows you thought deleted — keep cascades minimal and deliberate.</li></ul>"
+  },
+  {
+    "id": "sb-id-generation",
+    "category": "springboot",
+    "difficulty": "intermediate",
+    "tags": [
+      "jpa",
+      "hibernate",
+      "identifiers"
+    ],
+    "question": "ID generation strategies — IDENTITY vs SEQUENCE vs AUTO vs TABLE?",
+    "answer": "<ul><li><strong>IDENTITY</strong> — DB auto-increment column. Simple, but the id only exists <em>after</em> the INSERT, so Hibernate must insert immediately — <strong>disables JDBC batching</strong> of inserts. The MySQL default choice.</li><li><strong>SEQUENCE</strong> — DB sequence fetched <em>before</em> insert (with allocationSize batching sequence calls). Ids known early, insert batching works. <strong>Preferred on PostgreSQL/Oracle.</strong></li><li><strong>AUTO</strong> — provider picks per dialect (Postgres→sequence, MySQL→identity in practice); explicit is better.</li><li><strong>TABLE</strong> — simulates a sequence via a table with row locking; portable but slow, effectively legacy.</li></ul>",
+    "tip": "The interview differentiator: 'SEQUENCE keeps insert batching alive, IDENTITY kills it' — plus UUIDs as the app-generated alternative when ids must exist before persist or across services.",
+    "code": "@Id\n@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = \"order_seq\")\n@SequenceGenerator(name = \"order_seq\", sequenceName = \"order_seq\",\n                   allocationSize = 50)   // 1 DB round-trip per 50 ids\nprivate Long id;",
+    "lang": "java",
+    "deep": "<h4>Why IDENTITY breaks batching</h4><p>Hibernate needs the id to manage the entity in the persistence context. With IDENTITY the id is born inside the INSERT, so persist() can't be delayed and grouped — each entity = immediate statement. With SEQUENCE, ids are pre-fetched, persists buffer, and flush emits one batched multi-row INSERT (with <code class=\"inline\">hibernate.jdbc.batch_size</code>).</p><h4>allocationSize vs sequence INCREMENT BY</h4><p>They must match (allocationSize 50 ⇒ sequence increments by 50, Hibernate hands out the 50 in memory). Mismatch causes duplicate-key chaos or gaping holes.</p><h4>UUID option</h4><pre><code>@Id @GeneratedValue(strategy = GenerationType.UUID)  // JPA 3.1\nprivate UUID id;</code></pre><ul><li>Pros: generated app-side (works pre-persist, across shards/services, unguessable in URLs).</li><li>Cons: 16 bytes, random insert order fragments B-tree indexes — time-ordered v7 UUIDs mitigate this.</li></ul><h4>Rapid-fire adjacent</h4><p>Gaps are normal (rollbacks, allocation blocks) — never promise gapless ids from any of these; a gapless legal sequence (invoice numbers) is its own serialized table.</p>"
+  },
+  {
+    "id": "sb-jpa-inheritance",
+    "category": "springboot",
+    "difficulty": "advanced",
+    "tags": [
+      "jpa",
+      "hibernate",
+      "inheritance"
+    ],
+    "question": "How do you map inheritance in JPA — SINGLE_TABLE vs JOINED vs TABLE_PER_CLASS?",
+    "answer": "<ul><li><strong>SINGLE_TABLE</strong> (default) — one table for the whole hierarchy + a discriminator column. Fastest (no joins), but subclass columns must all be <strong>nullable</strong> and the table gets wide.</li><li><strong>JOINED</strong> — one table per class, subclass tables share the parent's PK. Normalized, constraints work; polymorphic reads need joins.</li><li><strong>TABLE_PER_CLASS</strong> — each concrete class gets a complete table; polymorphic queries become UNIONs, identity needs sequence-style generators. Rarely a good idea.</li></ul><p>Alternative worth naming: <code class=\"inline\">@MappedSuperclass</code> — inherit fields (audit columns) with <strong>no polymorphic querying</strong> at all.</p>",
+    "tip": "Default advice: small hierarchy with few subclass fields → SINGLE_TABLE; data-integrity-heavy with distinct fields → JOINED; and question whether you need entity inheritance at all — composition usually wins.",
+    "code": "@Entity\n@Inheritance(strategy = InheritanceType.SINGLE_TABLE)\n@DiscriminatorColumn(name = \"payment_type\")\nabstract class Payment { @Id Long id; BigDecimal amount; }\n\n@Entity @DiscriminatorValue(\"CARD\")\nclass CardPayment extends Payment { String last4; }   // nullable in the table",
+    "lang": "java",
+    "deep": "<h4>How each strategy queries</h4><pre><code>-- SINGLE_TABLE: select * from payment where payment_type = 'CARD'\n-- JOINED:       select ... from payment p join card_payment c on c.id = p.id\n-- TABLE_PER_CLASS: select ... from card_payment  UNION ALL  select ... from upi_payment</code></pre><h4>Choosing in practice</h4><ul><li><strong>SINGLE_TABLE</strong> — polymorphic queries are one indexed scan; the price is nullable columns (no NOT NULL on last4) and a god-table smell as subclasses multiply.</li><li><strong>JOINED</strong> — clean schema, real constraints; each polymorphic load joins N tables, inserts hit two tables.</li><li><strong>@MappedSuperclass</strong> — the right tool when you only want shared fields (createdAt, updatedBy) and never query \"all Payments\".</li></ul><h4>Interview-grade caveat</h4><p>ORM inheritance is often a modeling trap: a <code class=\"inline\">type</code> column + strategy pattern in code, or separate entities sharing an interface, frequently ages better than deep entity hierarchies. Saying that (with the trade-offs above) reads as experience, not evasion.</p>"
+  },
+  {
+    "id": "sb-osiv",
+    "category": "springboot",
+    "difficulty": "advanced",
+    "tags": [
+      "jpa",
+      "hibernate",
+      "anti-pattern"
+    ],
+    "question": "What is the open-session-in-view anti-pattern?",
+    "answer": "<p>OSIV keeps the Hibernate session (and its DB connection lease) open for the <strong>entire HTTP request</strong> — including view rendering / JSON serialization — so lazy loading \"just works\" in controllers. <strong>Spring Boot enables it by default</strong> (<code class=\"inline\">spring.jpa.open-in-view=true</code>, with a startup warning).</p><p>Why it's an anti-pattern: it hides N+1 queries triggered from serialization, holds connections far longer than the transaction needs (pool exhaustion under load), and blurs the transaction boundary — queries run <em>after</em> the service layer returned.</p><p>Fix: <code class=\"inline\">open-in-view=false</code> and fetch what the response needs explicitly (fetch joins, @EntityGraph, DTO projections).</p>",
+    "tip": "The tell in an interview: 'LazyInitializationException appeared only after we disabled OSIV' — that exception is the design feedback OSIV was suppressing.",
+    "code": "# application.yml\nspring:\n  jpa:\n    open-in-view: false   # surface lazy-loading issues at dev time",
+    "lang": "yaml",
+    "deep": "<h4>What actually happens with OSIV on</h4><ol><li>Request arrives → OpenEntityManagerInViewInterceptor binds an EntityManager to the thread.</li><li>Service method runs its @Transactional work and commits.</li><li>Controller returns entities; <strong>Jackson serialization touches lazy fields → new SELECTs on the still-open session, outside any transaction</strong>.</li><li>Response completes → session closes.</li></ol><h4>The two concrete harms</h4><ul><li><strong>Connection hogging</strong>: with pool size 10 and slow clients/serialization, connections are held for full response times, not transaction times — throughput collapses well before CPU does.</li><li><strong>Invisible query storms</strong>: a template iterating orders→customer→address fires per-row queries that never show in service-layer review.</li></ul><h4>Life after disabling it</h4><ul><li>Fetch strategy becomes explicit per use case: <code class=\"inline\">join fetch</code> / <code class=\"inline\">@EntityGraph</code> for graphs, DTO projections for read models.</li><li>LazyInitializationException in dev = a missing fetch decision — fix the query, don't re-enable OSIV.</li><li>Note: it's a web-layer construct; async/scheduled code never had OSIV anyway.</li></ul>"
+  },
+  {
+    "id": "sb-oauth2-oidc",
+    "category": "springboot",
+    "difficulty": "advanced",
+    "tags": [
+      "security",
+      "oauth2",
+      "oidc"
+    ],
+    "question": "What are OAuth2 and OIDC? Explain the authorization code flow.",
+    "answer": "<p><strong>OAuth2</strong> is a <em>delegated authorization</em> framework: a user lets a client app access resources on their behalf without sharing passwords — the client gets a scoped <strong>access token</strong>. <strong>OIDC</strong> is an identity layer on top: adds an <strong>ID token</strong> (a JWT about who logged in) — OAuth2 = \"can this app read my calendar\", OIDC = \"log in with Google\".</p><p><strong>Authorization code flow</strong>: client redirects the browser to the authorization server → user authenticates and consents → auth server redirects back with a short-lived <strong>code</strong> → the client's <em>backend</em> exchanges code + client secret (+ PKCE verifier) for tokens. Tokens never transit the browser URL.</p>",
+    "tip": "Why the code hop instead of tokens in the redirect? The front channel (browser redirects, history, logs) is leaky; the code is useless without the back-channel exchange. PKCE extends that protection to apps that can't hold a secret (SPAs, mobile).",
+    "code": "# 1. Front channel\nGET https://auth.example.com/authorize?response_type=code\n    &client_id=app&redirect_uri=https://app/cb&scope=openid profile&state=xyz\n    &code_challenge=BASE64(SHA256(verifier))&code_challenge_method=S256\n# 2. Callback:  https://app/cb?code=SplxlO...&state=xyz\n# 3. Back channel\nPOST /token  grant_type=authorization_code&code=SplxlO...&code_verifier=verifier",
+    "lang": "bash",
+    "deep": "<h4>Cast of characters</h4><ul><li><strong>Resource owner</strong> — the user.</li><li><strong>Client</strong> — your app wanting access.</li><li><strong>Authorization server</strong> — Keycloak/Okta/Google; issues tokens.</li><li><strong>Resource server</strong> — the API validating access tokens (your Spring Boot service with <code class=\"inline\">spring-boot-starter-oauth2-resource-server</code>, validating JWTs against the issuer's JWKS).</li></ul><h4>Grant types in one line each</h4><ul><li><strong>Authorization code + PKCE</strong> — anything with a user and a browser; the modern default.</li><li><strong>Client credentials</strong> — service-to-service, no user.</li><li><strong>Refresh token</strong> — renew access tokens silently.</li><li><strong>Implicit &amp; password grants</strong> — deprecated; knowing <em>that</em> is the interview point.</li></ul><h4>OIDC specifics</h4><ul><li>ID token = JWT with iss/sub/aud/exp/nonce — consumed by the <em>client</em> for login; the access token is for APIs.</li><li><code class=\"inline\">scope=openid</code> switches OAuth2 into OIDC; /userinfo endpoint and discovery document (<code class=\"inline\">/.well-known/openid-configuration</code>) come with it.</li></ul><h4>Spring wiring in two lines</h4><pre><code># resource server\nspring.security.oauth2.resourceserver.jwt.issuer-uri=https://auth.example.com/realms/app</code></pre><p><code class=\"inline\">oauth2Login()</code> makes Spring the OIDC client (login page redirect); <code class=\"inline\">oauth2ResourceServer().jwt()</code> makes it validate bearer tokens.</p>"
+  },
+  {
+    "id": "sb-tls-handshake",
+    "category": "springboot",
+    "difficulty": "intermediate",
+    "tags": [
+      "security",
+      "https",
+      "tls"
+    ],
+    "question": "What happens in the HTTPS/TLS handshake (high level)?",
+    "answer": "<p>Goal: authenticate the server and agree on symmetric keys. TLS 1.3, one round trip:</p><ol><li><strong>ClientHello</strong> — supported versions/ciphers + the client's ephemeral key share.</li><li><strong>ServerHello</strong> — chosen cipher + server key share; then the <strong>certificate</strong> and a signed proof it holds the private key.</li><li>Client <strong>validates the certificate chain</strong> to a trusted root CA and checks the hostname.</li><li>Both derive the same session keys via ephemeral Diffie-Hellman (ECDHE) — <strong>the key never travels</strong>; encrypted application data begins.</li></ol><p>Asymmetric crypto bootstraps trust; the actual traffic uses fast <strong>symmetric</strong> encryption (AES-GCM).</p>",
+    "tip": "Two exam-favorite properties: forward secrecy (ephemeral keys — a stolen server key can't decrypt past captures) and why we switch to symmetric (RSA/ECC is ~1000x slower than AES).",
+    "code": "",
+    "lang": "",
+    "deep": "<h4>What the certificate actually proves</h4><p>A CA signed \"this public key belongs to api.example.com\". The client trusts a pre-installed root store; the chain (leaf → intermediate → root) transfers that trust. The server then proves possession of the matching private key by signing the handshake transcript. Failure modes map to browser errors: expired cert, hostname mismatch, unknown CA (self-signed).</p><h4>TLS 1.2 vs 1.3 in one breath</h4><ul><li>1.2: 2 round trips, RSA key-exchange still allowed (no forward secrecy), renegotiation quirks.</li><li>1.3: 1-RTT (0-RTT resumption possible), only ephemeral key exchange, legacy ciphers stripped.</li></ul><h4>Where this touches your stack</h4><ul><li><strong>TLS termination</strong> usually at the load balancer/ingress; pod-to-pod either plaintext in a trusted network or mTLS via a service mesh.</li><li><strong>mTLS</strong> = the client presents a certificate too — service-to-service authentication without passwords.</li><li>Spring Boot: <code class=\"inline\">server.ssl.*</code> with a keystore enables HTTPS directly on the embedded server when you're not behind a terminating proxy.</li></ul>"
+  },
+  {
+    "id": "sb-saga",
+    "category": "springboot",
+    "difficulty": "advanced",
+    "tags": [
+      "microservices",
+      "transactions",
+      "saga",
+      "V.Imp"
+    ],
+    "question": "How do you handle distributed transactions? Saga pattern — choreography vs orchestration? Why not 2PC?",
+    "answer": "<p>Across microservices there's no shared transaction — each service commits locally. A <strong>saga</strong> is a sequence of local transactions where each step publishes an event/command for the next, and failures trigger <strong>compensating transactions</strong> that undo prior steps (cancel reservation, refund payment).</p><ul><li><strong>Choreography</strong> — no central brain; services react to each other's events. Simple to start, but the flow lives nowhere — hard to see and evolve.</li><li><strong>Orchestration</strong> — a saga orchestrator tells each participant what to do and tracks state. Explicit flow, central place for timeouts/compensation; the orchestrator is one more thing to run.</li></ul><p><strong>2PC</strong> (XA) is avoided: a synchronous blocking protocol where the slowest/failed participant locks everyone; coordinators are a SPOF and modern brokers/NoSQL don't speak it.</p>",
+    "tip": "Order-payment-inventory is the canonical walkthrough. Say 'compensating transaction' early — it's the phrase that shows you understand sagas aren't rollbacks.",
+    "code": "// Orchestration sketch\nOrderSaga: create PENDING order\n  -> cmd: reserve inventory  -> ok\n  -> cmd: charge payment     -> FAILS\n  -> compensate: release inventory\n  -> mark order REJECTED     // eventual consistency, never half-charged",
+    "lang": "java",
+    "deep": "<h4>Why not 2PC — the concrete failure</h4><p>Phase 1: coordinator asks all to prepare (locks held). Phase 2: commit. If the coordinator dies between phases, participants sit <strong>blocked holding locks</strong>, in doubt, possibly for minutes — availability collapses exactly when things are already going wrong. CAP-wise, 2PC chooses consistency and sacrifices availability on every partition.</p><h4>Saga correctness details</h4><ul><li><strong>Compensations are business actions</strong>, not rollbacks — a refund, not an UPDATE undo; some things are un-compensatable (sent email) → order steps so risky-irreversible ones come last.</li><li><strong>Pivot step</strong>: the step after which the saga must complete forward (retry) rather than compensate backward.</li><li><strong>Idempotency + dedup</strong> on every participant — messages redeliver.</li><li><strong>Outbox pattern</strong>: write state change and outgoing event in ONE local transaction; a relay publishes from the outbox table — closes the 'committed but event lost' gap.</li></ul><h4>Choosing</h4><p>2–3 steps, stable flow → choreography is fine. Many steps, timeouts, human-visible state (\"where is my order stuck?\") → orchestrator (Camunda, Temporal, or a state-machine table). Interview-safe default: orchestration for anything money-touching.</p>"
+  },
+  {
+    "id": "sb-database-per-service",
+    "category": "springboot",
+    "difficulty": "advanced",
+    "tags": [
+      "microservices",
+      "data",
+      "architecture"
+    ],
+    "question": "Database-per-service — why, and how do you query across services?",
+    "answer": "<p>Each microservice owns its schema; <strong>no other service touches its tables</strong>. That's what makes services independently deployable (schema changes don't ripple), lets each pick the right store, and keeps coupling at the API level — a shared database is a monolith with extra network hops.</p><p>Cross-service reads, in preference order:</p><ul><li><strong>API composition</strong> — the caller (or a BFF/gateway) calls both services and joins in memory. Fine for small fan-outs.</li><li><strong>CQRS read model / data replication</strong> — services publish events; a consumer maintains a denormalized local view (e.g. order-history service listening to order + customer events). Joins become local queries; cost is eventual consistency.</li></ul>",
+    "tip": "The interview trap: 'just query their table, it's faster' — that couples deploys forever. Duplicated, event-synced data is the accepted price of autonomy.",
+    "code": "-- Anti-pattern: order-service SQL joining customer-service tables\n-- Instead: order-service keeps its own slim copy, updated by events\nCREATE TABLE customer_snapshot (\n  customer_id BIGINT PRIMARY KEY,\n  display_name TEXT,          -- only the fields orders actually need\n  updated_at TIMESTAMPTZ\n);",
+    "lang": "sql",
+    "deep": "<h4>What 'per service' really requires</h4><p>Separate schema + separate credentials is the minimum (same physical cluster is fine early); the rule that matters is <strong>access only via the owning service's API/events</strong>. Foreign keys across service boundaries disappear — referential integrity becomes an application concern (and IDs in events must be treated as possibly-stale).</p><h4>The reporting problem</h4><p>Analytics wants joins across everything. Answers: stream events to a warehouse (Kafka → OpenSearch/BigQuery/Redshift), or CDC (Debezium) off each service DB — never point BI tools at production service databases.</p><h4>Consistency toolkit that comes with this territory</h4><ul><li>Sagas for multi-service writes.</li><li>Outbox + CDC for reliable event publication.</li><li>Eventual consistency surfaced honestly in UX ('processing…') rather than faked with distributed locks.</li></ul><h4>When NOT to split the data</h4><p>If two 'services' constantly need each other's rows transactionally, that's one bounded context — merge them. Data-split pain is the loudest signal your service boundaries are wrong.</p>"
+  },
+  {
+    "id": "sb-cqrs-event-sourcing",
+    "category": "springboot",
+    "difficulty": "advanced",
+    "tags": [
+      "microservices",
+      "cqrs",
+      "event-sourcing",
+      "architecture"
+    ],
+    "question": "What are CQRS and event sourcing?",
+    "answer": "<p><strong>CQRS</strong> — Command Query Responsibility Segregation: separate the <strong>write model</strong> (commands, invariants, normalized) from the <strong>read model</strong> (queries, denormalized views built for each screen). They can be different classes, different tables, or different databases synced by events.</p><p><strong>Event sourcing</strong> — instead of storing current state, store the <strong>append-only sequence of events</strong> (OrderPlaced, ItemAdded, OrderCancelled); state is rebuilt by replaying them. You gain a complete audit trail, temporal queries (\"state as of Tuesday\"), and natural event publication — at the cost of significant complexity (versioning events, snapshots, eventual-consistent reads).</p><p>They pair naturally (events feed the read models) but are <strong>independent</strong> — CQRS alone is common; event sourcing is niche.</p>",
+    "tip": "Awareness-level is expected at 4 YOE: define both, note they're often combined but separate, and say you'd reach for CQRS-lite (separate read DTOs/views) long before full event sourcing.",
+    "code": "// CQRS-lite in a normal Spring app — no framework needed\n// write side\npublic void placeOrder(PlaceOrderCmd cmd) { ... }         // entities, invariants\n// read side\npublic Page<OrderSummaryView> search(OrderFilter f) { ... } // projection query,\n                                                            // maybe a materialized view",
+    "lang": "java",
+    "deep": "<h4>Why split reads from writes at all</h4><ul><li>Read and write loads differ by orders of magnitude — scale them separately.</li><li>Screens want joins/denormalization that fight the write model's normalization.</li><li>Authorization, caching and indexing strategies differ per side.</li></ul><p>The spectrum: same DB with projection queries → materialized views → separate read store (OpenSearch for search screens) fed by events. Each step buys performance and costs consistency lag.</p><h4>Event sourcing mechanics</h4><pre><code>events:  OrderPlaced{...} ItemAdded{...} ItemAdded{...} OrderPaid{...}\nstate  = fold(events)                 // replay\nsnapshot every N events               // replay cost control</code></pre><ul><li><strong>Event versioning</strong> is the long-term tax: events are forever; schema changes need upcasters.</li><li><strong>Deletes/GDPR</strong> are awkward in an immutable log (crypto-shredding).</li><li>Tooling: Axon (Java), EventStoreDB; Kafka is a transport, not a great event store (no per-aggregate reads).</li></ul><h4>When each earns its complexity</h4><ul><li>CQRS: read/write asymmetry, complex screens, search over OpenSearch — very common, low regret.</li><li>Event sourcing: audit-mandated domains (ledgers, trading), collaborative/undo semantics — adopt deliberately, per aggregate, not system-wide.</li></ul>"
+  },
+  {
+    "id": "sb-12-factor",
+    "category": "springboot",
+    "difficulty": "intermediate",
+    "tags": [
+      "microservices",
+      "cloud",
+      "best-practices"
+    ],
+    "question": "What are the 12-factor app principles (the ones that matter most)?",
+    "answer": "<p>A methodology for cloud-ready apps. The ones interviewers expect with examples:</p><ul><li><strong>Config in the environment</strong> — same artifact everywhere; env vars/config server, never per-env builds.</li><li><strong>Stateless processes</strong> — no local session/files; state in DB/Redis → any instance can die or scale.</li><li><strong>Backing services as attached resources</strong> — DB/broker are swappable URLs.</li><li><strong>Build, release, run separation</strong> — one immutable image promoted through envs.</li><li><strong>Logs as event streams</strong> — write to stdout; the platform ships them (ELK/OpenSearch).</li><li><strong>Disposability</strong> — fast startup, graceful shutdown; enables rolling deploys/autoscaling.</li><li><strong>Dev/prod parity</strong> — same DB/broker locally (Docker/Testcontainers).</li></ul>",
+    "tip": "Don't recite all 12 — name 5-6 with the Spring Boot mechanism for each (profiles + env overrides, stateless + JWT, stdout logging, graceful shutdown property). That reads as practice, not memorization.",
+    "code": "# one image, env-driven config (factor III)\nSPRING_DATASOURCE_URL=jdbc:postgresql://prod-db:5432/app\nSPRING_PROFILES_ACTIVE=prod\nserver.shutdown=graceful   # factor IX: disposability",
+    "lang": "bash",
+    "deep": "<h4>The full twelve, one line each</h4><ol><li><strong>Codebase</strong> — one repo per app, many deploys.</li><li><strong>Dependencies</strong> — declared explicitly (Maven/Gradle), no system-installed jars.</li><li><strong>Config</strong> — in the environment.</li><li><strong>Backing services</strong> — attached resources.</li><li><strong>Build/release/run</strong> — strict separation.</li><li><strong>Processes</strong> — stateless, share-nothing.</li><li><strong>Port binding</strong> — self-contained server (embedded Tomcat is literally this).</li><li><strong>Concurrency</strong> — scale out via processes, not threads-in-one-giant-box.</li><li><strong>Disposability</strong> — fast start, graceful stop.</li><li><strong>Dev/prod parity</strong> — keep gaps small.</li><li><strong>Logs</strong> — event streams to stdout.</li><li><strong>Admin processes</strong> — one-off tasks (migrations) run in the same environment/image.</li></ol><h4>How Spring Boot maps on</h4><ul><li>Fat jar + embedded server = port binding & self-containment.</li><li>Property precedence (env vars > yml) = config factor by design.</li><li>Flyway on startup = admin processes done right.</li><li>server.shutdown=graceful + readiness probes = disposability.</li></ul><h4>Beyond 12</h4><p>'15-factor' additions people mention: API-first, telemetry, authn/authz as first-class — worth name-dropping if the conversation goes cloud-native.</p>"
+  },
+  {
+    "id": "sb-microservice-boundaries",
+    "category": "springboot",
+    "difficulty": "advanced",
+    "tags": [
+      "microservices",
+      "ddd",
+      "architecture"
+    ],
+    "question": "How big should a microservice be? How do you decide boundaries (DDD, bounded context)?",
+    "answer": "<p>Size is the wrong metric — the unit is the <strong>bounded context</strong> (DDD): a boundary within which a model and its language are consistent. \"Product\" means different things to Catalog (descriptions, images), Inventory (stock, locations) and Pricing (rules, discounts) — three contexts, three candidate services, each owning its own data.</p><p>Good boundary tests:</p><ul><li>Changes for one business capability stay in one service (high cohesion).</li><li>It can deploy alone; no synchronous call chains for its core flow.</li><li>No shared database and no chatty two-way sync with a sibling — if two services always change together, <strong>merge them</strong>.</li></ul>",
+    "tip": "Strong interview answer: 'we'd rather start with a modular monolith and extract services along the seams that prove stable' — over-splitting is the #1 microservices regret.",
+    "code": "",
+    "lang": "",
+    "deep": "<h4>Finding boundaries in practice</h4><ul><li><strong>Event storming</strong> — map domain events on a wall with domain experts; clusters of events + the language changing (\"order\" becomes \"shipment\") reveal context borders.</li><li><strong>Team topology</strong> — Conway's law is real: a service should fit one team's ownership (the 'two-pizza' framing is about teams, not lines of code).</li><li><strong>Rate of change & scaling asymmetry</strong> — things that deploy or scale on different rhythms are natural split candidates (search vs checkout).</li></ul><h4>Context mapping (relationships between contexts)</h4><ul><li><strong>Customer–supplier</strong> — downstream negotiates needs with upstream.</li><li><strong>Anti-corruption layer</strong> — an adapter translating a legacy/external model so it doesn't pollute yours; the standard pattern when strangling a monolith.</li><li><strong>Shared kernel</strong> — a deliberately shared small model; minimize it.</li></ul><h4>Smells of wrong boundaries</h4><ul><li>Distributed monolith: every release train ships 5 services together.</li><li>One 'entity service' per table (UserService, OrderService, AddressService) doing CRUD — boundaries by noun instead of capability.</li><li>Sagas everywhere for basic flows — transactional coupling that wants to be one service.</li></ul>"
   }
 ]

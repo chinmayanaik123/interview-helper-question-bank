@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
-  "version": 35,
-  "updatedAt": "2026-07-23T15:01:59.267Z",
-  "totalQuestions": 1509,
-  "contentHash": "95e1b5be61227f5625464af6d00e6c1a26766476",
+  "version": 37,
+  "updatedAt": "2026-07-23T15:10:11.785Z",
+  "totalQuestions": 1535,
+  "contentHash": "a917b60a617e442e9bb23baef7f63a231b13bd0b",
   "groups": [
     {
       "id": "frontend",
@@ -51,7 +51,7 @@
       "id": "java-angular",
       "file": "packs/java-angular.json",
       "label": "Java + Angular",
-      "count": 820,
+      "count": 846,
       "hash": "023e90a1045a"
     }
   ],
@@ -188,8 +188,8 @@
       "label": "Spring Boot",
       "group": "backend",
       "color": "#4E8B2C",
-      "count": 73,
-      "hash": "e4379e99e18c"
+      "count": 99,
+      "hash": "56d0ce698b7c"
     },
     {
       "id": "python",
@@ -270,7 +270,7 @@
       "group": "backend",
       "color": "#E10098",
       "count": 20,
-      "hash": "0e61ff8265af"
+      "hash": "8087ec52f8d2"
     },
     {
       "id": "sql",

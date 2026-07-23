@@ -22,7 +22,8 @@
     "tags": [
       "rest",
       "comparison",
-      "api-design"
+      "api-design",
+      "V.Imp"
     ],
     "question": "How does GraphQL differ from REST?",
     "answer": "<table><tr><th></th><th>REST</th><th>GraphQL</th></tr><tr><td><strong>Endpoints</strong></td><td>Many resource URLs (<code class=\"inline\">/users/1</code>, <code class=\"inline\">/users/1/posts</code>)</td><td>Usually one (<code class=\"inline\">/graphql</code>)</td></tr><tr><td><strong>Data shape</strong></td><td>Server decides response structure</td><td>Client selects fields in the query</td></tr><tr><td><strong>Over-fetching</strong></td><td>Common — you get the whole resource</td><td>Avoided — request only needed fields</td></tr><tr><td><strong>Under-fetching</strong></td><td>Multiple requests for related data</td><td>Nested queries in one request</td></tr><tr><td><strong>Caching</strong></td><td>HTTP caching (ETag, CDN) works naturally</td><td>Harder — POST to one URL; needs client-side cache (Apollo) or persisted queries</td></tr><tr><td><strong>Versioning</strong></td><td><code class=\"inline\">/v1/</code>, <code class=\"inline\">/v2/</code> URL paths</td><td>Schema evolution — deprecate fields instead of new versions</td></tr></table><p>REST is simpler for file uploads, caching, and public APIs. GraphQL shines when many clients need different views of the same data.</p>",
@@ -98,7 +99,8 @@
     "tags": [
       "resolvers",
       "execution",
-      "context"
+      "context",
+      "V.Imp"
     ],
     "question": "What are resolvers and how does GraphQL execute a query?",
     "answer": "<p>A <strong>resolver</strong> is a function that returns the value for a single field. Every field in the schema maps to a resolver (explicit or default).</p><ul><li><strong>Signature</strong> — <code class=\"inline\">(parent, args, context, info) =&gt; value</code></li><li><strong>parent</strong> — result of the parent field's resolver (e.g. a <code class=\"inline\">User</code> object when resolving <code class=\"inline\">User.posts</code>).</li><li><strong>args</strong> — field arguments (<code class=\"inline\">id</code>, <code class=\"inline\">limit</code>).</li><li><strong>context</strong> — per-request shared object: DB connection, authenticated user, DataLoaders.</li><li><strong>info</strong> — AST metadata about the query (used for field selection optimisation).</li></ul><p>Execution walks the query tree depth-first: resolve the root <code class=\"inline\">Query</code> field, then each child field, in parallel at each level unless constrained.</p>",
@@ -114,7 +116,8 @@
     "tags": [
       "n+1",
       "dataloader",
-      "performance"
+      "performance",
+      "V.Imp"
     ],
     "question": "What is the N+1 problem in GraphQL and how do you solve it?",
     "answer": "<p>The <strong>N+1 problem</strong> happens when resolving a list triggers one database query per item instead of one batched query.</p><p>Example: a query fetches 100 users, then each user's <code class=\"inline\">posts</code> resolver runs a separate <code class=\"inline\">SELECT * FROM posts WHERE user_id = ?</code> — that's <strong>1 + 100 = 101 queries</strong>.</p><p><strong>DataLoader</strong> is the standard fix:</p><ul><li>Collects all <code class=\"inline\">load()</code> calls within a single tick of the event loop.</li><li>Deduplicates keys.</li><li>Calls one batch function: <code class=\"inline\">SELECT * FROM posts WHERE user_id IN (...)</code></li><li>Returns results in the same order as requested keys.</li></ul><p>Other approaches: JOIN/fetch-join at the parent resolver, lookahead/field-collection optimisation, or a query-planning layer (Hasura, Postgraphile).</p>",
