@@ -21,7 +21,8 @@
     "tags": [
       "lifecycle",
       "hooks",
-      "ngOnInit"
+      "ngOnInit",
+      "V.Imp"
     ],
     "question": "Lifecycle hooks — order and what each is for.",
     "answer": "<p>Order: <code class=\"inline\">constructor</code> → <code class=\"inline\">ngOnChanges</code> → <code class=\"inline\">ngOnInit</code> → <code class=\"inline\">ngDoCheck</code> → <code class=\"inline\">ngAfterContentInit</code> → <code class=\"inline\">ngAfterContentChecked</code> → <code class=\"inline\">ngAfterViewInit</code> → <code class=\"inline\">ngAfterViewChecked</code> → <code class=\"inline\">ngOnDestroy</code>.</p><ul><li><strong>ngOnChanges</strong> — runs when an <code class=\"inline\">@Input</code> changes (receives <code class=\"inline\">SimpleChanges</code>).</li><li><strong>ngOnInit</strong> — one-time init; fetch data here, not in the constructor.</li><li><strong>ngAfterViewInit</strong> — view and <code class=\"inline\">@ViewChild</code> refs are ready.</li><li><strong>ngOnDestroy</strong> — cleanup: unsubscribe, clear timers.</li></ul>",
@@ -135,7 +136,8 @@
       "routing",
       "lazy-loading",
       "guards",
-      "resolver"
+      "resolver",
+      "V.Imp"
     ],
     "question": "Explain routing: lazy loading, guards, and resolvers.",
     "answer": "<ul><li><strong>Lazy loading</strong> — load a feature only when visited via <code class=\"inline\">loadChildren</code> / <code class=\"inline\">loadComponent</code>. Smaller initial bundle, faster first paint.</li><li><strong>Guards</strong> — <code class=\"inline\">CanActivate</code> (auth), <code class=\"inline\">CanDeactivate</code> (unsaved-changes prompt), <code class=\"inline\">CanMatch</code>.</li><li><strong>Resolver</strong> — pre-fetch data before the route activates so the component opens with data ready.</li></ul>",
@@ -152,7 +154,8 @@
     "tags": [
       "http",
       "interceptor",
-      "jwt"
+      "jwt",
+      "V.Imp"
     ],
     "question": "What are HTTP interceptors used for?",
     "answer": "<p><strong>HTTP Interceptors</strong> are middleware that intercept every outgoing HTTP request and incoming HTTP response in an Angular application. They allow you to add, modify, or handle requests and responses globally without changing individual service methods. Common uses include attaching JWT tokens, adding custom headers, logging, displaying global loaders, handling errors, retrying failed requests, and refreshing expired access tokens.</p>",
@@ -184,7 +187,8 @@
     "tags": [
       "change-detection",
       "onpush",
-      "zone"
+      "zone",
+      "V.Imp"
     ],
     "question": "How does change detection work? Default vs OnPush.",
     "answer": "<p><code class=\"inline\">zone.js</code> patches async APIs and tells Angular to re-check the component tree after events. The <strong>Default</strong> strategy checks every component each cycle.</p><p><strong>OnPush</strong> only re-checks a component when: an <code class=\"inline\">@Input</code> reference changes, an event fires inside it, or an <code class=\"inline\">async</code> pipe emits. Combined with <strong>immutable data</strong> it drastically cuts re-renders. (Signals push toward zone-less change detection.)</p>",
@@ -990,7 +994,8 @@
     "tags": [
       "performance",
       "ngfor",
-      "trackby"
+      "trackby",
+      "V.Imp"
     ],
     "question": "What is trackBy in *ngFor and why use it?",
     "answer": "<p>By default <code class=\"inline\">*ngFor</code> tracks list items by object identity, so if the array reference changes (e.g. after an HTTP refresh) Angular destroys and recreates <em>every</em> DOM node. A <strong>trackBy</strong> function tells Angular how to identify an item (usually by <code class=\"inline\">id</code>), so it only re-renders the rows that actually changed.</p>",
@@ -1335,5 +1340,196 @@
     "code": "src/app/\n  core/            # provided once: interceptors, guards, auth\n  shared/          # dumb UI, pipes, directives — no feature imports\n  features/\n    orders/\n      data-access/   # OrdersService, models\n      feature-list/  # smart component (routed)\n      ui/            # dumb components\n  app.routes.ts    # lazy: loadChildren / loadComponent",
     "lang": "text",
     "deep": "<h4>How to structure the answer</h4><p>Don't list files. Go <strong>top-down</strong>: what the app does → how code is organised → how data flows → cross-cutting concerns → trade-offs you'd revisit. Two minutes, then stop and let them drill.</p><h4>1. Folder structure — and the rule behind it</h4><table><thead><tr><th>Layer</th><th>Holds</th><th>Rule</th></tr></thead><tbody><tr><td><code class=\"inline\">core/</code></td><td>auth, interceptors, global error handling</td><td>provided once, app-wide</td></tr><tr><td><code class=\"inline\">shared/</code></td><td>dumb UI, pipes, directives</td><td>must not import from <code class=\"inline\">features/</code></td></tr><tr><td><code class=\"inline\">features/&lt;domain&gt;/</code></td><td>everything for one domain</td><td>lazy-loaded; no cross-feature imports</td></tr></tbody></table><p>The invariant worth stating: <strong>dependencies point inward</strong> (features → shared → core), never sideways between features. If Orders imports from Billing, they should be one feature or share a library.</p><h4>2. Modules or standalone?</h4><p>Standalone components are the default from Angular 17+ — no NgModule boilerplate, and <code class=\"inline\">loadComponent</code> lazy-loads a single route. If your app is NgModule-based, say so and say why (legacy, gradual migration) rather than pretending. Knowing <em>both</em> and having a migration opinion is the strong answer.</p><pre><code>// standalone, lazy — the modern default\n{ path: 'orders', loadComponent: () =&gt; import('./features/orders/list.component') }\n\n// NgModule-based lazy route\n{ path: 'orders', loadChildren: () =&gt; import('./orders/orders.module').then(m =&gt; m.OrdersModule) }</code></pre><h4>3. Smart vs dumb components</h4><pre><code>// Smart — knows about services, no template logic worth testing\n@Component({ template: `&lt;order-table [orders]=\"orders$ | async\" (select)=\"open($event)\" /&gt;` })\nexport class OrdersPage {\n  private svc = inject(OrdersService);\n  orders$ = this.svc.getOrders();\n}\n\n// Dumb — inputs/outputs only, OnPush, trivial to test and reuse\n@Component({ changeDetection: ChangeDetectionStrategy.OnPush })\nexport class OrderTable {\n  @Input() orders: Order[] | null = null;\n  @Output() select = new EventEmitter&lt;Order&gt;();\n}</code></pre><p>Why it matters: dumb components have no dependencies to mock, so testing them is a function call. It's also what makes <code class=\"inline\">OnPush</code> safe.</p><h4>4. Where logic lives</h4><ul><li><strong>Component</strong> — view state only.</li><li><strong>Service</strong> — HTTP, business rules, orchestration. If a component has a <code class=\"inline\">HttpClient</code> call in it, that's a smell.</li><li><strong>Store</strong> — shared state across features.</li></ul><p>Be ready for “<em>why not put it in the component?</em>” — because services are injectable, mockable, and reusable, and because a component's job is rendering.</p><h4>5. State management — have an opinion</h4><p>The honest senior answer is a <strong>ladder</strong>, not a religion: component state → a service with a <code class=\"inline\">BehaviorSubject</code>/signal → a full store (NgRx/NgRx Signal Store) only when several features share server state and you need devtools/time-travel to reason about it. NgRx on a small app is boilerplate for its own sake — say that; it shows judgement.</p><h4>6. Cross-cutting concerns</h4><ul><li><strong>HTTP interceptors</strong> — attach the auth token, refresh on 401, map errors centrally.</li><li><strong>Route guards</strong> — auth/role checks (<code class=\"inline\">CanActivate</code>).</li><li><strong>Global <code class=\"inline\">ErrorHandler</code></strong> — one place that logs to Sentry.</li></ul><h4>7. Close with a trade-off</h4><p>Volunteer one thing you'd change: “we started NgModule-based and are migrating to standalone,” or “our shared/ folder became a junk drawer — I'd split it into ui/ and utils/.” Naming a weakness in your own architecture reads as seniority, not weakness — it proves you evaluated it rather than inherited it.</p><h4>How to say it in an interview</h4><p>“It's a lazy-loaded feature-based structure: core for app-wide singletons like interceptors and guards, shared for dumb reusable UI, and one folder per domain feature — dependencies point inward, features never import each other. Inside a feature I split smart components that inject services from dumb OnPush components that only take inputs, which keeps tests cheap. HTTP and business logic sit in services; state starts local and only gets promoted to a store when it's genuinely shared. Cross-cutting things — auth token, error mapping — are interceptors. The thing I'd revisit is X, because Y.”</p>"
+  },
+  {
+    "id": "ng-versions-14-15-16",
+    "category": "angular",
+    "difficulty": "intermediate",
+    "tags": [
+      "versions",
+      "features",
+      "V.Imp"
+    ],
+    "question": "What's new in Angular 14, 15 and 16? What did migrating between them involve?",
+    "answer": "<ul><li><strong>Angular 14</strong> — <strong>standalone components</strong> (developer preview), <strong>typed reactive forms</strong>, the <code class=\"inline\">inject()</code> function usable in functions, protected route guards as plain functions, extended template diagnostics.</li><li><strong>Angular 15</strong> — standalone APIs <strong>stable</strong> (loadComponent routing, functional guards/interceptors become the norm), directive composition API, NgOptimizedImage stable, MDC-based Material.</li><li><strong>Angular 16</strong> — <strong>Signals</strong> (developer preview), <code class=\"inline\">takeUntilDestroyed</code> + <code class=\"inline\">DestroyRef</code>, <strong>required inputs</strong> (<code class=\"inline\">@Input({required: true})</code>), route params as component inputs, esbuild dev server preview, non-destructive hydration for SSR.</li></ul><p>Migration is <code class=\"inline\">ng update @angular/core@15 @angular/cli@15</code> per major — schematics rewrite most breaking changes; the practical work is usually TypeScript/Node version bumps, Material MDC style breakages (v15), and dependency alignment.</p>",
+    "tip": "If your resume claims 14/15/16, have ONE concrete migration story ready — e.g. Material 15's MDC swap breaking custom styles, or converting a lazy module to loadComponent.",
+    "code": "# one major at a time, run the schematics\nng update @angular/core@15 @angular/cli@15\nng update @angular/material@15   # the usual pain point (MDC)",
+    "lang": "bash",
+    "deep": "<h4>The narrative interviewers want</h4><p>14→16 is one arc: <strong>Angular shedding NgModule ceremony and Zone.js dependence</strong>. Standalone components (14) remove module boilerplate; functional guards/interceptors (14/15) remove class ceremony; signals (16) begin the path to zoneless fine-grained reactivity. Framing it as that arc beats listing features.</p><h4>Feature-to-benefit mapping</h4><ul><li><strong>Typed forms (14)</strong> — <code class=\"inline\">form.value</code> is no longer <code class=\"inline\">any</code>; refactors surface at compile time.</li><li><strong>Required inputs (16)</strong> — a missing <code class=\"inline\">[user]</code> binding is now a template compile error, not an undefined at runtime.</li><li><strong>Route params as inputs (16)</strong> — <code class=\"inline\">@Input() id</code> bound from <code class=\"inline\">:id</code> with <code class=\"inline\">withComponentInputBinding()</code> — less ActivatedRoute plumbing.</li><li><strong>DestroyRef (16)</strong> — cleanup without implementing OnDestroy, enabling <code class=\"inline\">takeUntilDestroyed()</code> anywhere in an injection context.</li></ul><h4>Migration gotchas by version</h4><ul><li>14: TS 4.6+; typed forms are opt-in per form — <code class=\"inline\">UntypedFormGroup</code> is the escape hatch the schematic inserts.</li><li>15: Material MDC — DOM/CSS classes changed; any ::ng-deep overrides of Material internals broke. Legacy imports (<code class=\"inline\">MatLegacyButtonModule</code>) buy time.</li><li>16: <code class=\"inline\">ngcc</code> removed — View Engine libraries stop working entirely; Node 16+.</li></ul>"
+  },
+  {
+    "id": "ng-ngif-vs-hidden",
+    "category": "angular",
+    "difficulty": "beginner",
+    "tags": [
+      "directives",
+      "templates",
+      "performance"
+    ],
+    "question": "*ngIf vs [hidden] — what's the difference?",
+    "answer": "<p><code class=\"inline\">*ngIf</code> <strong>adds/removes the element from the DOM</strong>: when false, the component is destroyed (ngOnDestroy runs, subscriptions in it die, no change detection cost). <code class=\"inline\">[hidden]</code> just toggles <code class=\"inline\">display: none</code> — the element stays in the DOM, stays instantiated, and <strong>keeps being change-detected</strong>.</p><ul><li>Expensive component, rarely shown → <code class=\"inline\">*ngIf</code>.</li><li>Cheap element toggled constantly (avoid re-init cost / preserve internal state like scroll or form input) → <code class=\"inline\">[hidden]</code>.</li></ul>",
+    "tip": "Gotcha: [hidden] loses to any CSS that sets display on the element (display: flex in a class beats the hidden attribute). *ngIf has no such fight.",
+    "code": "<heavy-chart *ngIf=\"showChart\"></heavy-chart>      <!-- destroyed when false -->\n<div [hidden]=\"collapsed\">cheap, keeps DOM state</div> <!-- display:none only -->",
+    "lang": "html"
+  },
+  {
+    "id": "ng-setvalue-patchvalue",
+    "category": "angular",
+    "difficulty": "beginner",
+    "tags": [
+      "forms",
+      "reactive-forms"
+    ],
+    "question": "setValue vs patchValue?",
+    "answer": "<p>Both write values into a FormGroup/FormControl:</p><ul><li><code class=\"inline\">setValue(obj)</code> — <strong>strict, full shape required</strong>: the object must contain a value for <em>every</em> control; missing or extra keys throw. Use when the payload should exactly match the form.</li><li><code class=\"inline\">patchValue(obj)</code> — <strong>lenient, partial update</strong>: sets what's provided, silently ignores the rest (including typos in key names!).</li></ul><p>Both fire <code class=\"inline\">valueChanges</code>; pass <code class=\"inline\">{ emitEvent: false }</code> to update silently (crucial when writing from inside a valueChanges handler to avoid loops).</p>",
+    "tip": "setValue's error on a missing key is a feature — it catches API-shape drift. patchValue's silence on a typo'd key is the classic 'why isn't my form updating' bug.",
+    "code": "this.form.setValue({ name: u.name, email: u.email });   // must be complete\nthis.form.patchValue({ email: u.email });               // partial is fine\nthis.form.patchValue({ email: x }, { emitEvent: false }); // no valueChanges loop",
+    "lang": "typescript"
+  },
+  {
+    "id": "ng-form-states",
+    "category": "angular",
+    "difficulty": "intermediate",
+    "tags": [
+      "forms",
+      "reactive-forms",
+      "validation"
+    ],
+    "question": "dirty vs touched vs pristine? valid/invalid/pending? How do you enable/disable controls reactively?",
+    "answer": "<p>Two independent state axes on every AbstractControl:</p><ul><li><strong>Value axis</strong>: <code class=\"inline\">pristine</code> (never changed) ↔ <code class=\"inline\">dirty</code> (value changed by the user).</li><li><strong>Visit axis</strong>: <code class=\"inline\">untouched</code> ↔ <code class=\"inline\">touched</code> (control was blurred).</li></ul><p><strong>Validity</strong>: <code class=\"inline\">valid</code> / <code class=\"inline\">invalid</code> / <code class=\"inline\">pending</code> (async validator running) / <code class=\"inline\">disabled</code> (excluded from validation <em>and</em> from <code class=\"inline\">form.value</code>!).</p><p>Enable/disable via API — <code class=\"inline\">ctrl.disable()</code> / <code class=\"inline\">ctrl.enable()</code>, typically inside a <code class=\"inline\">valueChanges</code> subscription; never <code class=\"inline\">[disabled]</code> in the template with reactive forms (Angular warns).</p>",
+    "tip": "The standard UX recipe: show errors only when invalid && (dirty || touched) — otherwise a fresh form is a wall of red. Disabled controls vanishing from form.value (use getRawValue()) is the follow-up trap.",
+    "code": "this.form.get('country')!.valueChanges.subscribe(c => {\n  const state = this.form.get('state')!;\n  c === 'IN' ? state.enable() : state.disable();   // reactive, not [disabled]\n});\n\n// template:\n// <div *ngIf=\"email.invalid && (email.dirty || email.touched)\">...",
+    "lang": "typescript"
+  },
+  {
+    "id": "ng-navigation-methods",
+    "category": "angular",
+    "difficulty": "beginner",
+    "tags": [
+      "routing",
+      "navigation"
+    ],
+    "question": "routerLink vs router.navigate() vs navigateByUrl()?",
+    "answer": "<ul><li><strong>routerLink</strong> — declarative, in templates: renders a real <code class=\"inline\">&lt;a href&gt;</code> (middle-click/SEO friendly); pairs with <code class=\"inline\">routerLinkActive</code>.</li><li><strong>router.navigate(['users', id])</strong> — programmatic, takes a <strong>commands array</strong>; supports relative navigation via <code class=\"inline\">{ relativeTo: this.route }</code>, plus queryParams, fragment, state.</li><li><strong>router.navigateByUrl('/users/42')</strong> — programmatic, takes an <strong>absolute URL string</strong>, always from root; query params go inside the string.</li></ul><p>Rule of thumb: template link → routerLink; navigate after logic (form saved, login done) → navigate(); redirect to a fully-formed URL (e.g. stored returnUrl) → navigateByUrl.</p>",
+    "tip": "Both programmatic methods return a Promise<boolean> — false means a guard blocked it; awaiting it is how you know navigation actually happened.",
+    "code": "// after login: go back where the guard bounced from\nconst returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/';\nthis.router.navigateByUrl(returnUrl);\n\n// relative: /orders/42 -> /orders/42/items\nthis.router.navigate(['items'], { relativeTo: this.route });",
+    "lang": "typescript"
+  },
+  {
+    "id": "ng-child-aux-routes",
+    "category": "angular",
+    "difficulty": "intermediate",
+    "tags": [
+      "routing",
+      "outlets"
+    ],
+    "question": "Child routes, named (auxiliary) outlets, and the wildcard route — how do they work?",
+    "answer": "<p><strong>Child routes</strong> — nested <code class=\"inline\">children: []</code> render into the <em>parent component's own</em> <code class=\"inline\">&lt;router-outlet&gt;</code>: layout stays, only the inner area swaps (tabs, master-detail).</p><p><strong>Named outlets</strong> — <code class=\"inline\">&lt;router-outlet name=\"panel\"&gt;</code> + <code class=\"inline\">outlet: 'panel'</code> on the route lets independent content (chat sidebar, preview pane) have its own URL segment: <code class=\"inline\">/inbox(panel:compose)</code>.</p><p><strong>Wildcard</strong> — <code class=\"inline\">path: '**'</code> catches everything unmatched (404 page). <strong>Route order matters</strong>: first match wins, so <code class=\"inline\">**</code> must be last and specific paths go before parameterized ones.</p>",
+    "tip": "The order bug everyone hits once: putting path: '**' (or path: ':id') above a static route swallows it — Angular does not pick 'the most specific', it picks the first match.",
+    "code": "const routes: Routes = [\n  { path: 'orders', component: OrdersShell, children: [\n      { path: '', component: OrderList },\n      { path: ':id', component: OrderDetail },   // renders inside OrdersShell's outlet\n  ]},\n  { path: 'compose', component: ComposeCmp, outlet: 'panel' },\n  { path: '**', component: NotFoundCmp },        // ALWAYS last\n];",
+    "lang": "typescript"
+  },
+  {
+    "id": "ng-location-strategies",
+    "category": "angular",
+    "difficulty": "intermediate",
+    "tags": [
+      "routing",
+      "deployment"
+    ],
+    "question": "PathLocationStrategy vs HashLocationStrategy?",
+    "answer": "<ul><li><strong>PathLocationStrategy</strong> (default) — clean URLs (<code class=\"inline\">/users/42</code>) via the HTML5 History API. Requires the <strong>server to serve index.html for every route</strong> (a rewrite/fallback rule) — otherwise a refresh or deep link on <code class=\"inline\">/users/42</code> is a 404.</li><li><strong>HashLocationStrategy</strong> — routes after a hash (<code class=\"inline\">/#/users/42</code>). The browser never sends the fragment to the server, so <strong>no server config needed</strong> — but URLs are uglier, and SEO/SSR are out.</li></ul>",
+    "tip": "\"App works locally but refreshing a route on the server 404s\" = PathLocationStrategy without the server fallback — the single most common Angular deployment bug. Fix nginx (try_files ... /index.html) rather than switching to hash.",
+    "code": "# nginx fallback for PathLocationStrategy\nlocation / {\n  try_files $uri $uri/ /index.html;\n}\n\n// hash only when you can't touch the server (file://, legacy hosting):\nprovideRouter(routes, withHashLocation())",
+    "lang": "bash"
+  },
+  {
+    "id": "ng-route-data-passing",
+    "category": "angular",
+    "difficulty": "intermediate",
+    "tags": [
+      "routing",
+      "state"
+    ],
+    "question": "How do you pass data between routes? And what is RouteReuseStrategy?",
+    "answer": "<p>Options by durability:</p><ul><li><strong>Route/query params</strong> — survives refresh and sharing; the default for identity (<code class=\"inline\">/orders/42?tab=items</code>). Pass ids, not objects.</li><li><strong>Navigation state</strong> — <code class=\"inline\">router.navigate([...], { state: { draft } })</code>, read via <code class=\"inline\">history.state</code>. Invisible in the URL but <strong>lost on refresh</strong> — good for optional context only.</li><li><strong>Shared service / store</strong> — for real data; the target route should still be able to fetch by id if state is empty.</li><li><strong>Route data / resolvers</strong> — static config or prefetched data attached to the route.</li></ul><p><strong>RouteReuseStrategy</strong> (awareness): by default Angular destroys a component on leave and recreates on return; a custom strategy can <strong>detach and store</strong> the component (e.g. keep a filtered list's state and scroll when going list → detail → back).</p>",
+    "tip": "Interview-safe rule: the URL should be enough to reconstruct the page. Anything passed via state/service is an optimization, not the source of truth.",
+    "code": "// list -> detail keeping context out of the URL\nthis.router.navigate(['/orders', id], { state: { from: 'search' } });\n// detail:\nconst from = this.router.getCurrentNavigation()?.extras.state?.['from']\n          ?? history.state.from;   // after refresh: undefined -> fall back gracefully",
+    "lang": "typescript"
+  },
+  {
+    "id": "ng-interceptor-order",
+    "category": "angular",
+    "difficulty": "intermediate",
+    "tags": [
+      "http",
+      "interceptors",
+      "gotcha"
+    ],
+    "question": "What's the order of multiple interceptors? And the HttpParams/HttpHeaders immutability gotcha?",
+    "answer": "<p>Interceptors run <strong>in registration order for requests, reverse order for responses</strong> — an onion: first registered = outermost layer. Register auth before logging and the log sees the token; order is the array order in <code class=\"inline\">withInterceptors([auth, logging])</code> (or multi-provider order for class-based ones).</p><p><strong>Immutability gotcha</strong>: <code class=\"inline\">HttpRequest</code>, <code class=\"inline\">HttpHeaders</code>, <code class=\"inline\">HttpParams</code> are all immutable — <code class=\"inline\">headers.set(...)</code> and <code class=\"inline\">params.append(...)</code> <strong>return a new object</strong>. Calling them without using the return value silently does nothing.</p>",
+    "tip": "The bug in the wild: params.append('page', p); http.get(url, { params }) — request goes out with no page param. Always chain or reassign.",
+    "code": "// WRONG — result thrown away:\n// req.headers.set('Authorization', token);\n\n// RIGHT — clone with the new immutable pieces:\nconst authed = req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });\nreturn next(authed);\n\nlet params = new HttpParams().set('page', '1');\nparams = params.set('size', '20');   // reassign!",
+    "lang": "typescript"
+  },
+  {
+    "id": "ng-runoutsideangular",
+    "category": "angular",
+    "difficulty": "advanced",
+    "tags": [
+      "performance",
+      "zone",
+      "change-detection"
+    ],
+    "question": "What is NgZone.runOutsideAngular() and when do you use it? (And web workers?)",
+    "answer": "<p>Zone.js triggers change detection after <em>every</em> patched async event. <code class=\"inline\">runOutsideAngular(fn)</code> runs code where those events <strong>don't trigger CD</strong> — for high-frequency work that doesn't change bound state on every tick: <code class=\"inline\">mousemove</code>/<code class=\"inline\">scroll</code> listeners, <code class=\"inline\">requestAnimationFrame</code> loops, polling timers, third-party libs (charts, maps).</p><p>When a result <em>does</em> need to reach the UI, re-enter with <code class=\"inline\">zone.run(() =&gt; ...)</code>.</p><p><strong>Web workers</strong> (awareness): for CPU-heavy computation (parsing, crunching) move the work off the main thread entirely — <code class=\"inline\">ng generate web-worker</code> scaffolds one; communication is postMessage.</p>",
+    "tip": "Symptom that calls for it: dragging/scrolling feels janky and the profiler shows change detection running hundreds of times per second.",
+    "code": "constructor(private zone: NgZone) {}\n\nngOnInit() {\n  this.zone.runOutsideAngular(() => {\n    fromEvent(window, 'mousemove').pipe(throttleTime(50)).subscribe(e => {\n      this.updateCanvas(e);                       // no CD per event\n      if (this.crossedThreshold(e))\n        this.zone.run(() => this.showHint = true); // CD only when UI must change\n    });\n  });\n}",
+    "lang": "typescript"
+  },
+  {
+    "id": "ng-pwa",
+    "category": "angular",
+    "difficulty": "intermediate",
+    "tags": [
+      "pwa",
+      "service-worker",
+      "caching"
+    ],
+    "question": "What is a PWA? How does the Angular service worker cache assets vs API calls?",
+    "answer": "<p>A Progressive Web App is a web app that's <strong>installable, offline-capable and fast</strong>, built on three pillars: HTTPS, a <strong>web app manifest</strong> (name, icons — enables install), and a <strong>service worker</strong> (a background script that intercepts network requests and serves from cache).</p><p><code class=\"inline\">ng add @angular/pwa</code> wires Angular's service worker, configured via <code class=\"inline\">ngsw-config.json</code>:</p><ul><li><strong>assetGroups</strong> — app shell files (js/css/index.html): <code class=\"inline\">prefetch</code> (download all at install) or <code class=\"inline\">lazy</code>; versioned by content hash, updated as a whole so the app is always a consistent build.</li><li><strong>dataGroups</strong> — API responses: strategy <code class=\"inline\">freshness</code> (network-first with timeout fallback to cache) or <code class=\"inline\">performance</code> (cache-first until maxAge), with maxSize/maxAge per group.</li></ul>",
+    "tip": "freshness for data that must be current (prices), performance for stable reference data. And know the update flow: new versions activate on next reload — SwUpdate lets you prompt 'new version available'.",
+    "code": "// ngsw-config.json\n\"dataGroups\": [{\n  \"name\": \"api-catalog\",\n  \"urls\": [\"/api/catalog/**\"],\n  \"cacheConfig\": {\n    \"strategy\": \"performance\",     // cache-first\n    \"maxSize\": 100, \"maxAge\": \"1d\"\n  }\n}]",
+    "lang": "json",
+    "deep": "<h4>How the Angular SW updates safely</h4><ol><li>Each build produces <code class=\"inline\">ngsw.json</code> — a manifest of every asset's hash.</li><li>The SW serves the <strong>current version entirely from cache</strong> (app shell loads offline/instantly).</li><li>In the background it checks ngsw.json; a changed hash → downloads the <em>full new version</em> alongside the old.</li><li>New tabs/reloads get the new version; existing tabs keep the old — no mixed-version pages, which is the bug hand-rolled service workers ship constantly.</li></ol><h4>SwUpdate in practice</h4><pre><code>constructor(updates: SwUpdate) {\n  updates.versionUpdates\n    .pipe(filter(e => e.type === 'VERSION_READY'))\n    .subscribe(() => {\n      if (confirm('New version available. Reload?'))\n        document.location.reload();\n    });\n}</code></pre><h4>Gotchas worth volunteering</h4><ul><li>SW only registers on <strong>HTTPS</strong> (localhost exempt) and only in production builds by default.</li><li>Never cache authenticated/mutating APIs in dataGroups; POSTs aren't cached at all.</li><li>A broken deploy can be pinned by clients until SW update — the escape hatch is the <code class=\"inline\">ngsw/state</code> debug endpoint and 'safety worker' to unregister.</li><li>Lighthouse's PWA audit is the quick way to verify manifest + SW + offline are actually working.</li></ul>"
+  },
+  {
+    "id": "ng-cli-commands",
+    "category": "angular",
+    "difficulty": "beginner",
+    "tags": [
+      "cli",
+      "tooling",
+      "build"
+    ],
+    "question": "Which Angular CLI commands do you use daily? What does ng build --configuration production actually do?",
+    "answer": "<p>Daily: <code class=\"inline\">ng serve</code> (dev server + HMR/watch), <code class=\"inline\">ng generate component|service|guard</code>, <code class=\"inline\">ng test</code>, <code class=\"inline\">ng lint</code>, <code class=\"inline\">ng build</code>, <code class=\"inline\">ng update</code>, <code class=\"inline\">ng add</code> (install + run a library's setup schematic).</p><p><code class=\"inline\">ng build --configuration production</code>: <strong>AOT compilation</strong>, <strong>tree-shaking + minification</strong>, style/script <strong>optimization</strong>, output hashing for cache-busting, source maps off, budgets enforced (build fails if bundles exceed angular.json limits), <code class=\"inline\">fileReplacements</code> swapping in environment.prod.ts.</p><p><strong>Schematics</strong> (awareness) are the code generators behind ng generate/add/update — libraries ship them so <code class=\"inline\">ng add @angular/material</code> can edit your project, and ng update runs migration schematics.</p>",
+    "tip": "Bundle budgets in angular.json are the honest answer to 'how do you stop bundle-size regressions' — CI fails the build, no vigilance required.",
+    "code": "ng build --configuration production\nng build --stats-json && npx source-map-explorer dist/**/*.js  # what's IN the bundle\nng update @angular/core@16 @angular/cli@16                     # migration schematics",
+    "lang": "bash"
+  },
+  {
+    "id": "ng-resolution-modifiers",
+    "category": "angular",
+    "difficulty": "advanced",
+    "tags": [
+      "di",
+      "decorators"
+    ],
+    "question": "What are the DI resolution modifiers @Self, @Optional, @SkipSelf, @Host?",
+    "answer": "<p>They tune <em>where</em> the injector search looks and what happens on a miss (default: walk up from the component's own injector to root, throw if not found):</p><ul><li><strong>@Optional()</strong> — inject <code class=\"inline\">null</code> instead of throwing. For \"use it if present\" dependencies.</li><li><strong>@Self()</strong> — only this component/directive's own injector; don't walk up.</li><li><strong>@SkipSelf()</strong> — start from the <em>parent</em> injector; skip your own. Classic for a directive finding a parent instance of itself (nested menus), or a service checking it isn't provided twice.</li><li><strong>@Host()</strong> — stop the search at the host component (a directive may look at its component but not beyond).</li></ul>",
+    "tip": "The real-world combo to remember: @Optional() @SkipSelf() in a module/service constructor to error if someone imports a forRoot module twice.",
+    "code": "// directive grabs its OWN ngModel, not an ancestor's:\nconstructor(@Self() private ngControl: NgControl) {}\n\n// guard against double forRoot():\nconstructor(@Optional() @SkipSelf() parent?: CoreModule) {\n  if (parent) throw new Error('CoreModule imported twice');\n}",
+    "lang": "typescript"
   }
 ]
