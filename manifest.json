@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
-  "version": 42,
-  "updatedAt": "2026-07-23T15:21:42.990Z",
-  "totalQuestions": 1598,
-  "contentHash": "9553f6df7200e72e3e862f6b46eee1d03504f342",
+  "version": 43,
+  "updatedAt": "2026-07-23T15:26:14.586Z",
+  "totalQuestions": 1622,
+  "contentHash": "12a2ae05f87c138a30605a319bea80a15ed18ccf",
   "groups": [
     {
       "id": "frontend",
@@ -51,8 +51,8 @@
       "id": "java-angular",
       "file": "packs/java-angular.json",
       "label": "Java + Angular",
-      "count": 909,
-      "hash": "023e90a1045a"
+      "count": 933,
+      "hash": "ae5da0dfd601"
     }
   ],
   "categories": [
@@ -161,8 +161,8 @@
       "label": "General",
       "group": "frontend",
       "color": "#667085",
-      "count": 12,
-      "hash": "bfc316f486b3"
+      "count": 18,
+      "hash": "7ba65eac39a6"
     },
     {
       "id": "java",
@@ -170,8 +170,8 @@
       "label": "Java",
       "group": "backend",
       "color": "#9A5B34",
-      "count": 169,
-      "hash": "7285f35b8848"
+      "count": 174,
+      "hash": "263183efa0ef"
     },
     {
       "id": "leetcode",
@@ -296,8 +296,8 @@
       "label": "Git",
       "group": "devops",
       "color": "#D9491F",
-      "count": 10,
-      "hash": "b6b4110eb546"
+      "count": 11,
+      "hash": "7f5fb3f9093e"
     },
     {
       "id": "docker-kubernetes",
@@ -305,8 +305,8 @@
       "label": "Docker & Kubernetes",
       "group": "devops",
       "color": "#326CE5",
-      "count": 22,
-      "hash": "8e49c1abde29"
+      "count": 23,
+      "hash": "7ace69533fc3"
     },
     {
       "id": "behavioral",
@@ -359,8 +359,8 @@
       "label": "Fundamentals",
       "group": "testing",
       "color": "#0F766E",
-      "count": 20,
-      "hash": "639d9f267639"
+      "count": 24,
+      "hash": "eb15cb5578a7"
     },
     {
       "id": "manual-qa",
@@ -422,8 +422,8 @@
       "label": "LLMs & GenAI",
       "group": "ai",
       "color": "#8B5CF6",
-      "count": 24,
-      "hash": "044ab49add0b"
+      "count": 26,
+      "hash": "213c50b5401e"
     },
     {
       "id": "ml-fundamentals",
@@ -440,8 +440,8 @@
       "label": "System Design",
       "group": "architecture",
       "color": "#0F172A",
-      "count": 22,
-      "hash": "893f393fd000"
+      "count": 27,
+      "hash": "3373ffa38195"
     }
   ]
 }

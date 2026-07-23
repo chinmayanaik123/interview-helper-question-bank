@@ -43,6 +43,12 @@
     "redis-spring-data",
     "tf-test-levels",
     "tf-positive-negative",
-    "tf-sdlc-models"
+    "tf-sdlc-models",
+    "tf-tdd",
+    "tf-good-unit-test",
+    "tf-code-coverage",
+    "tf-static-analysis",
+    "llm-mcp",
+    "llm-streaming-ui"
   ]
 }

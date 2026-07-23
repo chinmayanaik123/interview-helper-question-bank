@@ -318,5 +318,64 @@
     "code": "",
     "lang": "",
     "deep": "<h4>Examples</h4><ul><li><strong>QA</strong>: add acceptance criteria template; require API tests in PR.</li><li><strong>QC</strong>: execute regression and log defects.</li></ul><h4>How to say it in an interview</h4><p>“QC finds defects in the product. QA improves the process so fewer defects are created. As an SDET I do both — execute tests and strengthen automation/CI quality gates.”</p>"
+  },
+  {
+    "id": "tf-tdd",
+    "category": "testing-fundamentals",
+    "difficulty": "intermediate",
+    "tags": [
+      "tdd",
+      "process",
+      "V.Imp"
+    ],
+    "question": "What is TDD? Explain red-green-refactor.",
+    "answer": "<p>Test-Driven Development: write the test <strong>before</strong> the code, in a tight loop:</p><ol><li><strong>Red</strong> — write a small failing test for the next behavior (failing proves the test can fail).</li><li><strong>Green</strong> — write the <em>minimum</em> code to pass.</li><li><strong>Refactor</strong> — clean up with the tests as a safety net; repeat.</li></ol><p>Real benefits: design pressure (hard-to-test code reveals coupling early), executable specs, fearless refactoring, and by construction everything is covered. Costs: slower start, and tests welded to implementation details make refactoring <em>harder</em> — test behavior, not internals.</p>",
+    "tip": "Interviewers respect honesty: 'strict TDD for tricky pure logic (parsers, calculations, bug reproductions — write the failing test first), test-alongside for CRUD plumbing' is a credible real-world answer.",
+    "code": "// 1 RED\n@Test void emptyCartTotalsZero() { assertEquals(0, new Cart().total()); }\n// 2 GREEN: int total() { return 0; }\n// 3 next RED forces real logic:\n@Test void totalSumsLinePrices() { cart.add(item(100), item(50)); assertEquals(150, cart.total()); }",
+    "lang": "java"
+  },
+  {
+    "id": "tf-good-unit-test",
+    "category": "testing-fundamentals",
+    "difficulty": "intermediate",
+    "tags": [
+      "unit-testing",
+      "best-practices",
+      "V.Imp"
+    ],
+    "question": "What makes a good unit test? (FIRST principles)",
+    "answer": "<p><strong>FIRST</strong>:</p><ul><li><strong>F</strong>ast — milliseconds; slow suites stop being run.</li><li><strong>I</strong>ndependent — any order, no shared mutable state between tests.</li><li><strong>R</strong>epeatable — same result everywhere: no real clock, network, or randomness (inject them).</li><li><strong>S</strong>elf-validating — asserts pass/fail by itself; no reading logs.</li><li><strong>T</strong>imely — written with (or before) the code.</li></ul><p>Plus the structural habits: one behavior per test, Arrange-Act-Assert shape, names that state the scenario (<code class=\"inline\">withdraw_insufficientBalance_throws</code>), and asserting <strong>behavior</strong> not implementation (over-mocked tests that break on every refactor are the classic smell).</p>",
+    "tip": "Flaky tests are the FIRST-violation interviewers probe: the causes are almost always time, order dependence, async waits, or shared state — name those four.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "tf-code-coverage",
+    "category": "testing-fundamentals",
+    "difficulty": "intermediate",
+    "tags": [
+      "coverage",
+      "metrics"
+    ],
+    "question": "What is code coverage? Is 100% coverage a good goal?",
+    "answer": "<p>The percentage of code executed by tests — line, branch (each if-outcome), and condition coverage; measured by JaCoCo (Java) or Istanbul (JS), usually gated in CI (e.g. 80% on changed code).</p><p><strong>100% is not a good goal</strong>: coverage proves code <em>ran</em>, not that anything was <em>asserted</em> — a suite with zero assertions can hit 100%. Chasing the last percent produces brittle tests of getters and framework glue, while a covered-but-wrong edge case still ships broken.</p><p>Healthy use: coverage as a <strong>detector of untested areas</strong> (a critical service at 30% is a real signal), branch coverage over line coverage, and mutation testing (PIT) if you want to measure test <em>quality</em>.</p>",
+    "tip": "The sound bite: 'high coverage doesn't prove good tests, but low coverage proves missing ones' — coverage is a smoke alarm, not a quality certificate.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "tf-static-analysis",
+    "category": "testing-fundamentals",
+    "difficulty": "intermediate",
+    "tags": [
+      "static-analysis",
+      "quality",
+      "tools"
+    ],
+    "question": "What do SonarQube and ESLint give you? How do quality gates work?",
+    "answer": "<p><strong>Static analysis</strong> inspects code without running it:</p><ul><li><strong>ESLint</strong> (JS/TS, + Angular rules) — bugs and style at lint speed: unused vars, unsafe any, missing lifecycle interfaces; auto-fixable, runs in the editor and CI.</li><li><strong>SonarQube</strong> — deeper multi-language analysis: bug patterns (possible NPEs, resource leaks), <strong>security hotspots</strong> (injection, weak crypto), code smells, duplication, complexity — tracked over time per branch/PR.</li></ul><p>A <strong>quality gate</strong> fails the pipeline on thresholds — the sane pattern is gating on <strong>new code only</strong> (\"clean as you code\"): no new critical issues, coverage on changed lines ≥ X% — so legacy debt doesn't block today's PR but nothing new rots.</p>",
+    "tip": "Mention the triad in CI order: linter (seconds, every save) → tests → Sonar gate on the PR. And one real rule that caught something for you — e.g. rxjs/no-unsafe-subscribe or a Sonar NPE path.",
+    "code": "",
+    "lang": ""
   }
 ]

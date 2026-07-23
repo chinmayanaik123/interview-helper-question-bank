@@ -347,5 +347,77 @@
     "tip": "Polyglot persistence is normal — SQL for orders, Redis for cache, Elasticsearch for search, S3 for files.",
     "code": "",
     "lang": ""
+  },
+  {
+    "id": "sd-design-principles",
+    "category": "system-design",
+    "difficulty": "beginner",
+    "tags": [
+      "principles",
+      "clean-code"
+    ],
+    "question": "DRY, KISS, YAGNI, separation of concerns — what do they mean in practice?",
+    "answer": "<ul><li><strong>DRY</strong> — one authoritative place per piece of <em>knowledge</em>. The nuance: duplicated <em>code</em> that represents different concepts should NOT be merged — wrong abstraction is worse than duplication.</li><li><strong>KISS</strong> — the simplest design that meets today's requirement; cleverness is a maintenance tax.</li><li><strong>YAGNI</strong> — don't build for imagined future needs (config flags nobody sets, generic engines with one use).</li><li><strong>Separation of concerns</strong> — each module owns one aspect (controller/service/repository; smart/dumb components) so changes stay local.</li></ul>",
+    "tip": "Best answered with a confession: 'I once abstracted two similar-looking flows too early and had to un-DRY them' — shows you know the principles fight each other and judgment is the real skill.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "sd-sse-websockets",
+    "category": "system-design",
+    "difficulty": "intermediate",
+    "tags": [
+      "realtime",
+      "sse",
+      "websockets",
+      "V.Imp"
+    ],
+    "question": "WebSockets vs SSE vs long polling — and why choose SSE for streaming AI responses?",
+    "answer": "<ul><li><strong>Long polling</strong> — client asks, server holds the request until data arrives, repeat. Works everywhere; high overhead per message.</li><li><strong>SSE (Server-Sent Events)</strong> — one long-lived HTTP response streaming <code class=\"inline\">text/event-stream</code>. <strong>Server→client only</strong>; auto-reconnect built into EventSource; plain HTTP (proxies, LBs, HTTP/2 friendly).</li><li><strong>WebSockets</strong> — full-duplex TCP after an HTTP upgrade; both directions, binary support; costs a stateful protocol, trickier LB/proxy story, manual reconnect/heartbeats.</li></ul><p><strong>LLM streaming is exactly SSE's shape</strong>: client sends one request, server streams tokens one way. OpenAI/Anthropic APIs stream via SSE; the UI reads chunks and renders incrementally.</p>",
+    "tip": "Decision rule to recite: chat between users = WebSocket (bidirectional); notifications, progress, token streams = SSE; legacy constraints = long polling. Choosing the lighter tool is the senior signal.",
+    "code": "// browser side of an SSE token stream\nconst es = new EventSource('/api/chat/stream?id=42');\nes.onmessage = (e) => {\n  if (e.data === '[DONE]') { es.close(); return; }\n  const delta = JSON.parse(e.data).token;\n  answerEl.textContent += delta;          // incremental render\n};\nes.onerror = () => { /* EventSource auto-reconnects with Last-Event-ID */ };",
+    "lang": "javascript"
+  },
+  {
+    "id": "sd-serverless",
+    "category": "system-design",
+    "difficulty": "intermediate",
+    "tags": [
+      "serverless",
+      "cloud"
+    ],
+    "question": "Serverless functions vs an always-on server — and what are cold starts?",
+    "answer": "<p><strong>Always-on</strong> (VM/container/Spring Boot pod) — a process you run, size and pay for 24/7; state in memory possible; predictable latency.</p><p><strong>Serverless</strong> (Lambda, Vercel/Netlify functions) — the platform spins up an instance <em>per demand</em>, scales to zero, bills per invocation. No server management, but: <strong>stateless by force</strong>, execution time limits, and <strong>cold starts</strong> — the first request after idle pays for provisioning + runtime boot (ms for Node, notoriously seconds for JVM — hence GraalVM native images for serverless Java).</p><p>Mitigations: provisioned concurrency/warm-up pings, small bundles, lighter runtimes, keeping DB connections in a pooler (serverless + naive connection-per-invocation exhausts Postgres).</p>",
+    "tip": "Good fit: spiky/low-traffic APIs, webhooks, glue. Bad fit: long-lived connections (WebSockets), sub-50ms latency guarantees, heavy steady traffic where a dedicated server is cheaper.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "sd-availability-nines",
+    "category": "system-design",
+    "difficulty": "intermediate",
+    "tags": [
+      "availability",
+      "sre"
+    ],
+    "question": "What does 99.5% (or 99.9%) uptime actually mean? How do you design for it?",
+    "answer": "<p>Availability translates directly into an allowed-downtime budget:</p><ul><li><strong>99%</strong> ≈ 7.3 hours/month</li><li><strong>99.5%</strong> ≈ 3.6 hours/month</li><li><strong>99.9%</strong> ≈ 43 minutes/month</li><li><strong>99.99%</strong> ≈ 4.4 minutes/month</li></ul><p>Each nine multiplies cost: redundancy (no SPOF, multi-instance/multi-AZ), health checks + automatic failover, zero-downtime deploys, graceful degradation (serve cached/partial rather than error), and an <strong>error budget</strong> mindset — planned maintenance and bad deploys spend the same budget.</p>",
+    "tip": "The chained-dependency trap: five 99.9% services in series ≈ 99.5% overall — availability multiplies. That's why critical paths minimize synchronous dependencies.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "sd-monorepo-polyrepo",
+    "category": "system-design",
+    "difficulty": "intermediate",
+    "tags": [
+      "repo-strategy",
+      "tooling"
+    ],
+    "question": "Monorepo vs polyrepo — trade-offs (especially for microfrontends)?",
+    "answer": "<p><strong>Monorepo</strong> — all apps/libs in one repo (Nx/Turborepo): atomic cross-cutting changes (shared component + all consumers in one PR), one dependency version policy, easy code sharing and refactoring; needs task-graph tooling to build/test only what changed, and CI/permissions get complex at scale.</p><p><strong>Polyrepo</strong> — repo per app/team: clear ownership and independent pipelines (the natural fit for independently-deployed microfrontends/microservices); the price is version drift, cross-repo changes spanning N PRs, and shared libraries distributed via registries with lagging upgrades.</p>",
+    "tip": "Nuance that lands: repo strategy ≠ deploy strategy — a monorepo can still deploy MFEs independently (Nx affected builds). Choose by how often changes cross project boundaries.",
+    "code": "",
+    "lang": ""
   }
 ]

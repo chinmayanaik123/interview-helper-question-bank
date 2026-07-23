@@ -2549,5 +2549,82 @@
     "tip": "The while (not if) around wait() is what they're checking — spurious wakeups and the re-check-after-wake rule. Bonus points for mentioning the Semaphore alternative.",
     "code": "class AlternatePrinter {\n  private int n = 1;\n  private final int max;\n  AlternatePrinter(int max) { this.max = max; }\n\n  synchronized void print(int parity) throws InterruptedException {\n    while (n <= max) {\n      while (n <= max && n % 2 != parity) wait();   // not my turn\n      if (n > max) break;\n      System.out.println(Thread.currentThread().getName() + \": \" + n++);\n      notifyAll();\n    }\n  }\n}\n// main:\nvar p = new AlternatePrinter(10);\nnew Thread(() -> { try { p.print(1); } catch (Exception e) {} }, \"odd\").start();\nnew Thread(() -> { try { p.print(0); } catch (Exception e) {} }, \"even\").start();\n// 3 threads printing 1..N: same monitor, condition n % 3 == myIndex",
     "lang": "java"
+  },
+  {
+    "id": "java-structural-patterns",
+    "category": "java",
+    "difficulty": "intermediate",
+    "tags": [
+      "design-patterns",
+      "spring",
+      "angular",
+      "V.Imp"
+    ],
+    "question": "Adapter, Facade, Proxy, Template Method — and where do Spring/Angular actually use design patterns?",
+    "answer": "<ul><li><strong>Adapter</strong> — converts one interface to another so incompatible things collaborate (<code class=\"inline\">Arrays.asList</code>, Spring MVC's HandlerAdapter).</li><li><strong>Facade</strong> — one simple entry point over a messy subsystem (<code class=\"inline\">JdbcTemplate</code> hiding raw JDBC; NgRx facade services).</li><li><strong>Proxy</strong> — a stand-in controlling access to the real object — <em>the</em> Spring pattern: <code class=\"inline\">@Transactional</code>, <code class=\"inline\">@Async</code>, AOP, lazy-loading Hibernate entities are all proxies.</li><li><strong>Template Method</strong> — skeleton algorithm in a base class, steps overridden (<code class=\"inline\">JdbcTemplate</code>/<code class=\"inline\">RestTemplate</code> — it's in the names).</li></ul><p>Framework map to recite: Spring beans = <strong>singleton</strong>, BeanFactory = <strong>factory</strong>, RxJS/ApplicationEvents = <strong>observer</strong>, interceptor/filter chains = <strong>chain of responsibility</strong>, RowMapper/Comparator injection = <strong>strategy</strong>, HttpClient feature wrapping = <strong>decorator</strong>, DI itself = inversion of control.</p>",
+    "tip": "'Where have you USED one?' is the follow-up — pick strategy (payment/validation variants) or facade (service wrapping three clients) from your own code, not the textbook duck example.",
+    "code": "// Template Method you already use daily:\njdbcTemplate.query(sql, (rs, i) -> new User(rs.getLong(1)));\n// JdbcTemplate owns connection/statement/exception steps — you supply one step.",
+    "lang": "java"
+  },
+  {
+    "id": "java-junit5",
+    "category": "java",
+    "difficulty": "intermediate",
+    "tags": [
+      "testing",
+      "junit",
+      "V.Imp"
+    ],
+    "question": "JUnit 5 essentials — @Test, lifecycle hooks, assertThrows, @ParameterizedTest?",
+    "answer": "<p>Core annotations: <code class=\"inline\">@Test</code>, <code class=\"inline\">@BeforeEach/@AfterEach</code> (fresh per test), <code class=\"inline\">@BeforeAll/@AfterAll</code> (static, once), <code class=\"inline\">@DisplayName</code>, <code class=\"inline\">@Disabled</code>, <code class=\"inline\">@Nested</code> for grouping.</p><p>Assertions: <code class=\"inline\">assertEquals/assertTrue/assertAll</code> (grouped soft asserts), and <strong><code class=\"inline\">assertThrows</code></strong> — the modern exception test, returning the exception for message checks.</p><p><strong>@ParameterizedTest</strong> — one test, many inputs via <code class=\"inline\">@ValueSource</code>, <code class=\"inline\">@CsvSource</code>, <code class=\"inline\">@MethodSource</code> — the answer to \"how do you avoid copy-pasted tests\".</p>",
+    "tip": "JUnit 4 → 5 mapping is a quick follow-up: @Before→@BeforeEach, @BeforeClass→@BeforeAll, @Ignore→@Disabled, expected= → assertThrows, @RunWith→@ExtendWith(MockitoExtension.class).",
+    "code": "@ParameterizedTest\n@CsvSource({ \"racecar,true\", \"hello,false\", \"'',true\" })\nvoid palindrome(String input, boolean expected) {\n  assertEquals(expected, Palindrome.check(input));\n}\n\n@Test\nvoid withdrawRejectsOverdraft() {\n  var ex = assertThrows(InsufficientFundsException.class,\n      () -> account.withdraw(1_000_000));\n  assertTrue(ex.getMessage().contains(\"balance\"));\n}",
+    "lang": "java"
+  },
+  {
+    "id": "java-switch-allowed-types",
+    "category": "java",
+    "difficulty": "intermediate",
+    "tags": [
+      "switch",
+      "rapid-fire",
+      "gotcha"
+    ],
+    "question": "Why is String allowed in switch but not long?",
+    "answer": "<p><code class=\"inline\">switch</code> compiles to constant-time jump instructions (<code class=\"inline\">tableswitch</code>/<code class=\"inline\">lookupswitch</code>) that operate on <strong>int</strong>. Allowed types are things reducible to int: byte/short/char/int, their wrappers, and enums (ordinal). <strong>String</strong> (Java 7+) works via a compiler trick — switch on <code class=\"inline\">hashCode()</code> plus an <code class=\"inline\">equals()</code> confirmation for collisions.</p><p><strong>long/float/double</strong> don't fit the int-based bytecode (and floats can't be compared exactly) — hence not allowed. Modern pattern-matching switch (Java 21) extends to type patterns, but the primitive rule stands.</p>",
+    "tip": "One-liner: switch is int-shaped bytecode; String sneaks in via hashCode + equals; long simply doesn't fit in an int jump table.",
+    "code": "switch (command) {          // compiles to hashCode switch + equals check\n  case \"start\" -> start();\n  case \"stop\"  -> stop();\n}\n// switch (someLong) {}      // compile error: incompatible types",
+    "lang": "java"
+  },
+  {
+    "id": "java-main-method",
+    "category": "java",
+    "difficulty": "beginner",
+    "tags": [
+      "main",
+      "rapid-fire",
+      "gotcha"
+    ],
+    "question": "Can main() be private? Overloaded? Final? What if there's no main at all?",
+    "answer": "<ul><li><strong>Overloaded</strong> — yes, freely; the JVM only ever launches <code class=\"inline\">public static void main(String[])</code>, other overloads are normal methods.</li><li><strong>final</strong> — yes; final only forbids overriding, which is irrelevant for a static entry point. <code class=\"inline\">static</code> is required (no instance exists yet).</li><li><strong>private</strong> — compiles fine, but the launcher refuses to run it: <em>\"main method not found\"-style error at launch</em>, not a compile error.</li><li><strong>No main</strong> — compiles fine too; running it fails at launch. (Java 21+ preview relaxes this with unnamed classes/instance main.)</li></ul>",
+    "tip": "The theme of all four: the JVM's entry-point contract is checked at LAUNCH time, the compiler doesn't care. Say that sentence and you've answered every variant.",
+    "code": "public class App {\n  public static void main(String[] args) { main(42); } // launched\n  static void main(int x) {}                           // just an overload\n}",
+    "lang": "java"
+  },
+  {
+    "id": "java-string-concat-order",
+    "category": "java",
+    "difficulty": "beginner",
+    "tags": [
+      "string",
+      "operators",
+      "rapid-fire",
+      "gotcha"
+    ],
+    "question": "What does \"abc\" + 1 + 2 print vs 1 + 2 + \"abc\"?",
+    "answer": "<p><code class=\"inline\">+</code> evaluates <strong>left to right</strong>, and its meaning flips per operand pair: once either side is a String, it's concatenation forever after.</p><ul><li><code class=\"inline\">\"abc\" + 1 + 2</code> → <code class=\"inline\">(\"abc\" + 1) + 2</code> → <strong>\"abc12\"</strong></li><li><code class=\"inline\">1 + 2 + \"abc\"</code> → <code class=\"inline\">(1 + 2) + \"abc\"</code> → <strong>\"3abc\"</strong> — the ints add first.</li></ul>",
+    "tip": "Force early concatenation with parentheses or an empty string: \"\" + 1 + 2 is \"12\". Also floats print their decimal: \"x\" + 1.0 is \"x1.0\".",
+    "code": "System.out.println(\"abc\" + 1 + 2);  // abc12\nSystem.out.println(1 + 2 + \"abc\");  // 3abc\nSystem.out.println(\"\" + (1 + 2));   // 3\nSystem.out.println('a' + 1);        // 98 — char + int is arithmetic!",
+    "lang": "java"
   }
 ]

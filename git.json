@@ -138,5 +138,20 @@
     "tip": "If you commit in detached HEAD, make a branch before switching away.",
     "code": "git switch -c new-branch  # save detached-HEAD work",
     "lang": "bash"
+  },
+  {
+    "id": "git-code-review",
+    "category": "git",
+    "difficulty": "intermediate",
+    "tags": [
+      "code-review",
+      "process",
+      "V.Imp"
+    ],
+    "question": "What do you look for in a code review? Describe your PR process.",
+    "answer": "<p>A layered checklist, most important first:</p><ul><li><strong>Correctness</strong> — does it do what the ticket says; edge cases (null/empty/concurrent); error handling.</li><li><strong>Design</strong> — right layer for the logic, no duplication of existing utilities, sane API shapes, backward compatibility.</li><li><strong>Safety</strong> — SQL injection/XSS, secrets in code, N+1 queries, missing indexes on new queries, transaction boundaries.</li><li><strong>Tests</strong> — meaningful cases (not just coverage), failure paths tested.</li><li><strong>Readability last</strong> — naming, dead code; style nits belong to the linter, not humans.</li></ul><p>Process: small PRs (&lt; ~400 lines review well), a description that says <em>why</em>, CI green before human eyes, comments phrased as questions, and approval means <em>I'd maintain this</em>.</p>",
+    "tip": "Have one story ready: a bug you caught in review (concurrency, missing rollback) and one piece of pushback you accepted gracefully — review questions are always secretly behavioral.",
+    "code": "",
+    "lang": ""
   }
 ]

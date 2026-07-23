@@ -3,7 +3,11 @@
     "id": "dk8s-what-is-docker",
     "category": "docker-kubernetes",
     "difficulty": "beginner",
-    "tags": ["docker", "basics", "containers"],
+    "tags": [
+      "docker",
+      "basics",
+      "containers"
+    ],
     "question": "What is Docker and why is it used?",
     "answer": "<p>Docker is a <strong>containerization platform</strong> that packages an application with its dependencies (libraries, runtime, config) into a portable, isolated unit called a <strong>container</strong>. Containers share the host OS kernel but run in isolated namespaces.</p><p>Key benefits:</p><ul><li><strong>Consistency</strong> — \"works on my machine\" becomes \"works everywhere.\"</li><li><strong>Portability</strong> — same image runs on laptop, CI, cloud.</li><li><strong>Isolation</strong> — apps don't interfere with each other.</li><li><strong>Fast startup</strong> — seconds vs minutes for VMs.</li><li><strong>Efficiency</strong> — lightweight compared to full VMs.</li></ul><p>Docker components: <strong>Docker Engine</strong> (daemon), <strong>Dockerfile</strong> (build recipe), <strong>Image</strong> (read-only template), <strong>Container</strong> (running instance), <strong>Registry</strong> (Docker Hub, ECR, GCR).</p>",
     "tip": "Docker is the packaging layer; Kubernetes is the orchestration layer on top. Know both roles.",
@@ -14,7 +18,11 @@
     "id": "dk8s-images-vs-containers",
     "category": "docker-kubernetes",
     "difficulty": "beginner",
-    "tags": ["docker", "images", "containers"],
+    "tags": [
+      "docker",
+      "images",
+      "containers"
+    ],
     "question": "What is the difference between a Docker image and a container?",
     "answer": "<p><strong>Image</strong> — a read-only, layered template built from a Dockerfile. Immutable snapshot of the app + dependencies. Stored in a registry (Docker Hub, ECR). Think of it as a <em>class</em> in OOP.</p><p><strong>Container</strong> — a running (or stopped) instance of an image. Writable layer on top of the read-only image layers. Think of it as an <em>object</em>.</p><p>Relationship: one image → many containers. Stopping a container doesn't delete the image. Deleting a container removes only its writable layer.</p><p>Image layers are cached and shared — if two images use <code class=\"inline\">node:20-alpine</code> as base, that layer is stored once on disk.</p>",
     "tip": "Analogy: image = ISO/installer, container = running process. You can have 10 nginx containers from one nginx image.",
@@ -25,7 +33,11 @@
     "id": "dk8s-dockerfile-best-practices",
     "category": "docker-kubernetes",
     "difficulty": "intermediate",
-    "tags": ["docker", "dockerfile", "best-practices"],
+    "tags": [
+      "docker",
+      "dockerfile",
+      "best-practices"
+    ],
     "question": "Dockerfile best practices for production images.",
     "answer": "<p>Key practices for smaller, secure, fast-building images:</p><ul><li><strong>Use specific tags</strong> — <code class=\"inline\">node:20.11-alpine</code> not <code class=\"inline\">node:latest</code>.</li><li><strong>Prefer Alpine or distroless</strong> — smaller attack surface.</li><li><strong>Order layers for cache</strong> — copy <code class=\"inline\">package.json</code> before source code so dependency install is cached.</li><li><strong>Combine RUN commands</strong> — fewer layers, smaller image.</li><li><strong>Use .dockerignore</strong> — exclude <code class=\"inline\">node_modules</code>, <code class=\"inline\">.git</code>, tests.</li><li><strong>Don't run as root</strong> — add <code class=\"inline\">USER nonroot</code>.</li><li><strong>One process per container</strong> — use Compose/K8s for multi-service apps.</li><li><strong>Pin versions</strong> — reproducible builds.</li><li><strong>Health check</strong> — <code class=\"inline\">HEALTHCHECK</code> instruction.</li><li><strong>No secrets in Dockerfile</strong> — use build args or runtime env vars.</li></ul>",
     "tip": "Layer caching is the #1 build-speed win — put things that change rarely (OS, deps) before things that change often (source code).",
@@ -36,7 +48,11 @@
     "id": "dk8s-multi-stage-builds",
     "category": "docker-kubernetes",
     "difficulty": "intermediate",
-    "tags": ["docker", "multi-stage", "build"],
+    "tags": [
+      "docker",
+      "multi-stage",
+      "build"
+    ],
     "question": "What are multi-stage Docker builds and why use them?",
     "answer": "<p>A multi-stage Dockerfile uses multiple <code class=\"inline\">FROM</code> stages. Earlier stages compile/build; the final stage copies only the artifacts needed to run. Build tools, compilers, and source code are left behind.</p><p>Benefits:</p><ul><li><strong>Smaller images</strong> — a Go binary image can be 15 MB instead of 800 MB with the full SDK.</li><li><strong>More secure</strong> — no compiler, shell, or source in production image.</li><li><strong>Faster deploys</strong> — less to pull and scan.</li></ul><p>Use <code class=\"inline\">COPY --from=stage-name</code> to pull artifacts from a previous stage. Name stages with <code class=\"inline\">AS builder</code>.</p>",
     "tip": "Always end with a minimal runtime stage (alpine, distroless, scratch for static binaries).",
@@ -47,7 +63,11 @@
     "id": "dk8s-docker-compose",
     "category": "docker-kubernetes",
     "difficulty": "beginner",
-    "tags": ["docker", "compose", "local-dev"],
+    "tags": [
+      "docker",
+      "compose",
+      "local-dev"
+    ],
     "question": "What is Docker Compose and when do you use it?",
     "answer": "<p>Docker Compose defines and runs <strong>multi-container applications</strong> from a single <code class=\"inline\">docker-compose.yml</code> file. One command (<code class=\"inline\">docker compose up</code>) starts all services, networks, and volumes together.</p><p>Use cases:</p><ul><li><strong>Local development</strong> — app + database + Redis + message broker.</li><li><strong>Integration testing</strong> — spin up dependencies in CI.</li><li><strong>Small deployments</strong> — single-host production (not for large scale — use K8s).</li></ul><p>Key concepts: <strong>services</strong> (containers), <strong>networks</strong> (service discovery by name), <strong>volumes</strong> (persistent data), <strong>depends_on</strong> (startup order), <strong>environment</strong> / <strong>env_file</strong>.</p>",
     "tip": "Compose is for dev/small deploys. In interviews, say you'd use K8s or ECS for production multi-host orchestration.",
@@ -58,7 +78,11 @@
     "id": "dk8s-docker-vs-vm",
     "category": "docker-kubernetes",
     "difficulty": "beginner",
-    "tags": ["docker", "vm", "virtualization"],
+    "tags": [
+      "docker",
+      "vm",
+      "virtualization"
+    ],
     "question": "Docker containers vs Virtual Machines — key differences.",
     "answer": "<table><tr><th>Aspect</th><th>Container</th><th>VM</th></tr><tr><td><strong>Isolation</strong></td><td>Process-level (namespaces, cgroups)</td><td>Hardware-level (hypervisor)</td></tr><tr><td><strong>OS</strong></td><td>Shares host kernel</td><td>Full guest OS per VM</td></tr><tr><td><strong>Startup</strong></td><td>Seconds</td><td>Minutes</td></tr><tr><td><strong>Size</strong></td><td>MBs</td><td>GBs</td></tr><tr><td><strong>Density</strong></td><td>Hundreds per host</td><td>Tens per host</td></tr><tr><td><strong>Portability</strong></td><td>Image runs anywhere with Docker</td><td>Heavier, OS-specific</td></tr></table><p>Containers are <strong>not</strong> as isolated as VMs — kernel exploits can affect the host. VMs are better for strong multi-tenant isolation. Many production setups use both: VMs as the host, containers inside.</p>",
     "tip": "Containers = lightweight, fast, shared kernel. VMs = stronger isolation, different OS kernels (Windows on Linux host).",
@@ -69,7 +93,11 @@
     "id": "dk8s-what-is-kubernetes",
     "category": "docker-kubernetes",
     "difficulty": "beginner",
-    "tags": ["kubernetes", "basics", "orchestration"],
+    "tags": [
+      "kubernetes",
+      "basics",
+      "orchestration"
+    ],
     "question": "What is Kubernetes and what problems does it solve?",
     "answer": "<p>Kubernetes (K8s) is an <strong>open-source container orchestration platform</strong> that automates deploying, scaling, and managing containerized applications across a cluster of machines.</p><p>Problems it solves:</p><ul><li><strong>Scheduling</strong> — places containers on nodes with available resources.</li><li><strong>Self-healing</strong> — restarts crashed containers, replaces failed nodes.</li><li><strong>Scaling</strong> — horizontal pod autoscaling based on CPU/memory/custom metrics.</li><li><strong>Service discovery</strong> — stable DNS and load balancing for pods.</li><li><strong>Rolling updates</strong> — zero-downtime deployments with rollback.</li><li><strong>Config management</strong> — ConfigMaps and Secrets decoupled from images.</li><li><strong>Storage orchestration</strong> — attach persistent volumes automatically.</li></ul><p>Architecture: <strong>control plane</strong> (API server, scheduler, controller manager, etcd) + <strong>worker nodes</strong> (kubelet, kube-proxy, container runtime).</p>",
     "tip": "K8s is the 'operating system for the data center' — you declare desired state, it makes reality match.",
@@ -80,7 +108,12 @@
     "id": "dk8s-pods-deployments-services",
     "category": "docker-kubernetes",
     "difficulty": "intermediate",
-    "tags": ["kubernetes", "pods", "deployments", "services"],
+    "tags": [
+      "kubernetes",
+      "pods",
+      "deployments",
+      "services"
+    ],
     "question": "Explain Pods, Deployments, and Services in Kubernetes.",
     "answer": "<p><strong>Pod</strong> — the smallest deployable unit. One or more containers sharing network (same IP) and storage volumes. Ephemeral — pods die and are replaced, never \"repaired.\"</p><p><strong>Deployment</strong> — manages a <em>ReplicaSet</em> of identical pods. Declares desired replica count, container image, and update strategy. You almost never create pods directly — always use Deployments (or StatefulSets/DaemonSets).</p><p><strong>Service</strong> — stable network endpoint for a set of pods. Types:</p><ul><li><strong>ClusterIP</strong> (default) — internal only, accessible within cluster.</li><li><strong>NodePort</strong> — exposes on each node's IP at a static port.</li><li><strong>LoadBalancer</strong> — provisions cloud LB (AWS ELB, GCP LB).</li><li><strong>ExternalName</strong> — DNS CNAME to external service.</li></ul><p>Flow: Deployment → creates ReplicaSet → creates Pods. Service → routes traffic to matching pods via label selector.</p>",
     "tip": "Pods are cattle, not pets. Deployments manage the herd; Services give the herd a stable address.",
@@ -92,7 +125,12 @@
     "id": "dk8s-configmaps-secrets",
     "category": "docker-kubernetes",
     "difficulty": "intermediate",
-    "tags": ["kubernetes", "configmaps", "secrets", "configuration"],
+    "tags": [
+      "kubernetes",
+      "configmaps",
+      "secrets",
+      "configuration"
+    ],
     "question": "ConfigMaps vs Secrets in Kubernetes.",
     "answer": "<p>Both decouple configuration from container images. Changes don't require rebuilding the image.</p><p><strong>ConfigMap</strong> — non-sensitive config (app settings, feature flags, config files). Stored as plain text in etcd. Mount as env vars, files, or command-line args.</p><p><strong>Secret</strong> — sensitive data (passwords, API keys, TLS certs). Base64-encoded in etcd (not encrypted by default — enable encryption at rest). Same consumption methods as ConfigMaps.</p><p>Consumption methods:</p><ul><li><strong>Environment variable</strong> — <code class=\"inline\">envFrom</code> or <code class=\"inline\">valueFrom</code>.</li><li><strong>Volume mount</strong> — files appear in a directory; auto-updates on change (with sync period).</li></ul><p>Best practice: use external secret managers (Vault, AWS Secrets Manager, Sealed Secrets) for production; K8s Secrets are convenient but not fully secure without additional hardening.</p>",
     "tip": "Base64 is encoding, not encryption. Always enable etcd encryption at rest and RBAC for Secrets.",
@@ -103,7 +141,11 @@
     "id": "dk8s-namespaces",
     "category": "docker-kubernetes",
     "difficulty": "beginner",
-    "tags": ["kubernetes", "namespaces", "isolation"],
+    "tags": [
+      "kubernetes",
+      "namespaces",
+      "isolation"
+    ],
     "question": "What are Kubernetes namespaces and how are they used?",
     "answer": "<p>Namespaces provide <strong>logical isolation</strong> within a single cluster. Resources in different namespaces are separated by name scope.</p><p>Common uses:</p><ul><li><strong>Environment separation</strong> — <code class=\"inline\">dev</code>, <code class=\"inline\">staging</code>, <code class=\"inline\">prod</code>.</li><li><strong>Team isolation</strong> — <code class=\"inline\">team-payments</code>, <code class=\"inline\">team-auth</code>.</li><li><strong>Resource quotas</strong> — limit CPU/memory per namespace.</li><li><strong>RBAC scoping</strong> — grant permissions per namespace.</li></ul><p>Default namespaces: <code class=\"inline\">default</code>, <code class=\"inline\">kube-system</code> (K8s components), <code class=\"inline\">kube-public</code>, <code class=\"inline\">kube-node-lease</code>.</p><p>Not a security boundary by itself — network policies and RBAC are needed for real isolation.</p>",
     "tip": "Services are reachable cross-namespace: <code class=\"inline\">service-name.namespace.svc.cluster.local</code>.",
@@ -114,7 +156,12 @@
     "id": "dk8s-ingress-vs-lb",
     "category": "docker-kubernetes",
     "difficulty": "intermediate",
-    "tags": ["kubernetes", "ingress", "loadbalancer", "networking"],
+    "tags": [
+      "kubernetes",
+      "ingress",
+      "loadbalancer",
+      "networking"
+    ],
     "question": "Ingress vs LoadBalancer Service — when to use each?",
     "answer": "<p><strong>LoadBalancer Service</strong> — provisions a cloud load balancer (one per Service). Each external service gets its own LB IP/DNS. Simple but expensive at scale (one LB per service).</p><p><strong>Ingress</strong> — a single entry point (one LB) that routes HTTP/HTTPS traffic to multiple backend Services based on host name and path rules. Requires an <strong>Ingress Controller</strong> (nginx, Traefik, AWS ALB Ingress Controller).</p><table><tr><th>Feature</th><th>LoadBalancer</th><th>Ingress</th></tr><tr><td>Protocols</td><td>TCP/UDP (L4)</td><td>HTTP/HTTPS (L7)</td></tr><tr><td>Routing</td><td>One service per LB</td><td>Path/host-based routing</td></tr><tr><td>TLS termination</td><td>At cloud LB</td><td>At Ingress controller</td></tr><tr><td>Cost</td><td>One LB per service</td><td>One LB for many services</td></tr></table><p>Typical pattern: Ingress for HTTP APIs + web apps; LoadBalancer for non-HTTP (databases, gRPC with L4, MQTT).</p>",
     "tip": "Production HTTP apps almost always use Ingress. Mention cert-manager for automatic TLS certificates.",
@@ -125,7 +172,11 @@
     "id": "dk8s-liveness-readiness",
     "category": "docker-kubernetes",
     "difficulty": "intermediate",
-    "tags": ["kubernetes", "probes", "health-checks"],
+    "tags": [
+      "kubernetes",
+      "probes",
+      "health-checks"
+    ],
     "question": "Liveness probe vs Readiness probe — what's the difference?",
     "answer": "<p>Both are health checks kubelet runs against containers, but they trigger different actions:</p><p><strong>Liveness probe</strong> — \"Is the container alive?\" If it fails, kubelet <strong>restarts the container</strong>. Use when the app can deadlock or get stuck but the process is still running.</p><p><strong>Readiness probe</strong> — \"Is the container ready to serve traffic?\" If it fails, the pod is <strong>removed from Service endpoints</strong> (no traffic) but NOT restarted. Use during startup (waiting for DB connection) or temporary overload.</p><p><strong>Startup probe</strong> (bonus) — disables liveness/readiness until it passes. For slow-starting apps so liveness doesn't kill them during boot.</p><p>Probe types: <code class=\"inline\">httpGet</code>, <code class=\"inline\">tcpSocket</code>, <code class=\"inline\">exec</code> (run command). Configure <code class=\"inline\">initialDelaySeconds</code>, <code class=\"inline\">periodSeconds</code>, <code class=\"inline\">failureThreshold</code>.</p>",
     "tip": "Never point liveness at a dependency (DB). If DB is down, liveness restarts your app in a loop. Use readiness for dependency checks.",
@@ -136,7 +187,11 @@
     "id": "dk8s-rolling-updates",
     "category": "docker-kubernetes",
     "difficulty": "intermediate",
-    "tags": ["kubernetes", "deployments", "rolling-update"],
+    "tags": [
+      "kubernetes",
+      "deployments",
+      "rolling-update"
+    ],
     "question": "How do rolling updates work in Kubernetes?",
     "answer": "<p>When you change a Deployment spec (e.g., new image tag), Kubernetes performs a <strong>rolling update</strong> — gradually replacing old pods with new ones with zero downtime (if configured correctly).</p><p>Strategy settings (<code class=\"inline\">spec.strategy.rollingUpdate</code>):</p><ul><li><strong>maxSurge</strong> — how many extra pods above desired count during update (e.g., 25% or 1).</li><li><strong>maxUnavailable</strong> — how many pods can be down during update (e.g., 0 for zero-downtime).</li></ul><p>Process: create new ReplicaSet → scale up new pods → wait for readiness → terminate old pods → repeat until complete.</p><p><strong>Rollback:</strong> <code class=\"inline\">kubectl rollout undo deployment/api</code> — reverts to previous ReplicaSet. <code class=\"inline\">kubectl rollout history</code> shows revisions.</p><p>Alternatives: <strong>Recreate</strong> (kill all, then start new — downtime), <strong>Blue/Green</strong> (switch Service selector), <strong>Canary</strong> (via Argo Rollouts or service mesh).</p>",
     "tip": "Set maxUnavailable: 0 and maxSurge: 1 for safe zero-downtime updates. Always define readiness probes.",
@@ -148,7 +203,11 @@
     "id": "dk8s-hpa",
     "category": "docker-kubernetes",
     "difficulty": "intermediate",
-    "tags": ["kubernetes", "hpa", "autoscaling"],
+    "tags": [
+      "kubernetes",
+      "hpa",
+      "autoscaling"
+    ],
     "question": "What is Horizontal Pod Autoscaler (HPA)?",
     "answer": "<p>HPA automatically scales the number of pod replicas in a Deployment (or ReplicaSet, StatefulSet) based on observed metrics.</p><p>Default metrics: <strong>CPU</strong> and <strong>memory</strong> utilization. With metrics-server installed, HPA compares current usage against targets.</p><p>Custom metrics: requests per second (via Prometheus adapter), queue depth, any metric from monitoring system.</p><p>Key fields:</p><ul><li><strong>minReplicas / maxReplicas</strong> — scaling bounds.</li><li><strong>targetCPUUtilizationPercentage</strong> — e.g., 70% means scale up when average CPU across pods exceeds 70% of requested CPU.</li></ul><p>Requirements: resource <strong>requests</strong> must be set on containers (HPA needs them to calculate utilization). Install <strong>metrics-server</strong> in the cluster.</p><p>Related: <strong>VPA</strong> (Vertical — adjusts requests/limits), <strong>Cluster Autoscaler</strong> (adds/removes nodes).</p>",
     "tip": "HPA needs requests defined. Without them, CPU percentage is meaningless and HPA won't work.",
@@ -159,7 +218,11 @@
     "id": "dk8s-requests-limits",
     "category": "docker-kubernetes",
     "difficulty": "intermediate",
-    "tags": ["kubernetes", "resources", "qos"],
+    "tags": [
+      "kubernetes",
+      "resources",
+      "qos"
+    ],
     "question": "Resource requests and limits in Kubernetes.",
     "answer": "<p>Every container should define <strong>requests</strong> and <strong>limits</strong> for CPU and memory:</p><p><strong>Request</strong> — guaranteed resources reserved for the container. Scheduler uses requests to place pods on nodes with enough capacity.</p><p><strong>Limit</strong> — maximum resources the container can use. Exceeding memory limit → OOMKilled. Exceeding CPU limit → throttled (not killed).</p><p>QoS classes (affects eviction priority):</p><ul><li><strong>Guaranteed</strong> — requests = limits for all containers. Last to be evicted.</li><li><strong>Burstable</strong> — requests &lt; limits. Default for most apps.</li><li><strong>BestEffort</strong> — no requests/limits. First evicted under pressure.</li></ul><p>CPU: <code class=\"inline\">500m</code> = 0.5 core. Memory: <code class=\"inline\">256Mi</code>, <code class=\"inline\">1Gi</code>.</p>",
     "tip": "Set requests based on normal usage (p50), limits at p99 or 2x requests. Monitor and adjust with VPA recommendations.",
@@ -171,7 +234,11 @@
     "id": "dk8s-container-networking",
     "category": "docker-kubernetes",
     "difficulty": "intermediate",
-    "tags": ["kubernetes", "networking", "cni"],
+    "tags": [
+      "kubernetes",
+      "networking",
+      "cni"
+    ],
     "question": "Container networking basics in Docker and Kubernetes.",
     "answer": "<p><strong>Docker networking:</strong></p><ul><li><strong>bridge</strong> (default) — containers on same host communicate via virtual bridge. Port mapping (<code class=\"inline\">-p 8080:80</code>) for external access.</li><li><strong>host</strong> — container uses host network directly (no isolation).</li><li><strong>overlay</strong> — multi-host networking (Docker Swarm).</li><li><strong>none</strong> — no networking.</li></ul><p><strong>Kubernetes networking model:</strong></p><ul><li>Every pod gets a unique IP (flat network — no NAT between pods).</li><li>All pods can communicate without NAT (by default).</li><li>Agents on each node (kubelet + CNI plugin) configure networking.</li></ul><p><strong>CNI plugins</strong> (Container Network Interface): Calico, Flannel, Cilium, Weave — implement pod networking, IP allocation, and optionally network policies.</p><p><strong>Network Policies</strong> — firewall rules for pods (allow/deny traffic by label, namespace, port). Default: all traffic allowed. Requires a CNI that supports policies (Calico, Cilium).</p>",
     "tip": "Know the K8s networking model: every pod has an IP, Services provide stable endpoints, kube-proxy handles load balancing.",
@@ -183,7 +250,11 @@
     "id": "dk8s-why-k8s-microservices",
     "category": "docker-kubernetes",
     "difficulty": "intermediate",
-    "tags": ["kubernetes", "microservices", "architecture"],
+    "tags": [
+      "kubernetes",
+      "microservices",
+      "architecture"
+    ],
     "question": "Why use Kubernetes for microservices?",
     "answer": "<p>Microservices introduce operational complexity — many small services to deploy, scale, monitor, and network. Kubernetes addresses this:</p><ul><li><strong>Independent scaling</strong> — scale the payment service to 10 replicas without touching the auth service.</li><li><strong>Independent deployment</strong> — deploy one service without redeploying the entire monolith.</li><li><strong>Service discovery</strong> — services find each other by DNS, no hardcoded IPs.</li><li><strong>Resilience</strong> — self-healing restarts, health checks, pod disruption budgets.</li><li><strong>Resource efficiency</strong> — bin-pack many services onto shared nodes.</li><li><strong>Declarative config</strong> — GitOps: entire infra state in version-controlled YAML.</li><li><strong>Portability</strong> — same manifests run on AWS EKS, GCP GKE, Azure AKS, on-prem.</li></ul><p>Trade-offs: steep learning curve, operational overhead, overkill for small teams (&lt;5 services). Alternatives: Docker Compose (dev), managed PaaS (Heroku, Cloud Run), ECS/Fargate.</p>",
     "tip": "Don't say \"K8s for everything.\" Show judgment — K8s shines at 10+ services, multi-team, multi-env scale.",
@@ -194,7 +265,12 @@
     "id": "dk8s-openshift-basics",
     "category": "docker-kubernetes",
     "difficulty": "intermediate",
-    "tags": ["openshift", "routes", "s2i", "enterprise"],
+    "tags": [
+      "openshift",
+      "routes",
+      "s2i",
+      "enterprise"
+    ],
     "question": "OpenShift basics — Routes and Builds.",
     "answer": "<p>OpenShift is Red Hat's <strong>enterprise Kubernetes distribution</strong> with additional security, developer tools, and integrated CI/CD.</p><p><strong>Routes</strong> — OpenShift's equivalent of Ingress. Exposes a Service externally with a hostname under the cluster domain (e.g., <code class=\"inline\">myapp.apps.cluster.example.com</code>). Handles edge TLS termination. Simpler than configuring Ingress + cert-manager for basic cases.</p><pre><code>oc expose svc/myapp --hostname=myapp.apps.cluster.example.com</code></pre><p><strong>Builds</strong> — built-in CI for creating container images from source:</p><ul><li><strong>Source-to-Image (S2I)</strong> — push source code, OpenShift builds the image using a builder image (no Dockerfile needed).</li><li><strong>Docker build</strong> — build from Dockerfile in the repo.</li><li><strong>Pipeline build</strong> — Jenkins pipeline integration.</li></ul><p>Other OpenShift extras: <strong>Security Context Constraints</strong> (SCC), <strong>Projects</strong> (namespaces with extra isolation), built-in <strong>ImageStreams</strong>, <strong>oc</strong> CLI (wraps kubectl).</p>",
     "tip": "OpenShift = K8s + opinionated defaults + Routes + S2I + RBAC/SCC hardening. Know oc vs kubectl.",
@@ -205,7 +281,12 @@
     "id": "dk8s-jenkins-cicd",
     "category": "docker-kubernetes",
     "difficulty": "intermediate",
-    "tags": ["jenkins", "cicd", "kubernetes", "deployment"],
+    "tags": [
+      "jenkins",
+      "cicd",
+      "kubernetes",
+      "deployment"
+    ],
     "question": "How does Jenkins CI/CD deploy to Kubernetes?",
     "answer": "<p>Typical pipeline flow:</p><ol><li><strong>Checkout</strong> — clone source from Git.</li><li><strong>Build & Test</strong> — compile, run unit/integration tests.</li><li><strong>Build image</strong> — <code class=\"inline\">docker build</code> or Kaniko (no Docker daemon needed).</li><li><strong>Push image</strong> — tag with build number + git SHA, push to registry (ECR, GCR, Harbor).</li><li><strong>Deploy to K8s</strong> — update manifest image tag and apply, or use Helm upgrade.</li><li><strong>Verify</strong> — wait for rollout, run smoke tests.</li></ol><p>Deployment methods:</p><ul><li><strong>kubectl apply</strong> — sed/envsubst to replace image tag in YAML.</li><li><strong>Helm upgrade</strong> — <code class=\"inline\">helm upgrade --install --set image.tag=$BUILD_NUMBER</code>.</li><li><strong>ArgoCD / Flux</strong> — GitOps: Jenkins commits manifest change, ArgoCD syncs.</li><li><strong>Kubernetes plugin</strong> — dynamic Jenkins agents as K8s pods.</li></ul>",
     "tip": "Modern pattern: Jenkins builds + pushes image, then updates a Git repo (GitOps). ArgoCD/Flux deploys to K8s.",
@@ -217,7 +298,12 @@
     "id": "dk8s-persistent-volumes",
     "category": "docker-kubernetes",
     "difficulty": "intermediate",
-    "tags": ["kubernetes", "storage", "pv", "pvc"],
+    "tags": [
+      "kubernetes",
+      "storage",
+      "pv",
+      "pvc"
+    ],
     "question": "How does persistent storage work in Kubernetes?",
     "answer": "<p>Containers are ephemeral — data in a container filesystem is lost when the pod dies. For databases, file uploads, and logs, use <strong>Persistent Volumes</strong>.</p><p>Key resources:</p><ul><li><strong>PV (PersistentVolume)</strong> — cluster-level storage resource (NFS, cloud disk, local SSD). Provisioned by admin or dynamically via StorageClass.</li><li><strong>PVC (PersistentVolumeClaim)</strong> — pod's request for storage (size, access mode). Binds to a matching PV.</li><li><strong>StorageClass</strong> — defines provisioner (e.g., <code class=\"inline\">gp3</code> on AWS EBS, <code class=\"inline\">standard</code> on GCE). Enables dynamic provisioning.</li></ul><p>Access modes: <strong>ReadWriteOnce</strong> (one node), <strong>ReadOnlyMany</strong>, <strong>ReadWriteMany</strong> (NFS, EFS).</p><p>Mount in pod via <code class=\"inline\">volumes</code> and <code class=\"inline\">volumeMounts</code>. PVC is referenced by name.</p>",
     "tip": "Databases in K8s need PVCs + StatefulSets (stable pod identity). Don't use Deployments for stateful data without understanding the risks.",
@@ -228,7 +314,12 @@
     "id": "dk8s-troubleshooting",
     "category": "docker-kubernetes",
     "difficulty": "intermediate",
-    "tags": ["kubernetes", "troubleshooting", "kubectl", "debugging"],
+    "tags": [
+      "kubernetes",
+      "troubleshooting",
+      "kubectl",
+      "debugging"
+    ],
     "question": "How do you troubleshoot a failing pod in Kubernetes?",
     "answer": "<p>Systematic debugging approach:</p><ol><li><strong>Check pod status</strong> — <code class=\"inline\">kubectl get pods</code>. Look for CrashLoopBackOff, ImagePullBackOff, Pending, OOMKilled.</li><li><strong>Describe pod</strong> — <code class=\"inline\">kubectl describe pod &lt;name&gt;</code>. Events section shows scheduling failures, probe failures, volume mount errors.</li><li><strong>Check logs</strong> — <code class=\"inline\">kubectl logs &lt;pod&gt;</code> or <code class=\"inline\">kubectl logs &lt;pod&gt; --previous</code> for crashed container.</li><li><strong>Exec into container</strong> — <code class=\"inline\">kubectl exec -it &lt;pod&gt; -- /bin/sh</code> to inspect filesystem, test connectivity.</li><li><strong>Check events</strong> — <code class=\"inline\">kubectl get events --sort-by=.lastTimestamp</code>.</li><li><strong>Port-forward</strong> — <code class=\"inline\">kubectl port-forward pod/&lt;name&gt; 8080:8080</code> for local testing.</li></ol><p>Common issues: wrong image tag (ImagePullBackOff), missing ConfigMap/Secret, insufficient resources (Pending), failed liveness probe (restart loop), app error (CrashLoopBackOff), OOM (increase memory limit).</p>",
     "tip": "Start with `kubectl describe` — the Events section answers 80% of pod issues.",
@@ -239,11 +330,30 @@
     "id": "dk8s-docker-volumes",
     "category": "docker-kubernetes",
     "difficulty": "beginner",
-    "tags": ["docker", "volumes", "storage"],
+    "tags": [
+      "docker",
+      "volumes",
+      "storage"
+    ],
     "question": "Docker volumes and persistent data.",
     "answer": "<p>Container filesystems are ephemeral. Docker provides mechanisms for data that survives container restarts:</p><p><strong>Volumes</strong> — managed by Docker, stored on host at <code class=\"inline\">/var/lib/docker/volumes/</code>. Best choice for persistent data. Can be shared between containers. Work with volume drivers for remote storage (NFS, cloud).</p><p><strong>Bind mounts</strong> — map a host directory into the container. Good for dev (live code reload) but tied to host path.</p><p><strong>tmpfs mounts</strong> — stored in host memory. Fast, not persisted. For secrets or temp data.</p><p>In Compose: named volumes persist across <code class=\"inline\">docker compose down</code> (unless <code class=\"inline\">-v</code> flag). Bind mounts for source code in dev.</p>",
     "tip": "Use named volumes for databases in Compose. Use bind mounts only for dev hot-reload.",
     "code": "# Named volume\ndocker run -d -v pgdata:/var/lib/postgresql/data postgres:16\n\n# Bind mount (dev)\ndocker run -v $(pwd)/src:/app/src myapp\n\n# Compose\nvolumes:\n  pgdata:  # named volume, managed by Docker",
     "lang": "bash"
+  },
+  {
+    "id": "dk8s-blue-green-canary",
+    "category": "docker-kubernetes",
+    "difficulty": "intermediate",
+    "tags": [
+      "deployment",
+      "strategy",
+      "V.Imp"
+    ],
+    "question": "Blue-green vs canary deployment? And how does environment promotion (dev → QA → prod) work?",
+    "answer": "<ul><li><strong>Blue-green</strong> — two full environments; deploy to the idle one (green), test it, then <strong>switch all traffic at once</strong> (LB/router flip). Instant rollback = flip back. Cost: double infrastructure; watch DB migrations that must serve both versions.</li><li><strong>Canary</strong> — release to a <strong>small slice</strong> (5% of pods/users), watch error rates and latency, then ramp 25→50→100%. Limits blast radius; needs good metrics and often sticky routing.</li><li><strong>Rolling</strong> (K8s default) — replace pods gradually; simplest, but no traffic-percentage control.</li></ul><p><strong>Promotion</strong>: build the image <strong>once</strong>, tag it, and promote the <em>same immutable artifact</em> through dev → QA → prod; only externalized config (ConfigMaps/Secrets/profiles) differs per environment. Rebuilding per environment invalidates all prior testing.</p>",
+    "tip": "The one-artifact rule is the interview kernel: 'what QA tested is bit-for-bit what prod runs'. Canary needs metrics to judge — without observability it's just a slow rollout.",
+    "code": "# canary with plain k8s: two deployments, one service selector\n# app-stable: replicas 9,  labels app=api\n# app-canary: replicas 1,  labels app=api, track=canary  -> ~10% traffic\n# service selects app=api (both) — promote by scaling canary up, stable down",
+    "lang": "yaml"
   }
 ]

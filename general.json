@@ -199,5 +199,92 @@
     "tip": "Stand-ups answer three things: what I did, what I'll do, what's blocking me.",
     "code": "",
     "lang": ""
+  },
+  {
+    "id": "gen-reverse-proxy",
+    "category": "general",
+    "difficulty": "beginner",
+    "tags": [
+      "networking",
+      "nginx",
+      "infrastructure"
+    ],
+    "question": "What is a reverse proxy / load balancer? Nginx basics.",
+    "answer": "<p>A <strong>reverse proxy</strong> sits in front of your servers, accepting client traffic and forwarding it inward (clients never see the backends). It centralizes: <strong>TLS termination</strong>, compression, caching, rate limiting, path routing (<code class=\"inline\">/api</code> → backend, <code class=\"inline\">/</code> → static Angular files).</p><p>A <strong>load balancer</strong> is a reverse proxy distributing across multiple instances — round robin, least-connections, IP-hash — with health checks ejecting dead backends. (Forward proxy = the mirror image: sits in front of <em>clients</em>.)</p>",
+    "tip": "The Angular+Spring deployment everyone actually runs: nginx serves the built static files, proxies /api to Spring Boot, and try_files handles SPA route refreshes.",
+    "code": "server {\n  listen 443 ssl;\n  location /api/ { proxy_pass http://backend:8080/; }\n  location /     { root /usr/share/nginx/html; try_files $uri /index.html; }\n}\nupstream backend { server app1:8080; server app2:8080; }  # least_conn; health checks",
+    "lang": "bash"
+  },
+  {
+    "id": "gen-user-story-invest",
+    "category": "general",
+    "difficulty": "beginner",
+    "tags": [
+      "agile",
+      "requirements"
+    ],
+    "question": "What is a user story? INVEST criteria and acceptance criteria?",
+    "answer": "<p>A user story is a small requirement from the user's viewpoint: <em>As a &lt;role&gt; I want &lt;capability&gt; so that &lt;benefit&gt;</em> — a placeholder for a conversation, not a spec.</p><p><strong>INVEST</strong>: <strong>I</strong>ndependent (schedulable alone), <strong>N</strong>egotiable, <strong>V</strong>aluable (user-visible benefit), <strong>E</strong>stimable, <strong>S</strong>mall (fits a sprint), <strong>T</strong>estable.</p><p><strong>Acceptance criteria</strong> — the concrete conditions that make it done, often Given/When/Then; they become the test cases and kill \"that's not what I meant\" at demo time.</p>",
+    "tip": "Be ready with a real example from your project, including one acceptance criterion that caught an edge case (empty state, permission denied) before development started.",
+    "code": "Story: As a customer I want to filter orders by date so I can find a past order.\n\nAcceptance criteria:\n  Given orders exist, When I pick a date range, Then only orders in it show\n  Given no orders match, Then an empty state with a clear-filters action shows\n  Date range max 1 year; invalid range shows inline validation",
+    "lang": "bash"
+  },
+  {
+    "id": "gen-estimation",
+    "category": "general",
+    "difficulty": "intermediate",
+    "tags": [
+      "agile",
+      "estimation",
+      "V.Imp"
+    ],
+    "question": "Story points and estimation — planning poker, velocity, burndown?",
+    "answer": "<p><strong>Story points</strong> measure relative effort+complexity+uncertainty (Fibonacci 1,2,3,5,8...), not hours — a 5 is 'about like that other 5', which dodges human badness at absolute estimates.</p><p><strong>Planning poker</strong>: everyone reveals an estimate simultaneously (no anchoring); big splits trigger discussion — the outliers usually know something. <strong>T-shirt sizing</strong> (S/M/L) for coarse roadmap-level sizing.</p><p><strong>Velocity</strong> — points completed per sprint, averaged; it's the team's <em>empirical</em> capacity for forecasting, never a performance KPI. <strong>Burndown</strong> — remaining work vs time in the sprint; a flat line mid-sprint = blocked or bad breakdown.</p>",
+    "tip": "For 'how do YOU estimate': decompose to tasks, compare against a reference story, size the unknowns (spike if too fuzzy), add integration/testing effort explicitly — concrete process beats theory.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "gen-dor-dod",
+    "category": "general",
+    "difficulty": "beginner",
+    "tags": [
+      "agile",
+      "process"
+    ],
+    "question": "Definition of Ready vs Definition of Done? How do you handle mid-sprint scope changes?",
+    "answer": "<p><strong>DoR</strong> — a story may enter a sprint only when: clear acceptance criteria, dependencies identified, estimated, testable. Protects the sprint from half-baked work.</p><p><strong>DoD</strong> — 'done' means: code + review + tests passing, acceptance criteria met, merged, deployed to the agreed environment, docs updated. One shared definition kills \"done but not done-done\".</p><p><strong>Mid-sprint changes</strong>: the sprint goal is protected — genuine urgencies (prod incident) swap something <em>out</em> of equal size rather than piling on; everything else goes to the backlog for next planning. Constant mid-sprint churn is a signal to shorten sprints or move to Kanban.</p>",
+    "tip": "The mature answer isn't 'never change scope' — it's 'trade, don't add', and make the cost visible to the product owner.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "gen-kanban-scrum",
+    "category": "general",
+    "difficulty": "beginner",
+    "tags": [
+      "agile",
+      "process"
+    ],
+    "question": "Kanban vs Scrum?",
+    "answer": "<ul><li><strong>Scrum</strong> — fixed-length sprints with commitment, defined roles (PO/SM), ceremonies (planning, standup, review, retro), velocity per sprint. Fits feature work that batches well.</li><li><strong>Kanban</strong> — continuous flow, no sprints: a board with <strong>WIP limits</strong> per column; pull the next item when capacity frees; measure <strong>cycle time</strong> and throughput. Fits support/ops and interrupt-heavy streams.</li></ul><p>Many teams run <strong>Scrumban</strong> — sprint cadence for planning/retros, WIP limits and pull for daily flow.</p>",
+    "tip": "The differentiator is WIP limits: Kanban optimizes flow by capping simultaneous work; Scrum optimizes predictability by time-boxed commitment. Say which your team used and why.",
+    "code": "",
+    "lang": ""
+  },
+  {
+    "id": "gen-requirements-translation",
+    "category": "general",
+    "difficulty": "intermediate",
+    "tags": [
+      "requirements",
+      "process",
+      "V.Imp"
+    ],
+    "question": "How do you translate functional requirements into technical/system requirements? What is performance engineering?",
+    "answer": "<p>A repeatable pipeline:</p><ol><li><strong>Clarify</strong> the functional requirement with concrete scenarios and acceptance criteria (what exactly must happen, for whom, how often).</li><li><strong>Derive system requirements</strong> — data model changes, API contracts (endpoints, payloads, status codes), integration points, authorization rules.</li><li><strong>Extract the non-functionals hidden inside</strong> — expected volumes, latency targets, concurrency, auditability, retention. \"Show order history\" secretly contains pagination, an index, and an SLA.</li><li><strong>Design + spike</strong> unknowns, then split into estimable stories with traceability back to the source requirement.</li></ol><p><strong>Performance engineering</strong> — treating performance as a requirement through the lifecycle, not a post-hoc fix: set numeric targets (p95 latency, throughput), test against them (JMeter/Gatling, Lighthouse for frontend), profile bottlenecks (APM, EXPLAIN plans, bundle analysis), fix, and <strong>guard in CI</strong> (perf budgets) so regressions fail the build.</p>",
+    "tip": "Have one worked example ready: functional ask → the API you designed → the NFR you surfaced (e.g. 50k rows ⇒ keyset pagination + index) → the measured result. JD-critical for service companies.",
+    "code": "",
+    "lang": ""
   }
 ]
